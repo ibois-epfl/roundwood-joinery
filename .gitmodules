@@ -1,3 +1,9 @@
 [submodule "src/3rd_party/eigen"]
 	path = src/3rd_party/eigen
 	url = https://github.com/diffCheckOrg/submodule-eigen.git
+[submodule "src/3rd_party/nanobind"]
+	path = src/3rd_party/nanobind
+	url = https://github.com/wjakob/nanobind.git
+[submodule "src/3rd_party/cgal"]
+	path = src/3rd_party/cgal
+	url = https://github.com/CGAL/cgal.git
