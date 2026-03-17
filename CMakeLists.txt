@@ -1,9 +1,14 @@
 cmake_minimum_required (VERSION 3.14)
 project (roundwood_joinery)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
 endif()
+
+add_definitions(-DCGAL_DISABLE_GMP -DCGAL_USE_GMP=OFF -DCGAL_USE_MPFR=OFF)
 
 set(RUN_TESTS TRUE) #For now we will always run tests after building...
 
@@ -26,6 +31,24 @@ endif()
 # Eigen
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/3rd_party/eigen)
 target_include_directories(${SHARED_LIB_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src/3rd_party/eigen)
+
+# Boost
+file(GLOB BOOST_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/3rd_party/boost/libs/*/include")
+foreach(dir ${BOOST_INCLUDE_DIRS})
+    message("Adding Boost include dir: ${dir}")
+    include_directories(${dir})
+    target_include_directories(${SHARED_LIB_NAME} PUBLIC ${dir})
+endforeach()
+
+# CGAL
+
+file(GLOB CGAL_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/3rd_party/cgal/*/include")
+foreach(dir ${CGAL_INCLUDE_DIRS})
+    message("Adding CGAL include dir: ${dir}")
+    include_directories(${dir})
+    target_include_directories(${SHARED_LIB_NAME} PUBLIC ${dir})
+endforeach()
+
 
 #############
 # Unit tests
