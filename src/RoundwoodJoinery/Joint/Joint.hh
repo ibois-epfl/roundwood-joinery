@@ -3,6 +3,15 @@
 #include <string>
 
 #include <Eigen/Dense>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Projection_traits_3.h>
+#include <CGAL/Polygon_2.h>
+#include <CGAL/Polygon_2_algorithms.h>
+ 
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+typedef K::Point_3 Point_3;
+
+#include "../PointCloud/PointCloud.hh"
 
 namespace RoundwoodJoinery::Joinery
 {
@@ -12,8 +21,10 @@ namespace RoundwoodJoinery::Joinery
     class JointFace
     {
     public:
-        JointFace(Eigen::Vector3d normal, Eigen::Vector3d center, double area);
+        JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners, double area);
         ~JointFace() = default;
+
+        std::vector<Eigen::Vector3d> ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud);
 
         // Getters
         /**
@@ -22,7 +33,7 @@ namespace RoundwoodJoinery::Joinery
          */
         Eigen::Vector3d GetNormal() const
         {
-            return this->normal;
+            return this->_normal;
         }
 
         /**
@@ -31,7 +42,7 @@ namespace RoundwoodJoinery::Joinery
          */
         Eigen::Vector3d GetCenter() const
         {
-            return this->center;
+            return this->_center;
         }
 
         /**
@@ -44,9 +55,15 @@ namespace RoundwoodJoinery::Joinery
         }
     
     private:
-        Eigen::Vector3d normal;
-        Eigen::Vector3d center;
+        Eigen::Vector3d _normal;
+        Eigen::Vector3d _center;
+        std::vector<Eigen::Vector3d> _corners;
         double _area;
+        
+        /**
+         * @brief the outline polygon that is optional for technical reasons, but is systematically created at construction
+         */
+        std::optional<CGAL::Polygon_2<CGAL::Projection_traits_3<K>>> _outline_polygon;
     };
 
     /**
