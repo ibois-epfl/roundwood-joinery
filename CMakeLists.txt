@@ -1,6 +1,12 @@
 cmake_minimum_required (VERSION 3.14)
 project (roundwood_joinery)
 
+if (NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Debug)
+endif()
+
+set(RUN_TESTS TRUE) #For now we will always run tests after building...
+
 set (SHARED_LIB_NAME "roundwoodJoinery")
 add_subdirectory(src/RoundwoodJoinery)
 
