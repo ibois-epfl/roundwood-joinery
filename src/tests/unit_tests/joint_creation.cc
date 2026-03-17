@@ -4,29 +4,24 @@
 int main()
 {
     // Create a JointFace instance
-    Eigen::Vector3d normal1(0.0, 0.0, 1.0);
-    Eigen::Vector3d center1(0.0, 0.0, 0.0);
+    Eigen::Vector3d normal(0.0, 0.0, 1.0);
+    Eigen::Vector3d center(700.0, -390.0, 350.0);
+    Eigen::Vector3d corner1(650.0, -490.0, 350.0);
+    Eigen::Vector3d corner2(650.0, -290.0, 350.0);
+    Eigen::Vector3d corner3(750.0, -290.0, 350.0);
+    Eigen::Vector3d corner4(750.0, -490.0, 350.0);
+    std::vector<Eigen::Vector3d> corners = {corner1, corner2, corner3, corner4};
     double area1 = 1.0;
 
-    Eigen::Vector3d normal2(0.0, 1.0, 0.0);
-    Eigen::Vector3d center2(0.0, -1.0, 0.0);
-    double area2 = 1.0;
-
-    Eigen::Vector3d normal3(0.0, -1.0, 0.0);
-    Eigen::Vector3d center3(0.0, 1.0, 0.0);
-    double area3 = 1.0;
-
-    RoundwoodJoinery::Joinery::JointFace face1(normal1, center1, area1);
-    RoundwoodJoinery::Joinery::JointFace face2(normal2, center2, area2);
-    RoundwoodJoinery::Joinery::JointFace face3(normal3, center3, area3);
+    RoundwoodJoinery::Joinery::JointFace face1(normal, corners, area1);
 
     // Create a Joint instance with the created face
-    std::vector<RoundwoodJoinery::Joinery::JointFace> faces = {face1, face2, face3};
+    std::vector<RoundwoodJoinery::Joinery::JointFace> faces = {face1};
     RoundwoodJoinery::Joinery::Joint joint(faces);
 
-    if (joint.GetNumFaces() != 3)
+    if (joint.GetNumFaces() != 1)
     {
-        std::cerr << "Test failed: Expected 3 faces, got " << joint.GetNumFaces() << std::endl;
+        std::cerr << "Test failed: Expected 1 face, got " << joint.GetNumFaces() << std::endl;
         return 1;
     }
 
@@ -36,14 +31,14 @@ int main()
         return 1;
     }
 
-    if (joint.GetFaces()[1].GetNormal() - normal2 != Eigen::Vector3d::Zero())
+    if (joint.GetFaces()[0].GetNormal() - normal != Eigen::Vector3d::Zero())
     {
-        std::cerr << "Test failed: Expected normal " << normal2.transpose() << ", got " << joint.GetFaces()[1].GetNormal().transpose() << std::endl;
+        std::cerr << "Test failed: Expected normal " << normal.transpose() << ", got " << joint.GetFaces()[0].GetNormal().transpose() << std::endl;
         return 1;
     }
-    if (joint.GetFaces()[2].GetCenter() - center3 != Eigen::Vector3d::Zero())
+    if (joint.GetFaces()[0].GetCenter() - center != Eigen::Vector3d::Zero())
     {
-        std::cerr << "Test failed: Expected center " << center3.transpose() << ", got " << joint.GetFaces()[2].GetCenter().transpose() << std::endl;
+        std::cerr << "Test failed: Expected center " << center.transpose() << ", got " << joint.GetFaces()[0].GetCenter().transpose() << std::endl;
         return 1;
     }
 
