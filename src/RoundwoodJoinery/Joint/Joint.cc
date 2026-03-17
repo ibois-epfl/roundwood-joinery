@@ -1,0 +1,68 @@
+# include "Joint.hh"
+
+namespace RoundwoodJoinery::Joinery
+{
+    RoundwoodJoinery::Joinery::JointFace::JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners, double area)
+        : _normal(normal), _corners(corners), _area(area)
+    {
+        Eigen::Vector3d center = Eigen::Vector3d::Zero();
+        for (const auto& corner : corners){center += corner;}
+        center /= corners.size();
+        this->_center = center;
+
+        std::vector<Point_3> cgal_corners;
+        for (const auto& corner : corners)
+        {
+            cgal_corners.emplace_back(Point_3(corner.x(), corner.y(), corner.z()));
+        }
+        CGAL::Projection_traits_3<K> traits({normal.x(), normal.y(), normal.z()});
+        CGAL::Polygon_2<CGAL::Projection_traits_3<K>> cgalPolygon(traits);
+        for (const auto& corner : corners) 
+        {
+            cgalPolygon.push_back(Point_3(corner.x(), corner.y(), corner.z()));
+        }
+        this->_outline_polygon = std::move(cgalPolygon);
+    }
+
+    std::vector<Eigen::Vector3d> JointFace::ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud)
+    {
+        std::vector<Eigen::Vector3d> projectedPoints;
+        Eigen::Vector3d normal = this->_normal.normalized();
+        for (const auto& point : pointCloud.GetPoints())
+        {
+            double dist = (point - this->_center).dot(normal);
+            // if this dot product is negative, the point is "behind" the face and we should ignore it
+            if (dist < 0){continue;}
+            Eigen::Vector3d projection = point - (dist * normal);
+            CGAL::Projection_traits_3<K> traits({normal.x(), normal.y(), normal.z()});
+            if (_outline_polygon) 
+            {
+                switch(CGAL::bounded_side_2(this->_outline_polygon->vertices_begin(), this->_outline_polygon->vertices_end(),
+                                                Point_3(projection.x(), projection.y(), projection.z()),traits))
+                {
+                    case CGAL::ON_BOUNDED_SIDE:
+                    case CGAL::ON_BOUNDARY:
+                        projectedPoints.push_back(projection);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+            {
+                std::cerr << "Warning: No outline polygon defined for this face. All projected points will be included." << std::endl;
+            }
+        }
+        return projectedPoints;
+    }
+
+    RoundwoodJoinery::Joinery::Joint::Joint(std::vector<RoundwoodJoinery::Joinery::JointFace> faces)
+        : _faces(faces)
+    {
+    }
+
+    std::vector<JointFace> Joint::GetFaces()
+    {
+        return this->_faces;
+    }
+}

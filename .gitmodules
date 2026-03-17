@@ -1,0 +1,15 @@
+[submodule "src/3rd_party/eigen"]
+	path = src/3rd_party/eigen
+	url = https://github.com/diffCheckOrg/submodule-eigen.git
+[submodule "src/3rd_party/nanobind"]
+	path = src/3rd_party/nanobind
+	url = https://github.com/wjakob/nanobind.git
+[submodule "src/3rd_party/cgal"]
+	path = src/3rd_party/cgal
+	url = https://github.com/CGAL/cgal.git
+[submodule "src/3rd_party/happly"]
+	path = src/3rd_party/happly
+	url = https://github.com/nmwsharp/happly.git
+[submodule "src/3rd_party/boost"]
+	path = src/3rd_party/boost
+	url = https://github.com/boostorg/boost.git
