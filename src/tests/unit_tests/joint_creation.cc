@@ -16,13 +16,13 @@ int main()
     Eigen::Vector3d center3(0.0, 1.0, 0.0);
     double area3 = 1.0;
 
-    RoundwoodJoinery::JointFace face1(normal1, center1, area1);
-    RoundwoodJoinery::JointFace face2(normal2, center2, area2);
-    RoundwoodJoinery::JointFace face3(normal3, center3, area3);
+    RoundwoodJoinery::Joinery::JointFace face1(normal1, center1, area1);
+    RoundwoodJoinery::Joinery::JointFace face2(normal2, center2, area2);
+    RoundwoodJoinery::Joinery::JointFace face3(normal3, center3, area3);
 
     // Create a Joint instance with the created face
-    std::vector<RoundwoodJoinery::JointFace> faces = {face1, face2, face3};
-    RoundwoodJoinery::Joint joint(faces);
+    std::vector<RoundwoodJoinery::Joinery::JointFace> faces = {face1, face2, face3};
+    RoundwoodJoinery::Joinery::Joint joint(faces);
 
     if (joint.GetNumFaces() != 3)
     {

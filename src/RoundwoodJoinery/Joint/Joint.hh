@@ -4,7 +4,7 @@
 
 #include <Eigen/Dense>
 
-namespace RoundwoodJoinery
+namespace RoundwoodJoinery::Joinery
 {
     /**
      * @brief Represents a face of a joint, containing its normal vector, center point, and area.

@@ -1,14 +1,14 @@
 # include "Joint.hh"
 
-namespace RoundwoodJoinery
+namespace RoundwoodJoinery::Joinery
 {
-    JointFace::JointFace(Eigen::Vector3d normal, Eigen::Vector3d center, double area)
+    RoundwoodJoinery::Joinery::JointFace::JointFace(Eigen::Vector3d normal, Eigen::Vector3d center, double area)
         : normal(normal), center(center), _area(area)
     {
         
     }
 
-    Joint::Joint(std::vector<JointFace> faces)
+    RoundwoodJoinery::Joinery::Joint::Joint(std::vector<RoundwoodJoinery::Joinery::JointFace> faces)
         : _faces(faces)
     {
     }
