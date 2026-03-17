@@ -36,5 +36,16 @@ int main()
         return 1;
     }
 
+    if (joint.GetFaces()[1].GetNormal() - normal2 != Eigen::Vector3d::Zero())
+    {
+        std::cerr << "Test failed: Expected normal " << normal2.transpose() << ", got " << joint.GetFaces()[1].GetNormal().transpose() << std::endl;
+        return 1;
+    }
+    if (joint.GetFaces()[2].GetCenter() - center3 != Eigen::Vector3d::Zero())
+    {
+        std::cerr << "Test failed: Expected center " << center3.transpose() << ", got " << joint.GetFaces()[2].GetCenter().transpose() << std::endl;
+        return 1;
+    }
+
     return 0;
 }
