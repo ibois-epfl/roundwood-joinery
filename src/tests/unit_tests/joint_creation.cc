@@ -13,7 +13,7 @@ int main()
     std::vector<Eigen::Vector3d> corners = {corner1, corner2, corner3, corner4};
     double area1 = 1.0;
 
-    RoundwoodJoinery::Joinery::JointFace face1(normal, corners, area1);
+    RoundwoodJoinery::Joinery::JointFace face1(normal, corners);
 
     // Create a Joint instance with the created face
     std::vector<RoundwoodJoinery::Joinery::JointFace> faces = {face1};
@@ -25,9 +25,9 @@ int main()
         return 1;
     }
 
-    if (joint.GetFaces()[0].GetArea() != 1.0)
+    if (joint.GetFaces()[0].GetArea() != 20000.0)
     {
-        std::cerr << "Test failed: Expected area 1.0, got " << joint.GetFaces()[0].GetArea() << std::endl;
+        std::cerr << "Test failed: Expected area 20000.0, got " << joint.GetFaces()[0].GetArea() << std::endl;
         return 1;
     }
 

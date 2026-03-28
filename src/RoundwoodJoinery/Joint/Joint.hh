@@ -21,7 +21,7 @@ namespace RoundwoodJoinery::Joinery
     class JointFace
     {
     public:
-        JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners, double area);
+        JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners);
         ~JointFace() = default;
 
         std::vector<Eigen::Vector3d> ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud);
@@ -58,7 +58,7 @@ namespace RoundwoodJoinery::Joinery
         Eigen::Vector3d _normal;
         Eigen::Vector3d _center;
         std::vector<Eigen::Vector3d> _corners;
-        double _area;
+        double _area = 0.0;
         
         /**
          * @brief the outline polygon that is optional for technical reasons, but is systematically created at construction
