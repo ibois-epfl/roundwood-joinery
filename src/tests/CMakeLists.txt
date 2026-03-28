@@ -4,12 +4,12 @@ foreach(TEST_FILE ${UNIT_TEST_FILES})
     message(STATUS "Processing test file: ${TEST_FILE}")
     get_filename_component(TEST_NAME ${TEST_FILE} NAME_WE)
     message(STATUS "Test name: ${TEST_NAME}")
+    add_executable(${TEST_NAME} ${TEST_FILE})
     if(WIN32)
         set_target_properties(${TEST_NAME} PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/src/tests/$<CONFIG>
         )
     endif()
-    add_executable(${TEST_NAME} ${TEST_FILE})
     target_link_libraries(${TEST_NAME} PRIVATE ${SHARED_LIB_NAME})
     if(WIN32)
         add_test(NAME ${TEST_NAME}
