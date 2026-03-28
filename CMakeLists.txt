@@ -67,10 +67,17 @@ foreach(TEST_FILE ${UNIT_TEST_FILES})
     list(APPEND TEST_EXECUTABLES ${TEST_NAME})
 endforeach()
 
-add_custom_target(run_tests
-    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS ${TEST_EXECUTABLES}
-    COMMENT "Running all tests") 
-
-add_custom_target(check ALL
-    DEPENDS run_tests)
+if(WIN32)
+    add_custom_target(run_tests
+        COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIG> --output-on-failure
+        DEPENDS ${TEST_EXECUTABLES}
+        COMMENT "Running all tests")
+else()
+    add_custom_target(run_tests
+        COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+        DEPENDS ${TEST_EXECUTABLES}
+        COMMENT "Running all tests")
+        
+        add_custom_target(check ALL
+        DEPENDS run_tests)
+endif()
