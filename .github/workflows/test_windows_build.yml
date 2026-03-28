@@ -18,3 +18,6 @@ jobs:
 
       - name: run build
         run: mkdir build && cd build && cmake .. && cmake --build . --config Debug -- /m:4
+      
+      - name: Run tests
+        run: ctest --test-dir build -C Debug --output-on-failure
