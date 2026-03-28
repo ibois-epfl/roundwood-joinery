@@ -69,4 +69,8 @@ endforeach()
 
 add_custom_target(run_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS ${TEST_EXECUTABLES}) 
+    DEPENDS ${TEST_EXECUTABLES}
+    COMMENT "Running all tests") 
+
+add_custom_target(check ALL
+    DEPENDS run_tests)
