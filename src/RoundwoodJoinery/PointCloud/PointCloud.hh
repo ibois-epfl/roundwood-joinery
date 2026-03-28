@@ -1,5 +1,6 @@
 # pragma once
 
+#include <cstdint>
 #include "../../3rd_party/happly/happly.h"
 #include "../../3rd_party/eigen/Eigen/Dense"
 
