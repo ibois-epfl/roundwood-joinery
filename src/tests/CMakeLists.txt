@@ -7,13 +7,14 @@ foreach(TEST_FILE ${UNIT_TEST_FILES})
     add_executable(${TEST_NAME} ${TEST_FILE})
     if(WIN32)
         set_target_properties(${TEST_NAME} PROPERTIES
-            RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/src/tests/$<CONFIG>
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/src/tests/Debug
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/src/tests/Release
         )
     endif()
     target_link_libraries(${TEST_NAME} PRIVATE ${SHARED_LIB_NAME})
     if(WIN32)
         add_test(NAME ${TEST_NAME}
-            COMMAND ${CMAKE_BINARY_DIR}/src/tests/$<CONFIG>/${TEST_NAME})
+            COMMAND $<TARGET_FILE:${TEST_NAME}>)
     else()
         add_test(NAME ${TEST_NAME}
             COMMAND ${CMAKE_BINARY_DIR}/src/tests/${TEST_NAME})
