@@ -1,4 +1,4 @@
-name: test build on ubuntu
+name: test build on windows
 
 on:
   push:
@@ -10,11 +10,11 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: run build
-        run: mkdir build && cd build && cmake .. && make -j$(nproc)
+        run: mkdir build && cd build && cmake .. && cmake --build . --config Debug -- /m:4
