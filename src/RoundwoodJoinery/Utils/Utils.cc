@@ -39,9 +39,14 @@ namespace RoundwoodJoinery::Utils
             // sorting along x coordinates
             for (int i = 0; i < skeleton.size(); i++)
             {
-                if (skeleton[i][0] > point[0])
+                if (point[0] < skeleton[i][0])
                 {
                     skeleton.insert(skeleton.begin() + i, Eigen::Vector3d(point[0], point[1], point[2]));
+                    break;
+                }
+                if (i == skeleton.size() - 1)
+                {
+                    skeleton.emplace_back(point[0], point[1], point[2]);
                     break;
                 }
             }
