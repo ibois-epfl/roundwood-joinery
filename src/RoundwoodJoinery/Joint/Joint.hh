@@ -21,7 +21,7 @@ namespace RoundwoodJoinery::Joinery
     class JointFace
     {
     public:
-        JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners);
+        JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners, double targetArea = 0.0);
         ~JointFace() = default;
 
         std::vector<Eigen::Vector3d> ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud);
@@ -47,18 +47,18 @@ namespace RoundwoodJoinery::Joinery
 
         /**
          * @brief Returns the area of the joint face.
-         * @return The area of the joint face.
+         * @return The target area of the joint face.
          */
-        double GetArea() const
+        double GetTargetArea() const
         {
-            return this->_area;
+            return this->_targetArea;
         }
     
     private:
         Eigen::Vector3d _normal;
-        Eigen::Vector3d _center;
+        Eigen::Vector3d _center = Eigen::Vector3d::Zero();
         std::vector<Eigen::Vector3d> _corners;
-        double _area = 0.0;
+        double _targetArea;
         
         /**
          * @brief the outline polygon that is optional for technical reasons, but is systematically created at construction
@@ -86,8 +86,25 @@ namespace RoundwoodJoinery::Joinery
         {
             return this->_faces.size();
         }
+
+        void SetCorrespondanceOnSkeleton(Eigen::Vector3d correspondance)
+        {
+            this->_correspondanceOnSkeleton = correspondance;
+        }
+
+        Eigen::Vector3d GetCorrespondanceOnSkeleton() const
+        {
+            if (this->_correspondanceOnSkeleton == Eigen::Vector3d::Zero())
+            {
+                throw std::runtime_error("Correspondance on skeleton has not been set for this joint.");
+            }
+            return this->_correspondanceOnSkeleton;
+        }
+
     
     private:
         std::vector<JointFace> _faces;
+        Eigen::Vector3d _center = Eigen::Vector3d::Zero();
+        Eigen::Vector3d _correspondanceOnSkeleton = Eigen::Vector3d::Zero();
     };
 }

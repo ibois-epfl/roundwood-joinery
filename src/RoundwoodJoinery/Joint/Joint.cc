@@ -2,8 +2,8 @@
 
 namespace RoundwoodJoinery::Joinery
 {
-    RoundwoodJoinery::Joinery::JointFace::JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners)
-        : _normal(normal), _corners(corners)
+    RoundwoodJoinery::Joinery::JointFace::JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners, double targetArea)
+        : _normal(normal), _corners(corners), _targetArea(targetArea)
     {
         Eigen::Vector3d center = Eigen::Vector3d::Zero();
         for (const auto& corner : corners){center += corner;}
@@ -22,7 +22,6 @@ namespace RoundwoodJoinery::Joinery
             cgalPolygon.push_back(Point_3(corner.x(), corner.y(), corner.z()));
         }
         this->_outline_polygon = std::move(cgalPolygon);
-        this->_area = std::abs(this->_outline_polygon->area());
     }
 
     std::vector<Eigen::Vector3d> JointFace::ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud)
