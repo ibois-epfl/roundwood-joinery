@@ -11,8 +11,9 @@ int main()
     Eigen::Vector3d corner3(750.0, -290.0, 350.0);
     Eigen::Vector3d corner4(750.0, -490.0, 350.0);
     std::vector<Eigen::Vector3d> corners = {corner1, corner2, corner3, corner4};
+    double targetArea = 15000.0;
 
-    RoundwoodJoinery::Joinery::JointFace face1(normal, corners);
+    RoundwoodJoinery::Joinery::JointFace face1(normal, corners, targetArea);
 
     // Create a Joint instance with the created face
     std::vector<RoundwoodJoinery::Joinery::JointFace> faces = {face1};
