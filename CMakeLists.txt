@@ -24,6 +24,11 @@ if(NOT GIT_SUBMOD_RESULT EQUAL "0")
     message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
 endif()
 
+# to avoid "fatal error C1128: number of sections exceeded object file format limit: compile with /bigobj" on MSVC
+if (MSVC)
+    target_compile_options(${SHARED_LIB_NAME} PRIVATE /bigobj)
+endif()
+
 #############
 # 3rd parties
 #############
