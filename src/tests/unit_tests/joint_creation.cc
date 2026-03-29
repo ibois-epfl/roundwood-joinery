@@ -11,7 +11,6 @@ int main()
     Eigen::Vector3d corner3(750.0, -290.0, 350.0);
     Eigen::Vector3d corner4(750.0, -490.0, 350.0);
     std::vector<Eigen::Vector3d> corners = {corner1, corner2, corner3, corner4};
-    double area1 = 1.0;
 
     RoundwoodJoinery::Joinery::JointFace face1(normal, corners);
 
