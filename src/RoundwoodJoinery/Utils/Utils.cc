@@ -76,4 +76,104 @@ namespace RoundwoodJoinery::Utils
         Eigen::Vector3d closestPointOnBase = baseStart + t * baseVector;
         return closestPointOnBase;
     }
+
+    std::vector<Eigen::Vector3d> Compute2DAlphaShape(const std::vector<Eigen::Vector3d>& points, double alpha, Eigen::Vector3d normal)
+    {
+        Utils::SavePointCloudToPLY(points, "points_for_alpha_shape.ply");
+        std::vector<Eigen::Vector2d> verticesInPlane;
+        for (const auto& point : points)
+        {
+            verticesInPlane.emplace_back(point.x(), point.y());
+        }
+        typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+        typedef CGAL::Alpha_shape_vertex_base_2<K> Vb;
+        typedef CGAL::Alpha_shape_face_base_2<K> Fb;
+        typedef CGAL::Triangulation_data_structure_2<Vb, Fb> Tds;
+        typedef CGAL::Delaunay_triangulation_2<K, Tds> Triangulation_2;
+        typedef CGAL::Alpha_shape_2<Triangulation_2> Alpha_shape_2;
+
+        std::vector<K::Point_2> cgalPoints2D;
+        for (size_t i = 0; i < verticesInPlane.size(); ++i)
+        {
+            cgalPoints2D.emplace_back(verticesInPlane[i].x(), verticesInPlane[i].y());
+        }
+
+        Alpha_shape_2 A(cgalPoints2D.begin(), cgalPoints2D.end(), alpha, Alpha_shape_2::REGULARIZED);
+        std::vector<Eigen::Vector3d> alphaShapePoints;
+        
+        std::map<std::pair<double, double>, std::vector<std::pair<double, double>>> adjacency;
+        for (auto it = A.finite_edges_begin(); it != A.finite_edges_end(); ++it) 
+        {
+            if (A.classify(*it) == Alpha_shape_2::REGULAR) 
+            {
+                auto seg = A.segment(*it);
+                std::pair<double, double> p1 = {seg.source().x(), seg.source().y()};
+                std::pair<double, double> p2 = {seg.target().x(), seg.target().y()};
+                adjacency[p1].push_back(p2);
+                adjacency[p2].push_back(p1);
+            }
+        }
+        std::cout << "pop1" << std::endl;
+
+        std::pair<double, double> start = adjacency.begin()->first;
+        std::cout << "pop2" << std::endl;
+        std::vector<std::pair<double, double>> ordered2D;
+        std::set<std::pair<double, double>> visited;
+        auto current = start;
+        std::pair<double, double> prev = {std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN()};
+        while (true) 
+        {
+            std::cout << "pop21" << std::endl;
+            ordered2D.push_back(current);
+            visited.insert(current);
+            // Find the next neighbor that is not the previous point
+            const auto& neighbors = adjacency[current];
+            std::pair<double, double> next;
+            if (neighbors.size() == 1) 
+            {
+                std::cout << "pop22" << std::endl;
+                next = neighbors[0];
+                std::cout << "pop23" << std::endl;
+            }
+            else if (neighbors.size() == 2)
+            {
+                std::cout << "pop24" << std::endl;
+                next = (neighbors[0] == prev) ? neighbors[1] : neighbors[0];
+                std::cout << "pop25" << std::endl;
+            }
+            if (visited.count(next)) break;
+            prev = current;
+            current = next;
+        }
+        std::cout << "size of ordered2D: " << ordered2D.size() << std::endl;
+        // imperfect way to reintroduce the z coordinate.
+        // We rely on the fact that the alpha shape points are a subset of the original points, 
+        // so we can find the corresponding z value in the original point cloud
+        std::vector<Eigen::Vector3d> ordered3D;
+        for (const auto& p2d : ordered2D) 
+        {
+            for (const auto& p3d : points) 
+            {
+                if (std::abs(p3d.x() - p2d.first) < 1e-6 && std::abs(p3d.y() - p2d.second) < 1e-6) 
+                {
+                    ordered3D.push_back(p3d);
+                    break;
+                }
+            }
+        }
+        return ordered3D;
+    }
+
+    void SavePointCloudToPLY(const std::vector<Eigen::Vector3d>& points, const std::string& filename)
+    {
+        std::vector<std::array<double, 3>> meshVertexPositions;
+        for (const auto& p : points)
+        {
+            meshVertexPositions.push_back({p.x(), p.y(), p.z()});
+        }
+
+        happly::PLYData plyOut;
+        plyOut.addVertexPositions(meshVertexPositions);
+        plyOut.write(filename, happly::DataFormat::ASCII);
+    }
 }

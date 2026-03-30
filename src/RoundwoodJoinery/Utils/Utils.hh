@@ -4,6 +4,17 @@
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Surface_mesh.h>
 #include <CGAL/alpha_wrap_3.h>
+
+//for alpha shape
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+ 
+#include <CGAL/Alpha_shape_2.h>
+#include <CGAL/Alpha_shape_vertex_base_2.h>
+#include <CGAL/Alpha_shape_face_base_2.h>
+#include <CGAL/Delaunay_triangulation_2.h>
+ 
+#include <CGAL/algorithm.h>
+
 // for skeletonization
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Polyhedron_3.h>
@@ -33,5 +44,23 @@ namespace RoundwoodJoinery::Utils
      */
     Eigen::Vector3d FindHeightOfTriangle(Eigen::Vector3d testPoint, 
                                          Eigen::Vector3d baseStart,
-                                         Eigen::Vector3d baseEnd);  
+                                         Eigen::Vector3d baseEnd);
+    /**
+     * @brief Computes the 2D alpha shape of a set of points that all lie on the same plane, using CGAL.
+     * 
+     * @param points The set of points lying on the same plane, no re-projection is computed nor planarity checked...
+     * @param alpha The alpha parameter for the alpha shape algorithm. Controls the level of detail of the shape.
+     * @param normal The normal vector of the plane on which the points lie.
+     * @return A vector of 3D points representing the 2D alpha shape.
+     */
+    std::vector<Eigen::Vector3d> Compute2DAlphaShape(const std::vector<Eigen::Vector3d>& points, double alpha, Eigen::Vector3d normal);
+
+    /**
+     * @brief Saves a point cloud to a PLY file.
+     * 
+     * @param points The point cloud to be saved, represented as a vector of 3D points.
+     * @param filename The name of the PLY file to save the point cloud to.
+     */
+    void SavePointCloudToPLY(const std::vector<Eigen::Vector3d>& points, const std::string& filename);
+
 }
