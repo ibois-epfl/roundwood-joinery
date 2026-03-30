@@ -63,4 +63,12 @@ namespace RoundwoodJoinery::Utils
      */
     void SavePointCloudToPLY(const std::vector<Eigen::Vector3d>& points, const std::string& filename);
 
+    /**
+     * @brief Computes an approximating transformation matrix based on a set of anchor points and their corresponding translations.
+     * 
+     * @param anchorPointsAndTranslations A vector of pairs, where each pair consists of an anchor point and its corresponding translation.
+     * @return A 4x4 transformation matrix that approximates the given translations.
+     */
+    Eigen::Matrix4d ComputeApproximatingTransformation(std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> anchorPointsAndTranslations);
+
 }
