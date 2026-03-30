@@ -113,17 +113,14 @@ namespace RoundwoodJoinery::Utils
                 adjacency[p2].push_back(p1);
             }
         }
-        std::cout << "pop1" << std::endl;
 
         std::pair<double, double> start = adjacency.begin()->first;
-        std::cout << "pop2" << std::endl;
         std::vector<std::pair<double, double>> ordered2D;
         std::set<std::pair<double, double>> visited;
         auto current = start;
         std::pair<double, double> prev = {std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN()};
         while (true) 
         {
-            std::cout << "pop21" << std::endl;
             ordered2D.push_back(current);
             visited.insert(current);
             // Find the next neighbor that is not the previous point
@@ -131,21 +128,16 @@ namespace RoundwoodJoinery::Utils
             std::pair<double, double> next;
             if (neighbors.size() == 1) 
             {
-                std::cout << "pop22" << std::endl;
                 next = neighbors[0];
-                std::cout << "pop23" << std::endl;
             }
             else if (neighbors.size() == 2)
             {
-                std::cout << "pop24" << std::endl;
                 next = (neighbors[0] == prev) ? neighbors[1] : neighbors[0];
-                std::cout << "pop25" << std::endl;
             }
             if (visited.count(next)) break;
             prev = current;
             current = next;
         }
-        std::cout << "size of ordered2D: " << ordered2D.size() << std::endl;
         // imperfect way to reintroduce the z coordinate.
         // We rely on the fact that the alpha shape points are a subset of the original points, 
         // so we can find the corresponding z value in the original point cloud
