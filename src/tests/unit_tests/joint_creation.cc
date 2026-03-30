@@ -42,5 +42,16 @@ int main()
         return 1;
     }
 
+    RoundwoodJoinery::PointCloud::PointCloud pointCloud = RoundwoodJoinery::PointCloud::PointCloud();
+    if (!pointCloud.LoadFromFile("../../../test_files/ply/cleaned_trunc_00094.ply"))
+    {
+        std::cerr << "Failed to load point cloud from file." << std::endl;
+        return 1;
+    }
+    if( joint.GetFaces()[0].ComputeCurrentArea(pointCloud) < 11870.0 || joint.GetFaces()[0].ComputeCurrentArea(pointCloud) > 11880.0 )
+    {
+        std::cerr << "Test failed: Expected current area between 11870.0 and 11880.0, got " << joint.GetFaces()[0].ComputeCurrentArea(pointCloud) << std::endl;
+        return 1;
+    }
     return 0;
 }
