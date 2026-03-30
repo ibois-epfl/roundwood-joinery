@@ -5,7 +5,10 @@ namespace RoundwoodJoinery::Beam
     Beam::Beam(double referenceDiameter, std::vector<std::shared_ptr<Joinery::Joint>> joints, std::vector<Eigen::Vector3d> skeleton, RoundwoodJoinery::PointCloud::PointCloud pointCloud)
         : _referenceDiameter(referenceDiameter), _joints(joints), _skeleton(skeleton), _pointCloud(pointCloud)
     {
-
+        for (const auto& joint : joints)
+        {
+            joint->SetClosestPointOnSkeleton(this->_FindClosestPointOnSkeleton(joint->GetCenter()));
+        }
     }
 
     Eigen::Vector3d Beam::_FindClosestPointOnSkeleton(const Eigen::Vector3d& point)
@@ -38,5 +41,34 @@ namespace RoundwoodJoinery::Beam
             }
         }
         return closestPoint;
+    }
+
+    std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> Beam::_ComputeJointFaceTranslationsForOptimisation()
+    {
+        std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> anchorPointsAndTranslations;
+
+        for (const std::shared_ptr<RoundwoodJoinery::Joinery::Joint>& joint : this->_joints)
+        {
+            for (RoundwoodJoinery::Joinery::JointFace& face : joint->GetFaces())
+            {
+                Eigen::Vector3d currentCenter = face.GetCenter();
+                double targetArea = face.GetTargetArea();
+                double currentArea = face.ComputeCurrentArea(this->_pointCloud);
+
+                double areaRatio = currentArea / targetArea;
+                Eigen::Vector3d closestPointOnSkeleton = this->_FindClosestPointOnSkeleton(currentCenter);
+                double distanceToSkeleton = (currentCenter - closestPointOnSkeleton).norm();
+
+                double openingAngle = std::acos(distanceToSkeleton / (this->_referenceDiameter / 2.0));
+                double newAngle = std::asin(areaRatio * std::sin(openingAngle));
+
+                double translationMagnitude = distanceToSkeleton - (this->_referenceDiameter / 2.0) * std::cos(newAngle);
+                Eigen::Vector3d translationDirection = (currentCenter - closestPointOnSkeleton).normalized();
+                Eigen::Vector3d translation = translationMagnitude * translationDirection;
+
+                anchorPointsAndTranslations.push_back(std::make_pair(currentCenter, translation));
+            }
+        }
+        return anchorPointsAndTranslations;
     }
 }

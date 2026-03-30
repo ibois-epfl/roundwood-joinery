@@ -11,7 +11,7 @@ int main()
     Eigen::Vector3d corner3(750.0, -290.0, 350.0);
     Eigen::Vector3d corner4(750.0, -490.0, 350.0);
     std::vector<Eigen::Vector3d> corners = {corner1, corner2, corner3, corner4};
-    double targetArea = 15000.0;
+    double targetArea = 12000.0;
 
     RoundwoodJoinery::Joinery::JointFace face1(normal, corners, targetArea);
 
@@ -33,8 +33,21 @@ int main()
     double offset = 0.01;
     std::vector<Eigen::Vector3d> skeleton = RoundwoodJoinery::Utils::ComputePointCloudSkeleton(pointCloud, alpha, offset);
 
-    double referenceDiameter = 250.0;
+    double referenceDiameter = 160.0; // corresponds more or less to test data.
     RoundwoodJoinery::Beam::Beam beam(referenceDiameter, jointVector, skeleton, pointCloud);
 
+    double retrievedReferenceDiameter = beam.GetReferenceDiameter();
+
+    if (retrievedReferenceDiameter != referenceDiameter)
+    {
+        std::cout << "Beam reference diameter incorrect: " << retrievedReferenceDiameter << std::endl;
+        return 1;
+    }
+
+    std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> translations = beam.ComputeOneIterationOfJointFaceTranslationsForOptimisation();
+    for (const auto& [anchor, translation] : translations)
+    {
+        std::cout << "Anchor: " << anchor.transpose() << ", Translation: " << translation.transpose() << std::endl;
+    }
     return 0;
 }
