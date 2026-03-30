@@ -62,4 +62,18 @@ namespace RoundwoodJoinery::Utils
 
         return skeleton;
     }
+
+    Eigen::Vector3d FindHeightOfTriangle(Eigen::Vector3d testPoint, 
+                                         Eigen::Vector3d baseStart,
+                                         Eigen::Vector3d baseEnd)
+    {
+        Eigen::Vector3d baseVector = baseEnd - baseStart;
+        Eigen::Vector3d testVector = testPoint - baseStart;
+
+        double t = testVector.dot(baseVector) / baseVector.dot(baseVector);
+        t = std::max(0.0, std::min(1.0, t)); // Clamp t to the range [0, 1]
+
+        Eigen::Vector3d closestPointOnBase = baseStart + t * baseVector;
+        return closestPointOnBase;
+    }
 }

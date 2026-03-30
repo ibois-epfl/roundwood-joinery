@@ -22,4 +22,16 @@ namespace RoundwoodJoinery::Utils
      *  @return A vector of 3D points representing the skeleton of the point cloud.
      */
     std::vector<Eigen::Vector3d> ComputePointCloudSkeleton(const PointCloud::PointCloud& pointCloud, double alpha, double offset);
+
+    /**
+     * @brief Computes the height of a triangle formed by a test point and a base defined by two points.
+     * 
+     * @param testPoint The point from which the height is measured.
+     * @param baseStart The starting point of the base of the triangle.
+     * @param baseEnd The ending point of the base of the triangle.
+     * @return The point on the base that is closest to the test point, representing the height of the triangle.
+     */
+    Eigen::Vector3d FindHeightOfTriangle(Eigen::Vector3d testPoint, 
+                                         Eigen::Vector3d baseStart,
+                                         Eigen::Vector3d baseEnd);  
 }
