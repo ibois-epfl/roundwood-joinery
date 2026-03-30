@@ -11,8 +11,9 @@ int main()
     Eigen::Vector3d corner3(750.0, -290.0, 350.0);
     Eigen::Vector3d corner4(750.0, -490.0, 350.0);
     std::vector<Eigen::Vector3d> corners = {corner1, corner2, corner3, corner4};
+    double targetArea = 15000.0;
 
-    RoundwoodJoinery::Joinery::JointFace face1(normal, corners);
+    RoundwoodJoinery::Joinery::JointFace face1(normal, corners, targetArea);
 
     // Create a Joint instance with the created face
     std::vector<RoundwoodJoinery::Joinery::JointFace> faces = {face1};
@@ -24,9 +25,9 @@ int main()
         return 1;
     }
 
-    if (joint.GetFaces()[0].GetArea() != 20000.0)
+    if (joint.GetFaces()[0].GetTargetArea() != targetArea)
     {
-        std::cerr << "Test failed: Expected area 20000.0, got " << joint.GetFaces()[0].GetArea() << std::endl;
+        std::cerr << "Test failed: Expected target area " << targetArea << ", got " << joint.GetFaces()[0].GetTargetArea() << std::endl;
         return 1;
     }
 
@@ -41,5 +42,16 @@ int main()
         return 1;
     }
 
+    RoundwoodJoinery::PointCloud::PointCloud pointCloud = RoundwoodJoinery::PointCloud::PointCloud();
+    if (!pointCloud.LoadFromFile("../../../test_files/ply/cleaned_trunc_00094.ply"))
+    {
+        std::cerr << "Failed to load point cloud from file." << std::endl;
+        return 1;
+    }
+    if( joint.GetFaces()[0].ComputeCurrentArea(pointCloud) < 11870.0 || joint.GetFaces()[0].ComputeCurrentArea(pointCloud) > 11880.0 )
+    {
+        std::cerr << "Test failed: Expected current area between 11870.0 and 11880.0, got " << joint.GetFaces()[0].ComputeCurrentArea(pointCloud) << std::endl;
+        return 1;
+    }
     return 0;
 }
