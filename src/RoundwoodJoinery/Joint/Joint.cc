@@ -60,10 +60,11 @@ namespace RoundwoodJoinery::Joinery
     RoundwoodJoinery::Joinery::Joint::Joint(std::vector<RoundwoodJoinery::Joinery::JointFace> faces)
         : _faces(faces)
     {
-    }
+        for (const auto& face : faces)
+        {
+            this->_center += face.GetCenter();
+        }
+        this->_center /= faces.size();
 
-    std::vector<JointFace> Joint::GetFaces()
-    {
-        return this->_faces;
     }
 }

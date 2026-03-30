@@ -76,35 +76,54 @@ namespace RoundwoodJoinery::Joinery
         Joint() = default;
         ~Joint() = default;
 
-        std::vector<JointFace> GetFaces();
+        /**
+         * @brief Returns the faces that make up the joint.
+         * @return A vector of JointFace objects representing the faces of the joint.
+         */
+        std::vector<JointFace> GetFaces()
+        {
+            return this->_faces;
+        }
+
+        /**
+         * @brief Returns the center point of the joint.
+         * @return The center point of the joint.
+         */
+        Eigen::Vector3d GetCenter() const
+        {
+            return this->_center;
+        }
 
         /**
          * @brief Returns the number of faces in the joint.
-          * @return The number of faces in the joint.
+         * @return The number of faces in the joint.
          */
         size_t GetNumFaces()
         {
             return this->_faces.size();
         }
 
-        void SetCorrespondanceOnSkeleton(Eigen::Vector3d correspondance)
+        void SetClosestPointOnSkeleton(Eigen::Vector3d correspondance)
         {
-            this->_correspondanceOnSkeleton = correspondance;
+            this->_closestPointOnSkeleton = correspondance;
         }
 
-        Eigen::Vector3d GetCorrespondanceOnSkeleton() const
+        /**
+         * @brief Returns the closest point on the skeleton to this joint. If the closest point has not been set, it returns (0,0,0) and prints a warning message.
+         * @return The closest point on the skeleton to this joint.
+         */
+        Eigen::Vector3d GetClosestPointOnSkeleton() const
         {
-            if (this->_correspondanceOnSkeleton == Eigen::Vector3d::Zero())
+            if (this->_closestPointOnSkeleton == Eigen::Vector3d::Zero())
             {
-                throw std::runtime_error("Correspondance on skeleton has not been set for this joint.");
+                std::cerr << "Warning: Closest point on skeleton has not been set for this joint. Returning (0,0,0) as default." << std::endl;
             }
-            return this->_correspondanceOnSkeleton;
+            return this->_closestPointOnSkeleton;
         }
 
-    
     private:
         std::vector<JointFace> _faces;
         Eigen::Vector3d _center = Eigen::Vector3d::Zero();
-        Eigen::Vector3d _correspondanceOnSkeleton = Eigen::Vector3d::Zero();
+        Eigen::Vector3d _closestPointOnSkeleton = Eigen::Vector3d::Zero();
     };
 }
