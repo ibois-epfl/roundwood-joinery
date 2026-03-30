@@ -12,6 +12,7 @@ typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_3 Point_3;
 
 #include "../PointCloud/PointCloud.hh"
+#include "../Utils/Utils.hh"
 
 namespace RoundwoodJoinery::Joinery
 {
@@ -53,12 +54,30 @@ namespace RoundwoodJoinery::Joinery
         {
             return this->_targetArea;
         }
-    
+
+        /**
+         * @brief Returns the current area of the joint face.
+         * @return The current area of the joint face.
+         */
+        double GetCurrentArea() const
+        {
+            return this->_currentArea;
+        }
+
+        /**
+         * @brief Computes the current area of the joint face based on the points from the beam's point cloud that are projected onto the face.
+         * 
+         * @param beamPointCloud The point cloud of the beam to which the joint face belongs.
+         * @return The computed current area of the joint face.
+         */
+        double ComputeCurrentArea(PointCloud::PointCloud& beamPointCloud);
+
     private:
         Eigen::Vector3d _normal;
         Eigen::Vector3d _center = Eigen::Vector3d::Zero();
         std::vector<Eigen::Vector3d> _corners;
         double _targetArea;
+        double _currentArea;
         
         /**
          * @brief the outline polygon that is optional for technical reasons, but is systematically created at construction

@@ -57,6 +57,30 @@ namespace RoundwoodJoinery::Joinery
         return projectedPoints;
     }
 
+    double RoundwoodJoinery::Joinery::JointFace::ComputeCurrentArea(PointCloud::PointCloud& beamPointCloud)
+    {
+        std::vector<Eigen::Vector3d> projectedPoints = this->ProjectPointsOntoFace(beamPointCloud);
+        if (projectedPoints.size() < 3)
+        {
+            std::cerr << "Warning: Not enough points projected onto the face to compute area. Returning 0." << std::endl;
+            return 0.0;
+        }
+        std::vector<Eigen::Vector3d> alphaShapePoints = Utils::Compute2DAlphaShape(projectedPoints, 500.0, this->_normal);
+        // Compute the area of the alpha shape polygon
+        CGAL::Projection_traits_3<K> traits({this->_normal.x(), this->_normal.y(), this->_normal.z()});
+        CGAL::Polygon_2<CGAL::Projection_traits_3<K>> cgalPolygon(traits);
+        for (const auto& point : alphaShapePoints)
+        {
+            cgalPolygon.push_back(Point_3(point.x(), point.y(), point.z()));
+        }
+        cgalPolygon.reverse_orientation();
+        this->_currentArea = cgalPolygon.area();
+
+        Utils::SavePointCloudToPLY(alphaShapePoints, "alphaShapePoints.ply");
+
+        return this->_currentArea;
+    }
+
     RoundwoodJoinery::Joinery::Joint::Joint(std::vector<RoundwoodJoinery::Joinery::JointFace> faces)
         : _faces(faces)
     {
