@@ -5,6 +5,7 @@
 #include <Eigen/Dense>
 
 #include "../Joint/Joint.hh"
+#include "../Utils/Utils.hh"
 
 namespace RoundwoodJoinery::Beam
 {
@@ -44,7 +45,31 @@ namespace RoundwoodJoinery::Beam
             return this->_pointCloud;
         }
 
+        /**
+         * @brief Finds the closest point on the beam skeleton for each joint of the beam.
+         * 
+         */
+        void FindJointClosestPointsOnSkeleton()
+        {
+            for (const auto& joint : this->_joints)
+            {
+                Eigen::Vector3d jointCenter = joint->GetCenter();
+                Eigen::Vector3d correspondance = this->_FindClosestPointOnSkeleton(jointCenter);
+                joint->SetClosestPointOnSkeleton(correspondance);
+            }
+        }
+
     private:
+
+
+        /**
+         * @brief Private method that for a given point finds the closest point on the beam skeleton.
+         * 
+         * @param point The point for which to find the closest point on the skeleton.
+         * @return The closest point on the skeleton to the given point.
+         */
+        Eigen::Vector3d _FindClosestPointOnSkeleton(const Eigen::Vector3d& point);
+
         std::vector<std::shared_ptr<Joinery::Joint>> _joints;
         std::vector<Eigen::Vector3d> _skeleton;
         RoundwoodJoinery::PointCloud::PointCloud _pointCloud;
