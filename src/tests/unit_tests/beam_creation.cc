@@ -33,8 +33,8 @@ int main()
     double offset = 0.01;
     std::vector<Eigen::Vector3d> skeleton = RoundwoodJoinery::Utils::ComputePointCloudSkeleton(pointCloud, alpha, offset);
 
-    // Create a Beam instance with the created joint and skeleton
-    RoundwoodJoinery::Beam::Beam beam(jointVector, skeleton, pointCloud);
+    double referenceDiameter = 250.0;
+    RoundwoodJoinery::Beam::Beam beam(referenceDiameter, jointVector, skeleton, pointCloud);
 
     return 0;
 }

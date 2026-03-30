@@ -12,8 +12,18 @@ namespace RoundwoodJoinery::Beam
     class Beam
     {
     public:
-        Beam(std::vector<std::shared_ptr<Joinery::Joint>> joints, std::vector<Eigen::Vector3d> skeleton, RoundwoodJoinery::PointCloud::PointCloud pointCloud);
+        Beam(double referenceDiameter, std::vector<std::shared_ptr<Joinery::Joint>> joints, std::vector<Eigen::Vector3d> skeleton, RoundwoodJoinery::PointCloud::PointCloud pointCloud);
         ~Beam() = default;
+
+        /**
+         * @brief Returns the reference diameter of the beam.
+         * 
+         * @return The reference diameter of the beam.
+         */
+        double GetReferenceDiameter() const
+        {
+            return this->_referenceDiameter;
+        }
 
         /**
          * @brief Returns the joints associated with the beam.
@@ -73,5 +83,6 @@ namespace RoundwoodJoinery::Beam
         std::vector<std::shared_ptr<Joinery::Joint>> _joints;
         std::vector<Eigen::Vector3d> _skeleton;
         RoundwoodJoinery::PointCloud::PointCloud _pointCloud;
+        double _referenceDiameter;
     };
 }
