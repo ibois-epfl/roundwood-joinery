@@ -4,7 +4,11 @@
 
 file(GLOB_RECURSE SOURCES_LIB
     "${CMAKE_CURRENT_SOURCE_DIR}/RoundwoodJoinery.hh"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cc")
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cc"
+    )
+list(REMOVE_ITEM SOURCES_LIB
+    "${CMAKE_CURRENT_SOURCE_DIR}/roundwood_joinery_binding.cc"
+)
 
 add_library(${SHARED_LIB_NAME} SHARED ${SOURCES_LIB})
 
