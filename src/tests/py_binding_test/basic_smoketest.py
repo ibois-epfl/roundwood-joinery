@@ -2,7 +2,7 @@ import roundwoodJoineryBindings as rwj
 import numpy as np
 import Rhino
 
-print(rwj.M_PI)
+print(rwj.PI)
 
 for crv in i_crvs:
     corner_pts = [np.array([pt.X, pt.Y, pt.Z]) for pt in crv]

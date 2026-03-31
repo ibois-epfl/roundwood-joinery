@@ -7,7 +7,7 @@ namespace nb = nanobind;
 
 NB_MODULE(roundwoodJoineryBindings, m) 
 {
-    m.attr("M_PI") = RoundwoodJoinery::M_PI;
+    m.attr("PI") = RoundwoodJoinery::PI;
 
     nanobind::class_<RoundwoodJoinery::PointCloud::PointCloud>(m, "PointCloud")
         .def(nb::init<>(), "Default constructor for PointCloud")
