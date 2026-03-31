@@ -8,10 +8,10 @@ namespace RoundwoodJoinery::PointCloud
         {
             happly::PLYData plyIn(filename, true);
             auto vertices = plyIn.getVertexPositions();
-            this->points.clear();
+            this->_points.clear();
             for (const auto& vertex : vertices)
             {
-                this->points.emplace_back(vertex[0], vertex[1], vertex[2]);
+                this->_points.emplace_back(vertex[0], vertex[1], vertex[2]);
             }
             return true;
         }
