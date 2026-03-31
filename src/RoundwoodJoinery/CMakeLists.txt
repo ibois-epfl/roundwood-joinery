@@ -30,3 +30,11 @@ set_target_properties(${SHARED_LIB_NAME} PROPERTIES
 target_include_directories(${SHARED_LIB_NAME}
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src
     )
+
+add_custom_command(
+    TARGET ${SHARED_LIB_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:${SHARED_LIB_NAME}>
+        ${CMAKE_CURRENT_SOURCE_DIR}/../tests/py_binding_test/
+)

@@ -102,3 +102,11 @@ else()
         add_custom_target(check ALL
         DEPENDS run_tests)
 endif()
+
+add_custom_command(
+    TARGET ${BINDINGS_MODULE_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:${BINDINGS_MODULE_NAME}>
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/py_binding_test/
+)
