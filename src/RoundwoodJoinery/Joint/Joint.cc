@@ -76,8 +76,6 @@ namespace RoundwoodJoinery::Joinery
         cgalPolygon.reverse_orientation();
         this->_currentArea = cgalPolygon.area();
 
-        Utils::SavePointCloudToPLY(alphaShapePoints, "alphaShapePoints.ply");
-
         return this->_currentArea;
     }
 
