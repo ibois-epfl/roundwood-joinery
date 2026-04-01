@@ -1,6 +1,7 @@
 #include "nanobind/nanobind.h"
 #include "nanobind/eigen/dense.h"
 #include "nanobind/stl/vector.h"
+#include "nanobind/stl/pair.h"
 #include "nanobind/stl/shared_ptr.h"
 #include "RoundwoodJoinery.hh"
 
@@ -62,5 +63,36 @@ NB_MODULE(roundwoodJoineryBindings, m)
         .def("GetSkeleton", &RoundwoodJoinery::Beam::Beam::GetSkeleton)
         .def("GetPointCloud", &RoundwoodJoinery::Beam::Beam::GetPointCloud)
         .def("FindJointClosestPointsOnSkeleton", &RoundwoodJoinery::Beam::Beam::FindJointClosestPointsOnSkeleton, 
-                                                 "For each joint of the beam, find the closest point on the beam skeleton and set it as the closest point on skeleton for the joint");
-}   
+                                                 "For each joint of the beam, find the closest point on the beam skeleton and set it as the closest point on skeleton for the joint")
+        .def("ComputeOneIterationOfJointFaceTranslationsForOptimisation", &RoundwoodJoinery::Beam::Beam::ComputeOneIterationOfJointFaceTranslationsForOptimisation, 
+                                                                          "Compute one iteration of joint face translations for optimization based on the current state of the beam and its joints");
+
+        nb::module_ u = m.def_submodule("Utils", "Utility functions for Roundwood Joinery");
+
+        u.def("ComputePointCloudSkeleton", &RoundwoodJoinery::Utils::ComputePointCloudSkeleton, 
+            "Compute the skeleton of a given point cloud using the alpha shape algorithm", 
+            nb::arg("pointCloud"), 
+            nb::arg("alpha"), 
+            nb::arg("offset"));
+
+        u.def("FindHeightOfTriangle", &RoundwoodJoinery::Utils::FindHeightOfTriangle, 
+            "Compute the height of a triangle formed by a test point and a base defined by two points", 
+            nb::arg("testPoint"), 
+            nb::arg("baseStart"), 
+            nb::arg("baseEnd"));
+
+        u.def("Compute2DAlphaShape", &RoundwoodJoinery::Utils::Compute2DAlphaShape, 
+            "Compute the 2D alpha shape of a set of points that all lie on the same plane using CGAL", 
+            nb::arg("points"), 
+            nb::arg("alpha"), 
+            nb::arg("normal"));
+
+        u.def("SavePointCloudToPLY", &RoundwoodJoinery::Utils::SavePointCloudToPLY, 
+            "Save a point cloud to a PLY file", 
+            nb::arg("points"), 
+            nb::arg("filename"));
+            
+        u.def("ComputeApproximatingTransformation", &RoundwoodJoinery::Utils::ComputeApproximatingTransformation,
+            "Compute an approximating transformation matrix based on a set of anchor points and their corresponding translations",
+            nb::arg("anchorPointsAndTranslations"));
+}
