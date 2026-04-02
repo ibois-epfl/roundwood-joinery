@@ -8,7 +8,7 @@ if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-add_definitions(-DCGAL_DISABLE_GMP -DCGAL_USE_GMP=OFF -DCGAL_USE_MPFR=OFF)
+add_definitions(-DCGAL_DISABLE_GMP)
 
 set(RUN_TESTS TRUE) #For now we will always run tests after building...
 
