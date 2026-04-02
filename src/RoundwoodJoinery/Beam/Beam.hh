@@ -14,7 +14,11 @@ namespace RoundwoodJoinery::Beam
     class Beam
     {
     public:
-        Beam(double referenceDiameter, std::vector<std::shared_ptr<Joinery::Joint>> joints, std::vector<Eigen::Vector3d> skeleton, RoundwoodJoinery::PointCloud::PointCloud pointCloud);
+        Beam(double referenceDiameter, 
+            std::vector<std::shared_ptr<Joinery::Joint>> joints, 
+            std::vector<Eigen::Vector3d> skeleton, 
+            RoundwoodJoinery::PointCloud::PointCloud pointCloud);
+            
         ~Beam() = default;
 
         /**

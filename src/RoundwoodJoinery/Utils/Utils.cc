@@ -19,8 +19,6 @@ namespace RoundwoodJoinery::Utils
 
         Mesh wrap;
         CGAL::alpha_wrap_3(points, alpha, offset, wrap);
-        std::cout << "Result: " << num_vertices(wrap) << " vertices, " << num_faces(wrap) << " faces" << std::endl;
-        CGAL::IO::write_polygon_mesh("output.ply", wrap, CGAL::parameters::stream_precision(17));
 
         CGAL::Mean_curvature_flow_skeletonization<Mesh>::Skeleton cgalSkeletonGraph;
  
@@ -54,11 +52,7 @@ namespace RoundwoodJoinery::Utils
         for (const auto& p : skeleton)
         {
             meshVertexPositions.push_back({p[0], p[1], p[2]});
-        }
-
-        happly::PLYData plyOut;
-        plyOut.addVertexPositions(meshVertexPositions);
-        plyOut.write("my_output_skeleton_file.ply", happly::DataFormat::ASCII);
+        };
 
         return skeleton;
     }
@@ -79,7 +73,6 @@ namespace RoundwoodJoinery::Utils
 
     std::vector<Eigen::Vector3d> Compute2DAlphaShape(const std::vector<Eigen::Vector3d>& points, double alpha, Eigen::Vector3d normal)
     {
-        Utils::SavePointCloudToPLY(points, "points_for_alpha_shape.ply");
         std::vector<Eigen::Vector2d> verticesInPlane;
         for (const auto& point : points)
         {
