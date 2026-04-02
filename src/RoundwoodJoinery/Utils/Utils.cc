@@ -171,26 +171,17 @@ namespace RoundwoodJoinery::Utils
 
     Eigen::Matrix4d ComputeApproximatingTransformation(std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> anchorPointsAndTranslations)
     {
-        Eigen::MatrixXd A(3 * anchorPointsAndTranslations.size(), 12);
-        Eigen::VectorXd b(3 * anchorPointsAndTranslations.size());
+        Eigen::MatrixXd sourcePoints(3, anchorPointsAndTranslations.size());
+        Eigen::MatrixXd targetPoints(3, anchorPointsAndTranslations.size());
 
         for (size_t i = 0; i < anchorPointsAndTranslations.size(); ++i)
         {
-            const auto& [anchorPoint, translation] = anchorPointsAndTranslations[i];
-            A.row(3 * i)     << anchorPoint.x(), anchorPoint.y(), anchorPoint.z(), 1, 0, 0, 0, 0, 0, 0, 0, 0;
-            A.row(3 * i + 1) << 0, 0, 0, 0, anchorPoint.x(), anchorPoint.y(), anchorPoint.z(), 1, 0, 0, 0, 0;
-            A.row(3 * i + 2) << 0, 0, 0, 0, 0, 0, 0, 0, anchorPoint.x(), anchorPoint.y(), anchorPoint.z(), 1;
-            b.segment<3>(3 * i) = anchorPoint + translation;
+            const auto& pair = anchorPointsAndTranslations[i];
+            sourcePoints.col(i) = pair.first;
+            targetPoints.col(i) = pair.first + pair.second;
         }
 
-        // Solve for the transformation parameters using least squares
-        Eigen::VectorXd x = A.colPivHouseholderQr().solve(b);
-
-        // Construct the transformation matrix
-        Eigen::Matrix4d transformation = Eigen::Matrix4d::Identity();
-        transformation(0, 0) = x(0); transformation(0, 1) = x(1); transformation(0, 2) = x(2); transformation(0, 3) = x(3);
-        transformation(1, 0) = x(4); transformation(1, 1) = x(5); transformation(1, 2) = x(6); transformation(1, 3) = x(7);
-        transformation(2, 0) = x(8); transformation(2, 1) = x(9); transformation(2, 2) = x(10); transformation(2, 3) = x(11);
+        Eigen::Matrix4d transformation = Eigen::umeyama(sourcePoints, targetPoints, false);
 
         return transformation;
     }
