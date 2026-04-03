@@ -1,5 +1,6 @@
 # RoundwoodJoinery
 ![ubuntu build test](https://github.com/ibois-epfl/roundwood-joinery/actions/workflows/test_linux_build.yml/badge.svg)
+![macos build test](https://github.com/ibois-epfl/roundwood-joinery/actions/workflows/test_mac_build.yml/badge.svg)
 ![windows build test](https://github.com/ibois-epfl/roundwood-joinery/actions/workflows/test_windows_build.yml/badge.svg)
 
 Roundwood Joinery is a Rhino8 plugin for planning roundwood joinery in scanned trunks

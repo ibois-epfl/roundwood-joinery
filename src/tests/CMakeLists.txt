@@ -25,6 +25,8 @@ foreach(TEST_FILE ${UNIT_TEST_FILES})
     if(NOT SHARED_LIB_COPIED) # Ensure we only set up the copy command once
         if(WIN32)
             set(SHARED_LIB_FILE ${CMAKE_BINARY_DIR}/src/RoundwoodJoinery/$<CONFIG>/roundwoodJoinery.dll)
+        elseif(APPLE)
+            set(SHARED_LIB_FILE ${CMAKE_BINARY_DIR}/src/RoundwoodJoinery/$<CONFIG>/libroundwoodJoinery.dylib)
         else()
             set(SHARED_LIB_FILE ${CMAKE_BINARY_DIR}/src/RoundwoodJoinery/$<CONFIG>/libroundwoodJoinery.so)
         endif()
