@@ -39,3 +39,12 @@
 
 # debug information files
 *.dwo
+
+# build folder
+build/
+
+#python bindings
+*.pyd
+
+# grasshopper files
+*.gh
