@@ -68,9 +68,19 @@ namespace RoundwoodJoinery::Joinery
          * @brief Computes the current area of the joint face based on the points from the beam's point cloud that are projected onto the face.
          * 
          * @param beamPointCloud The point cloud of the beam to which the joint face belongs.
+         * @param alpha The alpha parameter for the alpha shape computation, which is used to determine the outline of the projected points.
          * @return The computed current area of the joint face.
          */
-        double ComputeCurrentArea(PointCloud::PointCloud& beamPointCloud);
+        double ComputeCurrentArea(PointCloud::PointCloud& beamPointCloud, double alpha = 500.0);
+
+        /**
+         * @brief Returns the current outline of the joint face based on the points from the beam's point cloud that are projected onto the face.
+         * 
+         * @param beamPointCloud The point cloud of the beam to which the joint face belongs.
+         * @param alpha The alpha parameter for the alpha shape computation, which is used to determine the outline of the projected points.
+         * @return A vector of Eigen::Vector3d representing the current outline of the joint face.
+         */
+        std::vector<Eigen::Vector3d> GetCurrentOutline(PointCloud::PointCloud& beamPointCloud, double alpha = 500.0);
 
     private:
         Eigen::Vector3d _normal;
@@ -78,6 +88,7 @@ namespace RoundwoodJoinery::Joinery
         std::vector<Eigen::Vector3d> _corners;
         double _targetArea;
         double _currentArea;
+        std::vector<Eigen::Vector3d> _projectedPoints;
         
         /**
          * @brief the outline polygon that is optional for technical reasons, but is systematically created at construction

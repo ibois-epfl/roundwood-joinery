@@ -54,18 +54,24 @@ namespace RoundwoodJoinery::Joinery
                 projectedPoints.push_back(projection);
             }
         }
+        this->_projectedPoints = projectedPoints;
         return projectedPoints;
     }
 
-    double RoundwoodJoinery::Joinery::JointFace::ComputeCurrentArea(PointCloud::PointCloud& beamPointCloud)
+    double RoundwoodJoinery::Joinery::JointFace::ComputeCurrentArea(PointCloud::PointCloud& beamPointCloud, double alpha)
     {
-        std::vector<Eigen::Vector3d> projectedPoints = this->ProjectPointsOntoFace(beamPointCloud);
-        if (projectedPoints.size() < 3)
+        if (this->_projectedPoints.empty())
+        {
+            this->_projectedPoints = this->ProjectPointsOntoFace(beamPointCloud);
+        }
+
+        if (this->_projectedPoints.size() < 3)
         {
             std::cerr << "Warning: Not enough points projected onto the face to compute area. Returning 0." << std::endl;
             return 0.0;
         }
-        std::vector<Eigen::Vector3d> alphaShapePoints = Utils::Compute2DAlphaShape(projectedPoints, 500.0, this->_normal);
+        
+        std::vector<Eigen::Vector3d> alphaShapePoints = Utils::Compute2DAlphaShape(this->_projectedPoints, alpha, this->_normal);
         // Compute the area of the alpha shape polygon
         CGAL::Projection_traits_3<K> traits({this->_normal.x(), this->_normal.y(), this->_normal.z()});
         CGAL::Polygon_2<CGAL::Projection_traits_3<K>> cgalPolygon(traits);
@@ -73,10 +79,29 @@ namespace RoundwoodJoinery::Joinery
         {
             cgalPolygon.push_back(Point_3(point.x(), point.y(), point.z()));
         }
+
         cgalPolygon.reverse_orientation();
         this->_currentArea = cgalPolygon.area();
 
         return this->_currentArea;
+    }
+
+    std::vector<Eigen::Vector3d> RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline(PointCloud::PointCloud& beamPointCloud, double alpha)
+    {
+        if (this->_projectedPoints.empty())
+        {
+            this->_projectedPoints = this->ProjectPointsOntoFace(beamPointCloud);
+        }
+
+        if (this->_projectedPoints.size() < 3)
+        {
+            std::cerr << "Warning: Not enough points projected onto the face to compute outline. Returning empty vector." << std::endl;
+            return {};
+        }
+
+        std::vector<Eigen::Vector3d> alphaShapePoints = Utils::Compute2DAlphaShape(this->_projectedPoints, alpha, this->_normal);
+
+        return alphaShapePoints;
     }
 
     RoundwoodJoinery::Joinery::Joint::Joint(std::vector<RoundwoodJoinery::Joinery::JointFace> faces)

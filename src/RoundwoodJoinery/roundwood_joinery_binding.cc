@@ -27,12 +27,21 @@ NB_MODULE(roundwoodJoineryBindings, m)
                       nb::arg("normal"), 
                       nb::arg("corners"), 
                       nb::arg("targetArea") = 0.0)
-        .def("project_points_onto_face", &RoundwoodJoinery::Joinery::JointFace::ProjectPointsOntoFace)
+        .def("project_points_onto_face", &RoundwoodJoinery::Joinery::JointFace::ProjectPointsOntoFace,
+             "Project points from the beam's point cloud onto the joint face and return the projected points that are within the face outline",
+             nb::arg("pointCloud"))
         .def("get_normal", &RoundwoodJoinery::Joinery::JointFace::GetNormal)
         .def("get_center", &RoundwoodJoinery::Joinery::JointFace::GetCenter)
         .def("get_target_area", &RoundwoodJoinery::Joinery::JointFace::GetTargetArea)
         .def("get_current_area", &RoundwoodJoinery::Joinery::JointFace::GetCurrentArea)
-        .def("compute_current_area", &RoundwoodJoinery::Joinery::JointFace::ComputeCurrentArea);
+        .def("compute_current_area", &RoundwoodJoinery::Joinery::JointFace::ComputeCurrentArea,
+             "Compute the current area of the joint face based on the projected points from the beam's point cloud",
+             nb::arg("beamPointCloud"),
+             nb::arg("alpha") = 500.0)
+        .def("get_current_outline", &RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline, 
+             "Get the current outline of the joint face based on the projected points from the beam's point cloud", 
+             nb::arg("beamPointCloud"), 
+             nb::arg("alpha") = 500.0);
 
 
     nb::class_<RoundwoodJoinery::Joinery::Joint>(m, "Joint")
