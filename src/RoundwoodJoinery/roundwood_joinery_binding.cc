@@ -14,9 +14,9 @@ NB_MODULE(roundwoodJoineryBindings, m)
     nb::class_<RoundwoodJoinery::PointCloud::PointCloud>(m, "PointCloud")
         .def(nb::init<>(), "Default constructor for PointCloud")
         .def(nb::init<std::vector<Eigen::Vector3d>>(), "Constructor for PointCloud with given points", nb::arg("points"))
-        .def("LoadFromFile", &RoundwoodJoinery::PointCloud::PointCloud::LoadFromFile, "Load point cloud data from a file", nb::arg("filename"))
-        .def("GetPoints", &RoundwoodJoinery::PointCloud::PointCloud::GetPoints)
-        .def("Get1PcntPoints", &RoundwoodJoinery::PointCloud::PointCloud::Get1PcntPoints);
+        .def("load_from_file", &RoundwoodJoinery::PointCloud::PointCloud::LoadFromFile, "Load point cloud data from a file", nb::arg("filename"))
+        .def("get_points", &RoundwoodJoinery::PointCloud::PointCloud::GetPoints)
+        .def("get_1_pcnt_points", &RoundwoodJoinery::PointCloud::PointCloud::Get1PcntPoints);
 
 
     nb::class_<RoundwoodJoinery::Joinery::JointFace>(m, "JointFace")
@@ -27,25 +27,25 @@ NB_MODULE(roundwoodJoineryBindings, m)
                       nb::arg("normal"), 
                       nb::arg("corners"), 
                       nb::arg("targetArea") = 0.0)
-        .def("ProjectPointsOntoFace", &RoundwoodJoinery::Joinery::JointFace::ProjectPointsOntoFace)
-        .def("GetNormal", &RoundwoodJoinery::Joinery::JointFace::GetNormal)
-        .def("GetCenter", &RoundwoodJoinery::Joinery::JointFace::GetCenter)
-        .def("GetTargetArea", &RoundwoodJoinery::Joinery::JointFace::GetTargetArea)
-        .def("GetCurrentArea", &RoundwoodJoinery::Joinery::JointFace::GetCurrentArea)
-        .def("ComputeCurrentArea", &RoundwoodJoinery::Joinery::JointFace::ComputeCurrentArea);
+        .def("project_points_onto_face", &RoundwoodJoinery::Joinery::JointFace::ProjectPointsOntoFace)
+        .def("get_normal", &RoundwoodJoinery::Joinery::JointFace::GetNormal)
+        .def("get_center", &RoundwoodJoinery::Joinery::JointFace::GetCenter)
+        .def("get_target_area", &RoundwoodJoinery::Joinery::JointFace::GetTargetArea)
+        .def("get_current_area", &RoundwoodJoinery::Joinery::JointFace::GetCurrentArea)
+        .def("compute_current_area", &RoundwoodJoinery::Joinery::JointFace::ComputeCurrentArea);
 
 
     nb::class_<RoundwoodJoinery::Joinery::Joint>(m, "Joint")
         .def(nb::init<std::vector<RoundwoodJoinery::Joinery::JointFace>>(), 
                       "Constructor for Joint with given faces",
                       nb::arg("faces"))
-        .def("GetFaces", &RoundwoodJoinery::Joinery::Joint::GetFaces)
-        .def("GetCenter", &RoundwoodJoinery::Joinery::Joint::GetCenter)
-        .def("GetNumFaces", &RoundwoodJoinery::Joinery::Joint::GetNumFaces)
-        .def("SetClosestPointOnSkeleton", &RoundwoodJoinery::Joinery::Joint::SetClosestPointOnSkeleton, 
+        .def("get_faces", &RoundwoodJoinery::Joinery::Joint::GetFaces)
+        .def("get_center", &RoundwoodJoinery::Joinery::Joint::GetCenter)
+        .def("get_num_faces", &RoundwoodJoinery::Joinery::Joint::GetNumFaces)
+        .def("set_closest_point_on_skeleton", &RoundwoodJoinery::Joinery::Joint::SetClosestPointOnSkeleton, 
                                           "Set the closest point on the skeleton for this joint", 
                                           nb::arg("point"))
-        .def("GetClosestPointOnSkeleton", &RoundwoodJoinery::Joinery::Joint::GetClosestPointOnSkeleton);
+        .def("get_closest_point_on_skeleton", &RoundwoodJoinery::Joinery::Joint::GetClosestPointOnSkeleton);
 
 
     nb::class_<RoundwoodJoinery::Beam::Beam>(m, "Beam")
@@ -58,41 +58,41 @@ NB_MODULE(roundwoodJoineryBindings, m)
                       nb::arg("joints"), 
                       nb::arg("skeleton"), 
                       nb::arg("pointCloud"))
-        .def("GetReferenceDiameter", &RoundwoodJoinery::Beam::Beam::GetReferenceDiameter)
-        .def("GetJoints", &RoundwoodJoinery::Beam::Beam::GetJoints)
-        .def("GetSkeleton", &RoundwoodJoinery::Beam::Beam::GetSkeleton)
-        .def("GetPointCloud", &RoundwoodJoinery::Beam::Beam::GetPointCloud)
-        .def("FindJointClosestPointsOnSkeleton", &RoundwoodJoinery::Beam::Beam::FindJointClosestPointsOnSkeleton, 
+        .def("get_reference_diameter", &RoundwoodJoinery::Beam::Beam::GetReferenceDiameter)
+        .def("get_joints", &RoundwoodJoinery::Beam::Beam::GetJoints)
+        .def("get_skeleton", &RoundwoodJoinery::Beam::Beam::GetSkeleton)
+        .def("get_point_cloud", &RoundwoodJoinery::Beam::Beam::GetPointCloud)
+        .def("find_joint_closest_points_on_skeleton", &RoundwoodJoinery::Beam::Beam::FindJointClosestPointsOnSkeleton, 
                                                  "For each joint of the beam, find the closest point on the beam skeleton and set it as the closest point on skeleton for the joint")
-        .def("ComputeOneIterationOfJointFaceTranslationsForOptimisation", &RoundwoodJoinery::Beam::Beam::ComputeOneIterationOfJointFaceTranslationsForOptimisation, 
+        .def("compute_one_iteration_of_joint_face_translations_for_optimisation", &RoundwoodJoinery::Beam::Beam::ComputeOneIterationOfJointFaceTranslationsForOptimisation, 
                                                                           "Compute one iteration of joint face translations for optimization based on the current state of the beam and its joints");
 
         nb::module_ u = m.def_submodule("Utils", "Utility functions for Roundwood Joinery");
 
-        u.def("ComputePointCloudSkeleton", &RoundwoodJoinery::Utils::ComputePointCloudSkeleton, 
+        u.def("compute_point_cloud_skeleton", &RoundwoodJoinery::Utils::ComputePointCloudSkeleton, 
             "Compute the skeleton of a given point cloud using the alpha shape algorithm", 
             nb::arg("pointCloud"), 
             nb::arg("alpha"), 
             nb::arg("offset"));
 
-        u.def("FindHeightOfTriangle", &RoundwoodJoinery::Utils::FindHeightOfTriangle, 
+        u.def("find_height_of_triangle", &RoundwoodJoinery::Utils::FindHeightOfTriangle, 
             "Compute the height of a triangle formed by a test point and a base defined by two points", 
             nb::arg("testPoint"), 
             nb::arg("baseStart"), 
             nb::arg("baseEnd"));
 
-        u.def("Compute2DAlphaShape", &RoundwoodJoinery::Utils::Compute2DAlphaShape, 
+        u.def("compute_2d_alpha_shape", &RoundwoodJoinery::Utils::Compute2DAlphaShape, 
             "Compute the 2D alpha shape of a set of points that all lie on the same plane using CGAL", 
             nb::arg("points"), 
             nb::arg("alpha"), 
             nb::arg("normal"));
 
-        u.def("SavePointCloudToPLY", &RoundwoodJoinery::Utils::SavePointCloudToPLY, 
+        u.def("save_point_cloud_to_ply", &RoundwoodJoinery::Utils::SavePointCloudToPLY, 
             "Save a point cloud to a PLY file", 
             nb::arg("points"), 
             nb::arg("filename"));
             
-        u.def("ComputeApproximatingTransformation", &RoundwoodJoinery::Utils::ComputeApproximatingTransformation,
+        u.def("compute_approximating_transformation", &RoundwoodJoinery::Utils::ComputeApproximatingTransformation,
             "Compute an approximating transformation matrix based on a set of anchor points and their corresponding translations",
             nb::arg("anchorPointsAndTranslations"));
 }
