@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.14)
+cmake_minimum_required (VERSION 3.18)
 project (roundwood_joinery)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -8,12 +8,13 @@ if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-add_definitions(-DCGAL_DISABLE_GMP -DCGAL_USE_GMP=OFF -DCGAL_USE_MPFR=OFF)
+add_definitions(-DCGAL_DISABLE_GMP)
 
 set(RUN_TESTS TRUE) #For now we will always run tests after building...
 
 set (SHARED_LIB_NAME "roundwoodJoinery")
 add_subdirectory(src/RoundwoodJoinery)
+set (BINDINGS_MODULE_NAME "roundwoodJoineryBindings")
 
 execute_process(
     COMMAND git submodule update --init --recursive
@@ -46,13 +47,28 @@ foreach(dir ${BOOST_INCLUDE_DIRS})
 endforeach()
 
 # CGAL
-
 file(GLOB CGAL_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/3rd_party/cgal/*/include")
 foreach(dir ${CGAL_INCLUDE_DIRS})
     message("Adding CGAL include dir: ${dir}")
     include_directories(${dir})
     target_include_directories(${SHARED_LIB_NAME} PUBLIC ${dir})
 endforeach()
+
+
+# nanobind
+if (CMAKE_VERSION VERSION_LESS 3.18)
+  set(DEV_MODULE Development)
+else()
+  set(DEV_MODULE Development.Module)
+endif()
+find_package(Python 3.9 COMPONENTS Interpreter ${DEV_MODULE} REQUIRED)
+if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/3rd_party/nanobind)
+nanobind_add_module(${BINDINGS_MODULE_NAME} ${PROJECT_SOURCE_DIR}/src/RoundwoodJoinery/roundwood_joinery_binding.cc)
+target_link_libraries(${BINDINGS_MODULE_NAME} PRIVATE ${SHARED_LIB_NAME})
 
 
 #############
@@ -86,3 +102,11 @@ else()
         add_custom_target(check ALL
         DEPENDS run_tests)
 endif()
+
+add_custom_command(
+    TARGET ${BINDINGS_MODULE_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:${BINDINGS_MODULE_NAME}>
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/py_binding_test/
+)
