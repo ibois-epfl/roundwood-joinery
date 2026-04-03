@@ -6,10 +6,12 @@
 Roundwood Joinery is a Rhino8 plugin for planning roundwood joinery in scanned trunks
 
 > [!Note]
-> The main branch doesn't currently contain code, as the development is done in separate branches. Once a first version will be functional, it will be merged in this main branch and this Note will be removed
+> The main branch is very rudimentary and contains the first milestone of this project: an end-to-end initial test. It has none of the rhino8 plugin infrastructure, and is only here for communication and idea sharing. When the plugin exists and is decent, this warning will be removed. Until then, cheers !
 
 ## Goal
-When building with roundwood, accurately cutting joints of specific surfaces in this somewhat irregular material can be tricky. This Rhino8 grasshopper plugin aims at facilitating this process. It requires as input: a scan of the tree trunk to be used, the relative positions of the joints, and their target surfaces (the surfaces expected in the joint). Based on that, this plugin optimises the positions of the joint in the scanned trunk to achieve the target surfaces.
+![illustratoin_of_beam](./assets/imgs/2026_04_03_whole_beam_pc_illustration.png)
+When building with roundwood, accurately cutting joints of specific surfaces in this somewhat irregular material can be tricky. This future Rhino8 grasshopper plugin aims at facilitating this process. It requires as input: a scan of the tree trunk to be used, the relative positions of the joints, and their target surfaces (the surfaces expected in the joint). Based on that, this plugin optimises the positions of the joint in the scanned trunk to achieve the target surfaces.
+![illustratoin_of_joint](./assets/imgs/2026_04_03_joint_correction_illustration.png)
 
 ## Process
 ```mermaid
@@ -20,3 +22,6 @@ flowchart LR
     D --> E
     E --> F(optimised joint positions)
 ```
+
+## Usage
+Checkout the [Usage.md](./USAGE.md) for more info, but right now you should probably not try this at home ;) 
