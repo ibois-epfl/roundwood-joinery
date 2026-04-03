@@ -1,6 +1,6 @@
 [project]
 name = "py-binding-test"
-version = "0.1.0"
+version = "0.0.1"
 description = "Sandbox to test the python binding"
 readme = "README.md"
 requires-python = ">=3.14"
