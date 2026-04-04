@@ -162,20 +162,24 @@ namespace RoundwoodJoinery::Utils
         plyOut.write(filename, happly::DataFormat::ASCII);
     }
 
-    Eigen::Matrix4d ComputeApproximatingTransformation(std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> anchorPointsAndTranslations)
+    std::vector<Eigen::Matrix4d> ComputeApproximatingTransformation(std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> groupedAnchorPointsAndTranslations)
     {
-        Eigen::MatrixXd sourcePoints(3, anchorPointsAndTranslations.size());
-        Eigen::MatrixXd targetPoints(3, anchorPointsAndTranslations.size());
-
-        for (size_t i = 0; i < anchorPointsAndTranslations.size(); ++i)
+        std::vector<Eigen::Matrix4d> transformations;
+        for (const auto& anchorPointsAndTranslations : groupedAnchorPointsAndTranslations)
         {
-            const auto& pair = anchorPointsAndTranslations[i];
-            sourcePoints.col(i) = pair.first;
-            targetPoints.col(i) = pair.first + pair.second;
+            Eigen::MatrixXd sourcePoints(3, anchorPointsAndTranslations.size());
+            Eigen::MatrixXd targetPoints(3, anchorPointsAndTranslations.size());
+
+            for (size_t i = 0; i < anchorPointsAndTranslations.size(); ++i)
+            {
+                const auto& pair = anchorPointsAndTranslations[i];
+                sourcePoints.col(i) = pair.first;
+                targetPoints.col(i) = pair.first + pair.second;
+            }
+
+            Eigen::Matrix4d transformation = Eigen::umeyama(sourcePoints, targetPoints, false);
+            transformations.push_back(transformation);
         }
-
-        Eigen::Matrix4d transformation = Eigen::umeyama(sourcePoints, targetPoints, false);
-
-        return transformation;
+        return transformations;
     }
 }

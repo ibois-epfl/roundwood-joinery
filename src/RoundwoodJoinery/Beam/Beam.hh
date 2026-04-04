@@ -81,7 +81,7 @@ namespace RoundwoodJoinery::Beam
         /**
          * @brief Just a test function
          */
-        std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> ComputeOneIterationOfJointFaceTranslationsForOptimisation()
+        std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> ComputeOneIterationOfJointFaceTranslationsForOptimisation()
         {
             return this->_ComputeJointFaceTranslationsForOptimisation();
         }
@@ -102,10 +102,11 @@ namespace RoundwoodJoinery::Beam
          * @brief Private method that computes the translations of the joint faces for optimization purposes. 
          * This is based on the current positions of the joints, their closest points on the skeleton, and their joint faces' target areas.
          * 
-         * @return A vector of pairs, where each pair consists of an anchor point (the center of a joint face),
-         *  and a translation vector that indicates how much the joint face should be translated to better fit the skeleton and target area.
+         * @return A vector of vectors of pairs, where each inner vector corresponds to a group of joints,
+         *  and each pair consists of an anchor point (a corner of a joint face) and a translation vector
+         *  that indicates how much the joint face should be translated to better fit the skeleton and target area.
          */
-        std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> _ComputeJointFaceTranslationsForOptimisation();
+        std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> _ComputeJointFaceTranslationsForOptimisation();
 
         std::vector<std::vector<std::shared_ptr<Joinery::Joint>>> _jointsByGroup;
         std::vector<Eigen::Vector3d> _skeleton;

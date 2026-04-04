@@ -52,12 +52,13 @@ namespace RoundwoodJoinery::Beam
         return closestPoint;
     }
 
-    std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> Beam::_ComputeJointFaceTranslationsForOptimisation()
+    std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> Beam::_ComputeJointFaceTranslationsForOptimisation()
     {
-        std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> anchorPointsAndTranslations;
+        std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> anchorPointsAndTranslations;
 
         for (const auto& jointGroup : this->_jointsByGroup)
         {
+            std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> groupTranslations;
             for (const auto& joint : jointGroup)
             {
                 for (RoundwoodJoinery::Joinery::JointFace& face : joint->GetFaces())
@@ -79,10 +80,11 @@ namespace RoundwoodJoinery::Beam
 
                     for (Eigen::Vector3d& corner : face.GetCorners())
                     {
-                        anchorPointsAndTranslations.push_back(std::make_pair(corner, translation));
+                        groupTranslations.push_back(std::make_pair(corner, translation));
                     }
                 }
             }
+            anchorPointsAndTranslations.push_back(groupTranslations);
         }
         return anchorPointsAndTranslations;
     }

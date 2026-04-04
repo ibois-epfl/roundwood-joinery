@@ -69,9 +69,10 @@ namespace RoundwoodJoinery::Utils
     /**
      * @brief Computes an approximating transformation matrix based on a set of anchor points and their corresponding translations.
      * 
-     * @param anchorPointsAndTranslations A vector of pairs, where each pair consists of an anchor point and its corresponding translation.
-     * @return A 4x4 transformation matrix that approximates the given translations.
+     * @param groupedAnchorPointsAndTranslations A vector of vectors of pairs, where each inner vector corresponds to a group of anchor points,
+     *  and each pair consists of an anchor point and its corresponding translation.
+     * @return A vector of 4x4 transformation matrices for each group of joints.
      */
-    Eigen::Matrix4d ComputeApproximatingTransformation(std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> anchorPointsAndTranslations);
+    std::vector<Eigen::Matrix4d> ComputeApproximatingTransformation(std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> groupedAnchorPointsAndTranslations);
 
 }
