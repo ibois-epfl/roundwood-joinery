@@ -77,7 +77,10 @@ namespace RoundwoodJoinery::Beam
                     Eigen::Vector3d translationDirection = (currentCenter - closestPointOnSkeleton).normalized();
                     Eigen::Vector3d translation = translationMagnitude * translationDirection;
 
-                    anchorPointsAndTranslations.push_back(std::make_pair(currentCenter, translation));
+                    for (Eigen::Vector3d& corner : face.GetCorners())
+                    {
+                        anchorPointsAndTranslations.push_back(std::make_pair(corner, translation));
+                    }
                 }
             }
         }
