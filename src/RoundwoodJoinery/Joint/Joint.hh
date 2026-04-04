@@ -37,6 +37,11 @@ namespace RoundwoodJoinery::Joinery
             return this->_normal;
         }
 
+        std::vector<Eigen::Vector3d> GetCorners() const
+        {
+            return this->_corners;
+        }
+
         /**
          * @brief Returns the center point of the joint face.
          * @return The center point of the joint face.
