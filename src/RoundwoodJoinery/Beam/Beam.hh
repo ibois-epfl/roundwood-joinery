@@ -15,7 +15,7 @@ namespace RoundwoodJoinery::Beam
     {
     public:
         Beam(double referenceDiameter, 
-            std::vector<std::shared_ptr<Joinery::Joint>> joints, 
+            std::vector<std::vector<std::shared_ptr<Joinery::Joint>>> jointsByGroup, 
             std::vector<Eigen::Vector3d> skeleton, 
             RoundwoodJoinery::PointCloud::PointCloud pointCloud);
             
@@ -36,9 +36,9 @@ namespace RoundwoodJoinery::Beam
          * 
          * @return A vector of shared pointers to the joints associated with the beam.
          */
-        std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::Joint>> GetJoints() const
+        std::vector<std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::Joint>>> GetJointsByGroup() const
         {
-            return this->_joints;
+            return this->_jointsByGroup;
         }
 
         /**
@@ -67,11 +67,14 @@ namespace RoundwoodJoinery::Beam
          */
         void FindJointClosestPointsOnSkeleton()
         {
-            for (const auto& joint : this->_joints)
+            for (const auto& jointGroup : this->_jointsByGroup)
             {
-                Eigen::Vector3d jointCenter = joint->GetCenter();
-                Eigen::Vector3d correspondance = this->_FindClosestPointOnSkeleton(jointCenter);
-                joint->SetClosestPointOnSkeleton(correspondance);
+                for (const auto& joint : jointGroup)
+                {
+                    Eigen::Vector3d jointCenter = joint->GetCenter();
+                    Eigen::Vector3d correspondance = this->_FindClosestPointOnSkeleton(jointCenter);
+                    joint->SetClosestPointOnSkeleton(correspondance);
+                }
             }
         }
 
@@ -104,7 +107,7 @@ namespace RoundwoodJoinery::Beam
          */
         std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> _ComputeJointFaceTranslationsForOptimisation();
 
-        std::vector<std::shared_ptr<Joinery::Joint>> _joints;
+        std::vector<std::vector<std::shared_ptr<Joinery::Joint>>> _jointsByGroup;
         std::vector<Eigen::Vector3d> _skeleton;
         RoundwoodJoinery::PointCloud::PointCloud _pointCloud;
         double _referenceDiameter;

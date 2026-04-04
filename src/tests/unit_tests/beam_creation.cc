@@ -34,7 +34,7 @@ int main()
     std::vector<Eigen::Vector3d> skeleton = RoundwoodJoinery::Utils::ComputePointCloudSkeleton(pointCloud, alpha, offset);
 
     double referenceDiameter = 160.0; // corresponds more or less to test data.
-    RoundwoodJoinery::Beam::Beam beam(referenceDiameter, jointVector, skeleton, pointCloud);
+    RoundwoodJoinery::Beam::Beam beam(referenceDiameter, {jointVector}, skeleton, pointCloud);
 
     double retrievedReferenceDiameter = beam.GetReferenceDiameter();
 

@@ -59,16 +59,16 @@ NB_MODULE(roundwoodJoineryBindings, m)
 
     nb::class_<RoundwoodJoinery::Beam::Beam>(m, "Beam")
         .def(nb::init<double, 
-                      std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::Joint>>, 
+                      std::vector<std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::Joint>>>, 
                       std::vector<Eigen::Vector3d>, 
                       RoundwoodJoinery::PointCloud::PointCloud>(), 
                       "Constructor for Beam with reference diameter, joints, skeleton, and point cloud", 
                       nb::arg("referenceDiameter"), 
-                      nb::arg("joints"), 
+                      nb::arg("jointsByGroup"), 
                       nb::arg("skeleton"), 
                       nb::arg("pointCloud"))
         .def("get_reference_diameter", &RoundwoodJoinery::Beam::Beam::GetReferenceDiameter)
-        .def("get_joints", &RoundwoodJoinery::Beam::Beam::GetJoints)
+        .def("get_joints_by_group", &RoundwoodJoinery::Beam::Beam::GetJointsByGroup)
         .def("get_skeleton", &RoundwoodJoinery::Beam::Beam::GetSkeleton)
         .def("get_point_cloud", &RoundwoodJoinery::Beam::Beam::GetPointCloud)
         .def("find_joint_closest_points_on_skeleton", &RoundwoodJoinery::Beam::Beam::FindJointClosestPointsOnSkeleton, 
