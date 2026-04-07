@@ -44,14 +44,10 @@ int main()
         return 1;
     }
 
-    std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> translations = beam.ComputeOneIterationOfJointFaceTranslationsForOptimisation();
-    for (size_t index = 0; index < translations.size(); ++index)
+    std::vector<Eigen::Matrix4d> transformations = beam.ComputeOneIterationOfJointFaceTranslationsForOptimisation();
+    for (size_t index = 0; index < transformations.size(); ++index)
     {
-        std::cout << "points and translation group " << index << ":" << std::endl;
-        for (const auto& [anchor, translation] : translations[index])
-        {
-            std::cout << "---> Anchor: " << anchor.transpose() << ", Translation: " << translation.transpose() << std::endl;
-        }
+        std::cout << "---> Transformation: " << std::endl << transformations[index] << std::endl;
     }
     return 0;
 }

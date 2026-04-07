@@ -81,9 +81,26 @@ namespace RoundwoodJoinery::Beam
         /**
          * @brief Just a test function
          */
-        std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> ComputeOneIterationOfJointFaceTranslationsForOptimisation()
+        std::vector<Eigen::Matrix4d> ComputeOneIterationOfJointFaceTranslationsForOptimisation()
         {
-            return this->_ComputeJointFaceTranslationsForOptimisation();
+            std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> pointsAndTranslations = this->_ComputeJointFaceTranslationsForOptimisation();
+            std::vector<Eigen::Matrix4d> transformations = RoundwoodJoinery::Utils::ComputeApproximatingTransformation(pointsAndTranslations);
+            Eigen::Matrix4d meanTransformation = RoundwoodJoinery::Utils::ComputeMeanTransformation(transformations);
+            std::vector<Eigen::Matrix4d> adaptedTransformations;
+
+            for (size_t i = 0; i < transformations.size(); ++i)
+            {
+                Eigen::Matrix4d residualTransformation = meanTransformation.inverse() * transformations[i];
+                Eigen::Vector3d jointGroupDOF = this->_jointGroups[i].GetDegreeOfFreedom();
+                Eigen::Vector3d residualTranslation = residualTransformation.block<3,1>(0,3);
+                Eigen::Matrix3d residualRotation = residualTransformation.block<3,3>(0,0);
+                Eigen::Vector3d implicitTranslation = residualRotation * this->_jointGroups[i].GetCentroid() + residualTranslation - this->_jointGroups[i].GetCentroid();
+                Eigen::Vector3d projectionOfImplicitTranslationOnDOF = (implicitTranslation.dot(jointGroupDOF) / jointGroupDOF.squaredNorm()) * jointGroupDOF;
+                Eigen::Matrix4d adaptedTransformation = meanTransformation;
+                adaptedTransformation.block<3,1>(0,3) += projectionOfImplicitTranslationOnDOF;
+                adaptedTransformations.push_back(adaptedTransformation);
+            }
+            return adaptedTransformations;
         }
 
     private:
@@ -102,6 +119,10 @@ namespace RoundwoodJoinery::Beam
          * @brief Private method that computes the translations of the joint faces for optimization purposes. 
          * This is based on the current positions of the joints, their closest points on the skeleton, and their joint faces' target areas.
          * 
+         * @return A vector of vectors of pairs, where each inner vector corresponds to a group of joints,
+         *  and each pair consists of an anchor point (a corner of a joint face) and a translation vector
+         *  that indicates how much the joint face should be translated to better fit the skeleton and target area.
+         */
         std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> _ComputeJointFaceTranslationsForOptimisation();
 
         std::vector<Joinery::JointGroup> _jointGroups;
