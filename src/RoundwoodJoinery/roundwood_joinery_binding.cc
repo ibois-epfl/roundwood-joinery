@@ -62,8 +62,18 @@ NB_MODULE(roundwoodJoineryBindings, m)
         .def(nb::init<std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::Joint>>>(), 
                       "Constructor for JointGroup with given joints",
                       nb::arg("joints"))
-        .def("get_joints", &RoundwoodJoinery::Joinery::JointGroup::GetJoints);
-        
+        .def("get_joints", &RoundwoodJoinery::Joinery::JointGroup::GetJoints)
+        .def("set_degree_of_freedom", &RoundwoodJoinery::Joinery::JointGroup::SetDegreeOfFreedom, 
+             "Set the degree of freedom for this joint group", 
+             nb::arg("degreeOfFreedom"))
+        .def("get_degree_of_freedom", &RoundwoodJoinery::Joinery::JointGroup::GetDegreeOfFreedom, 
+             "Get the degree of freedom for this joint group")
+        .def("get_centroid", &RoundwoodJoinery::Joinery::JointGroup::GetCentroid, 
+             "Get the centroid of this joint group, computed as the average of the centers of its joints")
+        .def("apply_transformation", &RoundwoodJoinery::Joinery::JointGroup::ApplyTransformation,
+             "Apply a 4x4 transformation to this joint group, which will be applied to all its joints and their faces",
+             nb::arg("transformation"));
+
     nb::class_<RoundwoodJoinery::Beam::Beam>(m, "Beam")
         .def(nb::init<double, 
                       std::vector<RoundwoodJoinery::Joinery::JointGroup>, 
