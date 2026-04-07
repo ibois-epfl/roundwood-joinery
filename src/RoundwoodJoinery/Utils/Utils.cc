@@ -76,7 +76,18 @@ namespace RoundwoodJoinery::Utils
         std::vector<Eigen::Vector2d> verticesInPlane;
         for (const auto& point : points)
         {
-            verticesInPlane.emplace_back(point.x(), point.y());
+            if (normal.z() != 0)
+            {
+                verticesInPlane.emplace_back(point.x(), point.y());
+            }
+            else if (normal.y() != 0)
+            {
+                verticesInPlane.emplace_back(point.x(), point.z());
+            }
+            else if (normal.x() != 0)
+            {
+                verticesInPlane.emplace_back(point.y(), point.z());
+            }
         }
         typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
         typedef CGAL::Alpha_shape_vertex_base_2<K> Vb;
@@ -131,18 +142,37 @@ namespace RoundwoodJoinery::Utils
             prev = current;
             current = next;
         }
-        // imperfect way to reintroduce the z coordinate.
+        // imperfect way to reintroduce the 3rd coordinate.
         // We rely on the fact that the alpha shape points are a subset of the original points, 
-        // so we can find the corresponding z value in the original point cloud
+        // so we can find the corresponding 3rd dimension value in the original point cloud
         std::vector<Eigen::Vector3d> ordered3D;
         for (const auto& p2d : ordered2D) 
         {
             for (const auto& p3d : points) 
             {
-                if (std::abs(p3d.x() - p2d.first) < 1e-6 && std::abs(p3d.y() - p2d.second) < 1e-6) 
+                if(normal.z() != 0)
                 {
-                    ordered3D.push_back(p3d);
-                    break;
+                    if (std::abs(p3d.x() - p2d.first) < 1e-6 && std::abs(p3d.y() - p2d.second) < 1e-6) 
+                    {
+                        ordered3D.push_back(p3d);
+                        break;
+                    }
+                }
+                else if (normal.y() != 0)
+                {
+                    if (std::abs(p3d.x() - p2d.first) < 1e-6 && std::abs(p3d.z() - p2d.second) < 1e-6) 
+                    {
+                        ordered3D.push_back(p3d);
+                        break;
+                    }
+                }
+                else if (normal.x() != 0)
+                {
+                    if (std::abs(p3d.y() - p2d.first) < 1e-6 && std::abs(p3d.z() - p2d.second) < 1e-6) 
+                    {
+                        ordered3D.push_back(p3d);
+                        break;
+                    }
                 }
             }
         }
