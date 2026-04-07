@@ -168,4 +168,26 @@ namespace RoundwoodJoinery::Joinery
             Eigen::Vector3d _center = Eigen::Vector3d::Zero();
             Eigen::Vector3d _closestPointOnSkeleton = Eigen::Vector3d::Zero();
     };
+
+    /**
+     * @brief a class to store the joints by rigid groups 
+     */
+    class JointGroup
+    {
+        public:
+            JointGroup(std::vector<std::shared_ptr<Joint>> joints) : _joints(joints) {};
+            ~JointGroup() = default;
+
+            /**
+            * @brief Returns the joints that make up the joint group.
+            * @return A vector of shared pointers to Joint objects representing the joints in the group.
+            */
+            std::vector<std::shared_ptr<Joint>> GetJoints()
+            {
+                return this->_joints;
+            }
+
+        private:
+            std::vector<std::shared_ptr<Joint>> _joints;
+    };
 }
