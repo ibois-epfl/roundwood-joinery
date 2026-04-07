@@ -69,16 +69,7 @@ namespace RoundwoodJoinery::Beam
          * @param index_2 The index of the second joint group.
          * @param degreesOfFreedom The translation degree of freedom to set between the two joint groups, represented as a 3D vector.
          */
-        void SetDegreesOfFreedomBetweenJointGroups(size_t index_1, size_t index_2, Eigen::Vector3d degreesOfFreedom)
-        {
-            if (index_1 >= this->_jointGroups.size() || index_2 >= this->_jointGroups.size())
-            {
-                std::cerr << "Error: Joint group index out of range when setting degrees of freedom." << std::endl;
-                return;
-            }
-            this->_relativeDegreesOfFreedom[index_1][index_2] = degreesOfFreedom;
-            this->_relativeDegreesOfFreedom[index_2][index_1] = degreesOfFreedom;
-        }
+        void SetDegreesOfFreedomBetweenJointGroups(size_t index_1, size_t index_2, Eigen::Vector3d degreesOfFreedom);
 
         /**
          * @brief Finds the closest point on the beam skeleton for each joint of the beam.
