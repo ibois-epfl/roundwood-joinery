@@ -59,15 +59,16 @@ namespace RoundwoodJoinery::Joinery
             std::cerr << "Warning: Not enough points projected onto the face to compute area. Returning 0." << std::endl;
             return 0.0;
         }
+        if (this->_normal == Eigen::Vector3d::Zero())
+        {
+            std::cerr << "Warning: Normal vector is zero. Cannot compute area. Returning 0." << std::endl;
+            return 0.0;
+        }
         
         std::vector<Eigen::Vector3d> alphaShapePoints = Utils::Compute2DAlphaShape(this->_projectedPoints, alpha, this->_normal);
         // Compute the area of the alpha shape polygon
         CGAL::Projection_traits_3<K> traits({this->_normal.x(), this->_normal.y(), this->_normal.z()});
-        CGAL::Polygon_2<CGAL::Projection_traits_3<K>> cgalPolygon(traits);
-        for (const auto& point : alphaShapePoints)
-        {
-            cgalPolygon.push_back(Point_3(point.x(), point.y(), point.z()));
-        }
+        CGAL::Polygon_2<CGAL::Projection_traits_3<K>> cgalPolygon = Utils::Compute2DPolygon(alphaShapePoints, this->_normal);
 
         cgalPolygon.reverse_orientation();
         this->_currentArea = cgalPolygon.area();
