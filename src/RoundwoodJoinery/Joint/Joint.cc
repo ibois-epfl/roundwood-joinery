@@ -10,18 +10,7 @@ namespace RoundwoodJoinery::Joinery
         center /= corners.size();
         this->_center = center;
 
-        std::vector<Point_3> cgal_corners;
-        for (const auto& corner : corners)
-        {
-            cgal_corners.emplace_back(Point_3(corner.x(), corner.y(), corner.z()));
-        }
-        CGAL::Projection_traits_3<K> traits({normal.x(), normal.y(), normal.z()});
-        CGAL::Polygon_2<CGAL::Projection_traits_3<K>> cgalPolygon(traits);
-        for (const auto& corner : corners) 
-        {
-            cgalPolygon.push_back(Point_3(corner.x(), corner.y(), corner.z()));
-        }
-        this->_outline_polygon = std::move(cgalPolygon);
+        this->_outline_polygon = std::move(Utils::Compute2DPolygon(corners, normal));
     }
 
     std::vector<Eigen::Vector3d> JointFace::ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud)

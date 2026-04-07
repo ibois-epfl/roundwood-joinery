@@ -24,6 +24,14 @@
 #include <CGAL/extract_mean_curvature_flow_skeleton.h>
 #include <CGAL/boost/graph/split_graph_into_polylines.h>
 
+// for 2D polygon in 3D
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Projection_traits_3.h>
+#include <CGAL/Polygon_2.h>
+#include <CGAL/Polygon_2_algorithms.h>
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+typedef K::Point_3 Point_3;
+
 #include "../PointCloud/PointCloud.hh"
 
 namespace RoundwoodJoinery::Utils
@@ -75,4 +83,13 @@ namespace RoundwoodJoinery::Utils
      */
     std::vector<Eigen::Matrix4d> ComputeApproximatingTransformation(std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> groupedAnchorPointsAndTranslations);
 
+
+    /**
+     * @brief Computes a 2D polygon from a set of 3D points projected onto a plane defined by a normal vector.
+     * 
+     * @param points The set of 3D points to be projected onto the plane.
+     * @param normal The normal vector of the plane onto which the points are projected.
+     * @return A CGAL 2D polygon representing the projected points.
+     */
+    CGAL::Polygon_2<CGAL::Projection_traits_3<K>> Compute2DPolygon(std::vector<Eigen::Vector3d> points, Eigen::Vector3d normal);
 }

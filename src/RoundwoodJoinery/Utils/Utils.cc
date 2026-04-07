@@ -182,4 +182,15 @@ namespace RoundwoodJoinery::Utils
         }
         return transformations;
     }
+
+    CGAL::Polygon_2<CGAL::Projection_traits_3<K>> Compute2DPolygon(std::vector<Eigen::Vector3d> points, Eigen::Vector3d normal)
+    {
+        CGAL::Projection_traits_3<K> traits({normal.x(), normal.y(), normal.z()});
+        CGAL::Polygon_2<CGAL::Projection_traits_3<K>> cgalPolygon(traits);
+        for (const auto& point : points)
+        {
+            cgalPolygon.push_back(Point_3(point.x(), point.y(), point.z()));
+        }
+        return cgalPolygon;
+    }
 }
