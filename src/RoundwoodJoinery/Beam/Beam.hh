@@ -61,6 +61,14 @@ namespace RoundwoodJoinery::Beam
             return this->_pointCloud;
         }
 
+        /**
+         * @brief Sets the relative degrees of freedom between two joint groups. 
+         * It is a symmetric relationship, so it updates both [index_1][index_2] and [index_2][index_1] in the matrix.
+         * 
+         * @param index_1 The index of the first joint group.
+         * @param index_2 The index of the second joint group.
+         * @param degreesOfFreedom The translation degree of freedom to set between the two joint groups, represented as a 3D vector.
+         */
         void SetDegreesOfFreedomBetweenJointGroups(size_t index_1, size_t index_2, Eigen::Vector3d degreesOfFreedom)
         {
             if (index_1 >= this->_jointGroups.size() || index_2 >= this->_jointGroups.size())
