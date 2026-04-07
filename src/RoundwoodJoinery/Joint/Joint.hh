@@ -187,7 +187,30 @@ namespace RoundwoodJoinery::Joinery
                 return this->_joints;
             }
 
+            void SetDegreeOfFreedom(Eigen::Vector3d degreeOfFreedom)
+            {
+                this->_degreeOfFreedom = degreeOfFreedom;
+            }
+
+            Eigen::Vector3d GetDegreeOfFreedom() const
+            {
+                return this->_degreeOfFreedom;
+            }
+
+            void ApplyTransformation(Eigen::Matrix4d transformation)
+            {
+                for (auto& joint : this->_joints)
+                {
+                    joint->ApplyTransformation(transformation);
+                }
+
+                // also allow transform the dof.
+                Eigen::Vector3d translation = transformation.block<3,1>(0,3);
+                Eigen::Matrix3d rotation = transformation.block<3,3>(0,0);
+                this->_degreeOfFreedom = rotation * this->_degreeOfFreedom + translation;
+            }
         private:
             std::vector<std::shared_ptr<Joint>> _joints;
+            Eigen::Vector3d _degreeOfFreedom;
     };
 }
