@@ -92,4 +92,12 @@ namespace RoundwoodJoinery::Utils
      * @return A CGAL 2D polygon representing the projected points.
      */
     CGAL::Polygon_2<CGAL::Projection_traits_3<K>> Compute2DPolygon(std::vector<Eigen::Vector3d> points, Eigen::Vector3d normal);
+
+    /**
+     * @brief Computes the mean transformation from a set of transformation matrices by averaging their rotation (through quaternions) and translation components separately.
+     * 
+     * @param transformations The set of transformation matrices to average.
+     * @return The mean transformation matrix.
+     */
+    Eigen::Matrix4d ComputeMeanTransformation(const std::vector<Eigen::Matrix4d>& transformations);
 }

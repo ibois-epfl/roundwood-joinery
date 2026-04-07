@@ -193,4 +193,50 @@ namespace RoundwoodJoinery::Utils
         }
         return cgalPolygon;
     }
+
+    Eigen::Matrix4d ComputeMeanTransformation(const std::vector<Eigen::Matrix4d>& transformations)
+    {
+        if (transformations.empty())
+        {
+            return Eigen::Matrix4d::Identity();
+        }
+
+        // Average rotation using quaternions
+        std::vector<Eigen::Quaterniond> quaternions;
+        for (const auto& transform : transformations)
+        {
+            Eigen::Matrix3d rotation = transform.block<3, 3>(0, 0);
+            Eigen::Quaterniond q(rotation);
+            quaternions.push_back(q);
+        }
+
+        Eigen::Quaterniond meanQuaternion(0, 0, 0, 0);
+        for (const auto& q : quaternions)
+        {
+            if (q.coeffs().dot(meanQuaternion.coeffs()) < 0)
+            {
+                meanQuaternion.coeffs() += -1 * (q).coeffs();
+            }
+            else 
+            {
+                meanQuaternion.coeffs() += q.coeffs();
+            }
+        }
+        meanQuaternion.normalize();
+
+        // Average translation
+        Eigen::Vector3d meanTranslation(0, 0, 0);
+        for (const auto& transform : transformations)
+        {
+            meanTranslation += transform.block<3, 1>(0, 3);
+        }
+        meanTranslation /= transformations.size();
+
+        // Construct the mean transformation matrix
+        Eigen::Matrix4d meanTransformation = Eigen::Matrix4d::Identity();
+        meanTransformation.block<3, 3>(0, 0) = meanQuaternion.toRotationMatrix();
+        meanTransformation.block<3, 1>(0, 3) = meanTranslation;
+
+        return meanTransformation;
+    }
 }
