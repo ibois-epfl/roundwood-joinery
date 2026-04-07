@@ -61,6 +61,17 @@ namespace RoundwoodJoinery::Beam
             return this->_pointCloud;
         }
 
+        void SetDegreesOfFreedomBetweenJointGroups(size_t index_1, size_t index_2, Eigen::Vector3d degreesOfFreedom)
+        {
+            if (index_1 >= this->_jointGroups.size() || index_2 >= this->_jointGroups.size())
+            {
+                std::cerr << "Error: Joint group index out of range when setting degrees of freedom." << std::endl;
+                return;
+            }
+            this->_relativeDegreesOfFreedom[index_1][index_2] = degreesOfFreedom;
+            this->_relativeDegreesOfFreedom[index_2][index_1] = degreesOfFreedom;
+        }
+
         /**
          * @brief Finds the closest point on the beam skeleton for each joint of the beam.
          * 
@@ -112,5 +123,9 @@ namespace RoundwoodJoinery::Beam
         std::vector<Eigen::Vector3d> _skeleton;
         RoundwoodJoinery::PointCloud::PointCloud _pointCloud;
         double _referenceDiameter;
+        /**
+         * @brief A matrix that stores the relative degree of freedom between the joint groups, by using the indexes of the joint groups. It is symmetric and the diagonal is empty.
+         */
+        std::vector<std::vector<Eigen::Vector3d>> _relativeDegreesOfFreedom;
     };
 }

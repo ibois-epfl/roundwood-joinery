@@ -11,6 +11,8 @@ namespace RoundwoodJoinery::Beam
               _skeleton(skeleton), 
               _pointCloud(pointCloud)
     {
+        // just initialising the relative degrees of freedom matrix with zeros, it will be updated later based on the joint groups and their interactions.
+        this->_relativeDegreesOfFreedom = std::vector<std::vector<Eigen::Vector3d>>(_jointGroups.size(), std::vector<Eigen::Vector3d>(_jointGroups.size(), Eigen::Vector3d::Zero()));
         for (auto& jointGroup : _jointGroups)
         {
             for (auto& joint : jointGroup.GetJoints())
