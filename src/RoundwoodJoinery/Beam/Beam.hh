@@ -15,7 +15,7 @@ namespace RoundwoodJoinery::Beam
     {
     public:
         Beam(double referenceDiameter, 
-            std::vector<std::vector<std::shared_ptr<Joinery::Joint>>> jointsByGroup, 
+            std::vector<Joinery::JointGroup> jointGroups, 
             std::vector<Eigen::Vector3d> skeleton, 
             RoundwoodJoinery::PointCloud::PointCloud pointCloud);
             
@@ -36,9 +36,9 @@ namespace RoundwoodJoinery::Beam
          * 
          * @return A vector of shared pointers to the joints associated with the beam.
          */
-        std::vector<std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::Joint>>> GetJointsByGroup() const
+        std::vector<Joinery::JointGroup> GetJointGroups() const
         {
-            return this->_jointsByGroup;
+            return this->_jointGroups;
         }
 
         /**
@@ -67,9 +67,9 @@ namespace RoundwoodJoinery::Beam
          */
         void FindJointClosestPointsOnSkeleton()
         {
-            for (const auto& jointGroup : this->_jointsByGroup)
+            for (auto& jointGroup : this->_jointGroups)
             {
-                for (const auto& joint : jointGroup)
+                for (auto& joint : jointGroup.GetJoints())
                 {
                     Eigen::Vector3d jointCenter = joint->GetCenter();
                     Eigen::Vector3d correspondance = this->_FindClosestPointOnSkeleton(jointCenter);
@@ -108,7 +108,7 @@ namespace RoundwoodJoinery::Beam
          */
         std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> _ComputeJointFaceTranslationsForOptimisation();
 
-        std::vector<std::vector<std::shared_ptr<Joinery::Joint>>> _jointsByGroup;
+        std::vector<Joinery::JointGroup> _jointGroups;
         std::vector<Eigen::Vector3d> _skeleton;
         RoundwoodJoinery::PointCloud::PointCloud _pointCloud;
         double _referenceDiameter;

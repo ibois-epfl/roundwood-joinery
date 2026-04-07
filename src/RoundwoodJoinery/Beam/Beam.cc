@@ -3,17 +3,17 @@
 namespace RoundwoodJoinery::Beam
 {
     Beam::Beam(double referenceDiameter, 
-        std::vector<std::vector<std::shared_ptr<Joinery::Joint>>> jointsByGroup, 
+        std::vector<Joinery::JointGroup> jointGroups, 
         std::vector<Eigen::Vector3d> skeleton, 
         RoundwoodJoinery::PointCloud::PointCloud pointCloud)
             : _referenceDiameter(referenceDiameter), 
-              _jointsByGroup(jointsByGroup), 
+              _jointGroups(jointGroups), 
               _skeleton(skeleton), 
               _pointCloud(pointCloud)
     {
-        for (const auto& jointGroup : _jointsByGroup)
+        for (auto& jointGroup : _jointGroups)
         {
-            for (const auto& joint : jointGroup)
+            for (auto& joint : jointGroup.GetJoints())
             {
                 joint->SetClosestPointOnSkeleton(this->_FindClosestPointOnSkeleton(joint->GetCenter()));
             }
@@ -56,10 +56,10 @@ namespace RoundwoodJoinery::Beam
     {
         std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> anchorPointsAndTranslations;
 
-        for (const auto& jointGroup : this->_jointsByGroup)
+        for (auto& jointGroup : this->_jointGroups)
         {
             std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> groupTranslations;
-            for (const auto& joint : jointGroup)
+            for (auto& joint : jointGroup.GetJoints())
             {
                 for (RoundwoodJoinery::Joinery::JointFace& face : joint->GetFaces())
                 {
