@@ -62,16 +62,6 @@ namespace RoundwoodJoinery::Beam
         }
 
         /**
-         * @brief Sets the relative degrees of freedom between two joint groups. 
-         * It is a symmetric relationship, so it updates both [index_1][index_2] and [index_2][index_1] in the matrix.
-         * 
-         * @param index_1 The index of the first joint group.
-         * @param index_2 The index of the second joint group.
-         * @param degreesOfFreedom The translation degree of freedom to set between the two joint groups, represented as a 3D vector.
-         */
-        void SetDegreesOfFreedomBetweenJointGroups(size_t index_1, size_t index_2, Eigen::Vector3d degreesOfFreedom);
-
-        /**
          * @brief Finds the closest point on the beam skeleton for each joint of the beam.
          * 
          */
@@ -112,19 +102,11 @@ namespace RoundwoodJoinery::Beam
          * @brief Private method that computes the translations of the joint faces for optimization purposes. 
          * This is based on the current positions of the joints, their closest points on the skeleton, and their joint faces' target areas.
          * 
-         * @return A vector of vectors of pairs, where each inner vector corresponds to a group of joints,
-         *  and each pair consists of an anchor point (a corner of a joint face) and a translation vector
-         *  that indicates how much the joint face should be translated to better fit the skeleton and target area.
-         */
         std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> _ComputeJointFaceTranslationsForOptimisation();
 
         std::vector<Joinery::JointGroup> _jointGroups;
         std::vector<Eigen::Vector3d> _skeleton;
         RoundwoodJoinery::PointCloud::PointCloud _pointCloud;
         double _referenceDiameter;
-        /**
-         * @brief A matrix that stores the relative degree of freedom between the joint groups, by using the indexes of the joint groups. It is symmetric and the diagonal is empty.
-         */
-        std::vector<std::vector<Eigen::Vector3d>> _relativeDegreesOfFreedom;
     };
 }
