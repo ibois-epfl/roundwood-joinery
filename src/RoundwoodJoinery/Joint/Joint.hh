@@ -91,6 +91,7 @@ namespace RoundwoodJoinery::Joinery
         Eigen::Vector3d _normal;
         Eigen::Vector3d _center = Eigen::Vector3d::Zero();
         std::vector<Eigen::Vector3d> _corners;
+        std::vector<Eigen::Vector3d> _originalCorners; // A backup should it be useful...
         double _targetArea;
         double _currentArea;
         std::vector<Eigen::Vector3d> _projectedPoints;

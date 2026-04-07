@@ -3,7 +3,7 @@
 namespace RoundwoodJoinery::Joinery
 {
     RoundwoodJoinery::Joinery::JointFace::JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners, double targetArea)
-        : _normal(normal), _corners(corners), _targetArea(targetArea)
+        : _normal(normal), _corners(corners), _originalCorners(corners), _targetArea(targetArea)
     {
         Eigen::Vector3d center = Eigen::Vector3d::Zero();
         for (const auto& corner : corners){center += corner;}
