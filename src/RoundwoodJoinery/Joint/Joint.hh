@@ -197,6 +197,16 @@ namespace RoundwoodJoinery::Joinery
                 return this->_degreeOfFreedom;
             }
 
+            Eigen::Vector3d GetCentroid() const
+            {
+                Eigen::Vector3d centroid = Eigen::Vector3d::Zero();
+                for (const auto& joint : this->_joints)
+                {
+                    centroid += joint->GetCenter();
+                }
+                return centroid / this->_joints.size();
+            }
+
             void ApplyTransformation(Eigen::Matrix4d transformation)
             {
                 for (auto& joint : this->_joints)
