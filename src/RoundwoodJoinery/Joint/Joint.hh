@@ -7,9 +7,6 @@
 #include <CGAL/Projection_traits_3.h>
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Polygon_2_algorithms.h>
- 
-typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
-typedef K::Point_3 Point_3;
 
 #include "../PointCloud/PointCloud.hh"
 #include "../Utils/Utils.hh"
@@ -87,6 +84,9 @@ namespace RoundwoodJoinery::Joinery
          */
         std::vector<Eigen::Vector3d> GetCurrentOutline(PointCloud::PointCloud& beamPointCloud, double alpha = 500.0);
 
+
+        void ApplyTransformation(Eigen::Matrix4d transformation);
+
     private:
         Eigen::Vector3d _normal;
         Eigen::Vector3d _center = Eigen::Vector3d::Zero();
@@ -156,6 +156,12 @@ namespace RoundwoodJoinery::Joinery
             }
             return this->_closestPointOnSkeleton;
         }
+
+        /**
+         * @brief A method to apply a transformation to the joint, which will be applied to all its faces.
+         * @param transformation The 4x4 transformation matrix to be applied to the joint.
+         */
+        void ApplyTransformation(Eigen::Matrix4d transformation);
 
     private:
         std::vector<JointFace> _faces;

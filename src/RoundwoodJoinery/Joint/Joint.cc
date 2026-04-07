@@ -93,6 +93,23 @@ namespace RoundwoodJoinery::Joinery
         return alphaShapePoints;
     }
 
+    void RoundwoodJoinery::Joinery::JointFace::ApplyTransformation(Eigen::Matrix4d transformation)
+    {
+        Eigen::Matrix3d rotation = transformation.block<3, 3>(0, 0);
+        Eigen::Vector3d translation = transformation.block<3, 1>(0, 3);
+        this->_normal = rotation * this->_normal;
+        this->_center = rotation * this->_center + translation;
+
+        for (size_t i = 0; i < this->_corners.size(); ++i)
+        {
+            this->_corners[i] = rotation * this->_corners[i] + translation;
+        }
+
+        this->_outline_polygon = std::move(Utils::Compute2DPolygon(this->_corners, this->_normal));
+        this->_projectedPoints.clear();
+        this->_currentArea = 0.0;
+    }
+
     RoundwoodJoinery::Joinery::Joint::Joint(std::vector<RoundwoodJoinery::Joinery::JointFace> faces)
         : _faces(faces)
     {
@@ -102,5 +119,19 @@ namespace RoundwoodJoinery::Joinery
         }
         this->_center /= faces.size();
 
+    }
+
+    void RoundwoodJoinery::Joinery::Joint::ApplyTransformation(Eigen::Matrix4d transformation)
+    {
+        // first the Joint data
+        Eigen::Matrix3d rotation = transformation.block<3, 3>(0, 0);
+        Eigen::Vector3d translation = transformation.block<3, 1>(0, 3);
+        this->_center = rotation * this->_center + translation;
+
+        // then the JointFaces
+        for (auto& face : this->_faces)
+        {
+            face.ApplyTransformation(transformation);
+        }
     }
 }
