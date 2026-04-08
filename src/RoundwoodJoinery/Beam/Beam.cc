@@ -72,8 +72,8 @@ namespace RoundwoodJoinery::Beam
                     Eigen::Vector3d closestPointOnSkeleton = this->_FindClosestPointOnSkeleton(currentCenter);
                     double distanceToSkeleton = (currentCenter - closestPointOnSkeleton).norm();
 
-                    double openingAngle = std::acos(distanceToSkeleton / (this->_referenceDiameter / 2.0));
-                    double newAngle = std::asin(areaRatio * std::sin(openingAngle));
+                    double openingAngle = std::acos(std::min(distanceToSkeleton / (this->_referenceDiameter / 2.0), 1.0));
+                    double newAngle = std::asin(std::min(areaRatio * std::sin(openingAngle), 1.0));
 
                     double translationMagnitude = distanceToSkeleton - (this->_referenceDiameter / 2.0) * std::cos(newAngle);
                     Eigen::Vector3d translationDirection = (currentCenter - closestPointOnSkeleton).normalized();
