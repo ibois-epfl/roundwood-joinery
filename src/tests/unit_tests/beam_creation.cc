@@ -18,7 +18,7 @@ int main()
     // Create a Joint instance with the created face
     std::vector<RoundwoodJoinery::Joinery::JointFace> faces = {face1};
     RoundwoodJoinery::Joinery::Joint joint(faces);
-    std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::Joint>> jointVector = {std::make_shared<RoundwoodJoinery::Joinery::Joint>(joint)};
+    std::vector<RoundwoodJoinery::Joinery::JointGroup> jointGroups = {RoundwoodJoinery::Joinery::JointGroup({std::make_shared<RoundwoodJoinery::Joinery::Joint>(joint)})};
 
     // Computing the skeleton of the pointcloud
     RoundwoodJoinery::PointCloud::PointCloud pointCloud = RoundwoodJoinery::PointCloud::PointCloud();
@@ -34,7 +34,7 @@ int main()
     std::vector<Eigen::Vector3d> skeleton = RoundwoodJoinery::Utils::ComputePointCloudSkeleton(pointCloud, alpha, offset);
 
     double referenceDiameter = 160.0; // corresponds more or less to test data.
-    RoundwoodJoinery::Beam::Beam beam(referenceDiameter, jointVector, skeleton, pointCloud);
+    RoundwoodJoinery::Beam::Beam beam(referenceDiameter, jointGroups, skeleton, pointCloud);
 
     double retrievedReferenceDiameter = beam.GetReferenceDiameter();
 
@@ -44,10 +44,10 @@ int main()
         return 1;
     }
 
-    std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> translations = beam.ComputeOneIterationOfJointFaceTranslationsForOptimisation();
-    for (const auto& [anchor, translation] : translations)
+    std::vector<Eigen::Matrix4d> transformations = beam.ComputeOneIterationOfJointFaceTranslationsForOptimisation();
+    for (size_t index = 0; index < transformations.size(); ++index)
     {
-        std::cout << "Anchor: " << anchor.transpose() << ", Translation: " << translation.transpose() << std::endl;
+        std::cout << "---> Transformation: " << std::endl << transformations[index] << std::endl;
     }
     return 0;
 }

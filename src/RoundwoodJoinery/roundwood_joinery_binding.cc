@@ -31,6 +31,7 @@ NB_MODULE(roundwoodJoineryBindings, m)
              "Project points from the beam's point cloud onto the joint face and return the projected points that are within the face outline",
              nb::arg("pointCloud"))
         .def("get_normal", &RoundwoodJoinery::Joinery::JointFace::GetNormal)
+        .def("get_corners", &RoundwoodJoinery::Joinery::JointFace::GetCorners)
         .def("get_center", &RoundwoodJoinery::Joinery::JointFace::GetCenter)
         .def("get_target_area", &RoundwoodJoinery::Joinery::JointFace::GetTargetArea)
         .def("get_current_area", &RoundwoodJoinery::Joinery::JointFace::GetCurrentArea)
@@ -57,18 +58,34 @@ NB_MODULE(roundwoodJoineryBindings, m)
         .def("get_closest_point_on_skeleton", &RoundwoodJoinery::Joinery::Joint::GetClosestPointOnSkeleton);
 
 
+    nb::class_<RoundwoodJoinery::Joinery::JointGroup>(m, "JointGroup")
+        .def(nb::init<std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::Joint>>>(), 
+                      "Constructor for JointGroup with given joints",
+                      nb::arg("joints"))
+        .def("get_joints", &RoundwoodJoinery::Joinery::JointGroup::GetJoints)
+        .def("set_degree_of_freedom", &RoundwoodJoinery::Joinery::JointGroup::SetDegreeOfFreedom, 
+             "Set the degree of freedom for this joint group", 
+             nb::arg("degreeOfFreedom"))
+        .def("get_degree_of_freedom", &RoundwoodJoinery::Joinery::JointGroup::GetDegreeOfFreedom, 
+             "Get the degree of freedom for this joint group")
+        .def("get_centroid", &RoundwoodJoinery::Joinery::JointGroup::GetCentroid, 
+             "Get the centroid of this joint group, computed as the average of the centers of its joints")
+        .def("apply_transformation", &RoundwoodJoinery::Joinery::JointGroup::ApplyTransformation,
+             "Apply a 4x4 transformation to this joint group, which will be applied to all its joints and their faces",
+             nb::arg("transformation"));
+
     nb::class_<RoundwoodJoinery::Beam::Beam>(m, "Beam")
         .def(nb::init<double, 
-                      std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::Joint>>, 
+                      std::vector<RoundwoodJoinery::Joinery::JointGroup>, 
                       std::vector<Eigen::Vector3d>, 
                       RoundwoodJoinery::PointCloud::PointCloud>(), 
                       "Constructor for Beam with reference diameter, joints, skeleton, and point cloud", 
                       nb::arg("referenceDiameter"), 
-                      nb::arg("joints"), 
+                      nb::arg("jointsByGroup"), 
                       nb::arg("skeleton"), 
                       nb::arg("pointCloud"))
         .def("get_reference_diameter", &RoundwoodJoinery::Beam::Beam::GetReferenceDiameter)
-        .def("get_joints", &RoundwoodJoinery::Beam::Beam::GetJoints)
+        .def("get_joints_by_group", &RoundwoodJoinery::Beam::Beam::GetJointGroups)
         .def("get_skeleton", &RoundwoodJoinery::Beam::Beam::GetSkeleton)
         .def("get_point_cloud", &RoundwoodJoinery::Beam::Beam::GetPointCloud)
         .def("find_joint_closest_points_on_skeleton", &RoundwoodJoinery::Beam::Beam::FindJointClosestPointsOnSkeleton, 

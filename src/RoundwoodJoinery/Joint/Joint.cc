@@ -3,25 +3,14 @@
 namespace RoundwoodJoinery::Joinery
 {
     RoundwoodJoinery::Joinery::JointFace::JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners, double targetArea)
-        : _normal(normal), _corners(corners), _targetArea(targetArea)
+        : _normal(normal), _corners(corners), _originalCorners(corners), _targetArea(targetArea)
     {
         Eigen::Vector3d center = Eigen::Vector3d::Zero();
         for (const auto& corner : corners){center += corner;}
         center /= corners.size();
         this->_center = center;
 
-        std::vector<Point_3> cgal_corners;
-        for (const auto& corner : corners)
-        {
-            cgal_corners.emplace_back(Point_3(corner.x(), corner.y(), corner.z()));
-        }
-        CGAL::Projection_traits_3<K> traits({normal.x(), normal.y(), normal.z()});
-        CGAL::Polygon_2<CGAL::Projection_traits_3<K>> cgalPolygon(traits);
-        for (const auto& corner : corners) 
-        {
-            cgalPolygon.push_back(Point_3(corner.x(), corner.y(), corner.z()));
-        }
-        this->_outline_polygon = std::move(cgalPolygon);
+        this->_outline_polygon = std::move(Utils::Compute2DPolygon(corners, normal));
     }
 
     std::vector<Eigen::Vector3d> JointFace::ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud)
@@ -70,15 +59,16 @@ namespace RoundwoodJoinery::Joinery
             std::cerr << "Warning: Not enough points projected onto the face to compute area. Returning 0." << std::endl;
             return 0.0;
         }
+        if (this->_normal == Eigen::Vector3d::Zero())
+        {
+            std::cerr << "Warning: Normal vector is zero. Cannot compute area. Returning 0." << std::endl;
+            return 0.0;
+        }
         
         std::vector<Eigen::Vector3d> alphaShapePoints = Utils::Compute2DAlphaShape(this->_projectedPoints, alpha, this->_normal);
         // Compute the area of the alpha shape polygon
         CGAL::Projection_traits_3<K> traits({this->_normal.x(), this->_normal.y(), this->_normal.z()});
-        CGAL::Polygon_2<CGAL::Projection_traits_3<K>> cgalPolygon(traits);
-        for (const auto& point : alphaShapePoints)
-        {
-            cgalPolygon.push_back(Point_3(point.x(), point.y(), point.z()));
-        }
+        CGAL::Polygon_2<CGAL::Projection_traits_3<K>> cgalPolygon = Utils::Compute2DPolygon(alphaShapePoints, this->_normal);
 
         cgalPolygon.reverse_orientation();
         this->_currentArea = cgalPolygon.area();
@@ -104,6 +94,23 @@ namespace RoundwoodJoinery::Joinery
         return alphaShapePoints;
     }
 
+    void RoundwoodJoinery::Joinery::JointFace::ApplyTransformation(Eigen::Matrix4d transformation)
+    {
+        Eigen::Matrix3d rotation = transformation.block<3, 3>(0, 0);
+        Eigen::Vector3d translation = transformation.block<3, 1>(0, 3);
+        this->_normal = rotation * this->_normal;
+        this->_center = rotation * this->_center + translation;
+
+        for (size_t i = 0; i < this->_corners.size(); ++i)
+        {
+            this->_corners[i] = rotation * this->_corners[i] + translation;
+        }
+
+        this->_outline_polygon = std::move(Utils::Compute2DPolygon(this->_corners, this->_normal));
+        this->_projectedPoints.clear();
+        this->_currentArea = 0.0;
+    }
+
     RoundwoodJoinery::Joinery::Joint::Joint(std::vector<RoundwoodJoinery::Joinery::JointFace> faces)
         : _faces(faces)
     {
@@ -113,5 +120,19 @@ namespace RoundwoodJoinery::Joinery
         }
         this->_center /= faces.size();
 
+    }
+
+    void RoundwoodJoinery::Joinery::Joint::ApplyTransformation(Eigen::Matrix4d transformation)
+    {
+        // first the Joint data
+        Eigen::Matrix3d rotation = transformation.block<3, 3>(0, 0);
+        Eigen::Vector3d translation = transformation.block<3, 1>(0, 3);
+        this->_center = rotation * this->_center + translation;
+
+        // then the JointFaces
+        for (auto& face : this->_faces)
+        {
+            face.ApplyTransformation(transformation);
+        }
     }
 }

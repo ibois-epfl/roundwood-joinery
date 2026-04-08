@@ -23,7 +23,8 @@ int main()
         {anchor4, transformedAnchor4 - anchor4}
     };
 
-    Eigen::Matrix4d computedTransformation = RoundwoodJoinery::Utils::ComputeApproximatingTransformation(anchorPointsAndTranslations);
+    std::vector<Eigen::Matrix4d> computedTransformations = RoundwoodJoinery::Utils::ComputeApproximatingTransformation({anchorPointsAndTranslations});
+    Eigen::Matrix4d computedTransformation = computedTransformations[0];
 
     std::cout << "Expected Transformation:\n" << expectedTransformation << std::endl;
     std::cout << "Computed Transformation:\n" << computedTransformation << std::endl;

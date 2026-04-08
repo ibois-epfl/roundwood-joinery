@@ -3,19 +3,23 @@
 namespace RoundwoodJoinery::Beam
 {
     Beam::Beam(double referenceDiameter, 
-        std::vector<std::shared_ptr<Joinery::Joint>> joints, 
+        std::vector<Joinery::JointGroup> jointGroups, 
         std::vector<Eigen::Vector3d> skeleton, 
         RoundwoodJoinery::PointCloud::PointCloud pointCloud)
             : _referenceDiameter(referenceDiameter), 
-              _joints(joints), 
+              _jointGroups(jointGroups), 
               _skeleton(skeleton), 
               _pointCloud(pointCloud)
     {
-        for (const auto& joint : joints)
+        for (auto& jointGroup : _jointGroups)
         {
-            joint->SetClosestPointOnSkeleton(this->_FindClosestPointOnSkeleton(joint->GetCenter()));
+            for (auto& joint : jointGroup.GetJoints())
+            {
+                joint->SetClosestPointOnSkeleton(this->_FindClosestPointOnSkeleton(joint->GetCenter()));
+            }
         }
     }
+
 
     Eigen::Vector3d Beam::_FindClosestPointOnSkeleton(const Eigen::Vector3d& point)
     {
@@ -49,31 +53,39 @@ namespace RoundwoodJoinery::Beam
         return closestPoint;
     }
 
-    std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> Beam::_ComputeJointFaceTranslationsForOptimisation()
+    std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> Beam::_ComputeJointFaceTranslationsForOptimisation()
     {
-        std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> anchorPointsAndTranslations;
+        std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> anchorPointsAndTranslations;
 
-        for (const std::shared_ptr<RoundwoodJoinery::Joinery::Joint>& joint : this->_joints)
+        for (auto& jointGroup : this->_jointGroups)
         {
-            for (RoundwoodJoinery::Joinery::JointFace& face : joint->GetFaces())
+            std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> groupTranslations;
+            for (auto& joint : jointGroup.GetJoints())
             {
-                Eigen::Vector3d currentCenter = face.GetCenter();
-                double targetArea = face.GetTargetArea();
-                double currentArea = face.ComputeCurrentArea(this->_pointCloud);
+                for (RoundwoodJoinery::Joinery::JointFace& face : joint->GetFaces())
+                {
+                    Eigen::Vector3d currentCenter = face.GetCenter();
+                    double targetArea = face.GetTargetArea();
+                    double currentArea = face.ComputeCurrentArea(this->_pointCloud);
 
-                double areaRatio = currentArea / targetArea;
-                Eigen::Vector3d closestPointOnSkeleton = this->_FindClosestPointOnSkeleton(currentCenter);
-                double distanceToSkeleton = (currentCenter - closestPointOnSkeleton).norm();
+                    double areaRatio = currentArea / targetArea;
+                    Eigen::Vector3d closestPointOnSkeleton = this->_FindClosestPointOnSkeleton(currentCenter);
+                    double distanceToSkeleton = (currentCenter - closestPointOnSkeleton).norm();
 
-                double openingAngle = std::acos(distanceToSkeleton / (this->_referenceDiameter / 2.0));
-                double newAngle = std::asin(areaRatio * std::sin(openingAngle));
+                    double openingAngle = std::acos(std::min(distanceToSkeleton / (this->_referenceDiameter / 2.0), 1.0));
+                    double newAngle = std::asin(std::min(areaRatio * std::sin(openingAngle), 1.0));
 
-                double translationMagnitude = distanceToSkeleton - (this->_referenceDiameter / 2.0) * std::cos(newAngle);
-                Eigen::Vector3d translationDirection = (currentCenter - closestPointOnSkeleton).normalized();
-                Eigen::Vector3d translation = translationMagnitude * translationDirection;
+                    double translationMagnitude = distanceToSkeleton - (this->_referenceDiameter / 2.0) * std::cos(newAngle);
+                    Eigen::Vector3d translationDirection = (currentCenter - closestPointOnSkeleton).normalized();
+                    Eigen::Vector3d translation = translationMagnitude * translationDirection;
 
-                anchorPointsAndTranslations.push_back(std::make_pair(currentCenter, translation));
+                    for (Eigen::Vector3d& corner : face.GetCorners())
+                    {
+                        groupTranslations.push_back(std::make_pair(corner, translation));
+                    }
+                }
             }
+            anchorPointsAndTranslations.push_back(groupTranslations);
         }
         return anchorPointsAndTranslations;
     }

@@ -24,6 +24,14 @@
 #include <CGAL/extract_mean_curvature_flow_skeleton.h>
 #include <CGAL/boost/graph/split_graph_into_polylines.h>
 
+// for 2D polygon in 3D
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Projection_traits_3.h>
+#include <CGAL/Polygon_2.h>
+#include <CGAL/Polygon_2_algorithms.h>
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+typedef K::Point_3 Point_3;
+
 #include "../PointCloud/PointCloud.hh"
 
 namespace RoundwoodJoinery::Utils
@@ -69,9 +77,27 @@ namespace RoundwoodJoinery::Utils
     /**
      * @brief Computes an approximating transformation matrix based on a set of anchor points and their corresponding translations.
      * 
-     * @param anchorPointsAndTranslations A vector of pairs, where each pair consists of an anchor point and its corresponding translation.
-     * @return A 4x4 transformation matrix that approximates the given translations.
+     * @param groupedAnchorPointsAndTranslations A vector of vectors of pairs, where each inner vector corresponds to a group of anchor points,
+     *  and each pair consists of an anchor point and its corresponding translation.
+     * @return A vector of 4x4 transformation matrices for each group of joints.
      */
-    Eigen::Matrix4d ComputeApproximatingTransformation(std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> anchorPointsAndTranslations);
+    std::vector<Eigen::Matrix4d> ComputeApproximatingTransformation(std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> groupedAnchorPointsAndTranslations);
 
+
+    /**
+     * @brief Computes a 2D polygon from a set of 3D points projected onto a plane defined by a normal vector.
+     * 
+     * @param points The set of 3D points to be projected onto the plane.
+     * @param normal The normal vector of the plane onto which the points are projected.
+     * @return A CGAL 2D polygon representing the projected points.
+     */
+    CGAL::Polygon_2<CGAL::Projection_traits_3<K>> Compute2DPolygon(std::vector<Eigen::Vector3d> points, Eigen::Vector3d normal);
+
+    /**
+     * @brief Computes the mean transformation from a set of transformation matrices by averaging their rotation (through quaternions) and translation components separately.
+     * 
+     * @param transformations The set of transformation matrices to average.
+     * @return The mean transformation matrix.
+     */
+    Eigen::Matrix4d ComputeMeanTransformation(const std::vector<Eigen::Matrix4d>& transformations);
 }

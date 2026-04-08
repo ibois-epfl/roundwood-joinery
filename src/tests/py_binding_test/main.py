@@ -10,7 +10,7 @@ import roundwoodJoineryBindings as rwj
 def main():
     viewer = Viewer()
     pointcloud = Pointcloud.from_ply("../../../test_files/ply/cleaned_trunc_00094_subsampled.ply")
-    viewer.scene.add(pointcloud, pointsize=2)
+    viewer.scene.add(pointcloud, pointsize=3.0)
 
     corner11 = [680.0, -490.0, 420.0]
     corner12 = [680.0, -290.0, 420.0]
@@ -57,20 +57,22 @@ def main():
     joint_face_2_polyline = cg.Polyline(corners2)
     joint_face_3_polyline = cg.Polyline(corners3)
 
-    beam = rwj.Beam(200.0, [joint], beam_skeleton, beam_point_cloud)
+    beam = rwj.Beam(180.0, [[joint]], beam_skeleton, beam_point_cloud)
     beam.find_joint_closest_points_on_skeleton()
-    for joint in beam.get_joints():
-        for i, joint_face in enumerate(joint.get_faces()):
-            joint_actual_face = joint_face.get_current_outline(beam_point_cloud)
-            viewer.scene.add(cg.Polygon(joint_actual_face), facecolor=Color.red(), edgecolor=Color.black(), linewidth=2)
-            print(f"Joint face {i+1} initial area:", joint_face.compute_current_area(beam_point_cloud))
+    for joint_group in beam.get_joints_by_group():
+        for joint in joint_group:
+            for i, joint_face in enumerate(joint.get_faces()):
+                joint_actual_face = joint_face.get_current_outline(beam_point_cloud)
+                viewer.scene.add(cg.Polygon(joint_actual_face), facecolor=Color.red(), edgecolor=Color.black(), linewidth=2)
+                print(f"Joint face {i+1} initial area:", joint_face.compute_current_area(beam_point_cloud))
 
     skeleton_polyline = cg.Polyline(beam_skeleton)
     viewer.scene.add(skeleton_polyline, color=Color.blue(), linewidth=10)
 
     res = beam.compute_one_iteration_of_joint_face_translations_for_optimisation()
-    transform = rwj.Utils.compute_approximating_transformation(res)
-
+    transforms = rwj.Utils.compute_approximating_transformation(res)
+    transform = transforms[0]
+    
     new_np_corners1 = np.hstack((np_corners1, np.ones((np_corners1.shape[0], 1))))
     new_np_corners1 = (transform @ new_np_corners1.T).T[:, :3]
     new_normal1 = (transform[:3, :3] @ normal1).tolist()
