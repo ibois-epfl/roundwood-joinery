@@ -111,12 +111,12 @@ namespace RoundwoodJoinery::Joinery
         this->_currentArea = 0.0;
     }
 
-    RoundwoodJoinery::Joinery::Joint::Joint(std::vector<RoundwoodJoinery::Joinery::JointFace> faces)
+    RoundwoodJoinery::Joinery::Joint::Joint(std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::JointFace>> faces)
         : _faces(faces)
     {
         for (const auto& face : faces)
         {
-            this->_center += face.GetCenter();
+            this->_center += face->GetCenter();
         }
         this->_center /= faces.size();
 
@@ -132,7 +132,7 @@ namespace RoundwoodJoinery::Joinery
         // then the JointFaces
         for (auto& face : this->_faces)
         {
-            face.ApplyTransformation(transformation);
+            face->ApplyTransformation(transformation);
         }
     }
 }

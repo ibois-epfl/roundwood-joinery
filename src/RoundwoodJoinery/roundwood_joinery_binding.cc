@@ -46,7 +46,7 @@ NB_MODULE(roundwoodJoineryBindings, m)
 
 
     nb::class_<RoundwoodJoinery::Joinery::Joint>(m, "Joint")
-        .def(nb::init<std::vector<RoundwoodJoinery::Joinery::JointFace>>(), 
+        .def(nb::init<std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::JointFace>>>(), 
                       "Constructor for Joint with given faces",
                       nb::arg("faces"))
         .def("get_faces", &RoundwoodJoinery::Joinery::Joint::GetFaces)

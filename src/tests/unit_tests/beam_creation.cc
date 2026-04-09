@@ -16,7 +16,7 @@ int main()
     RoundwoodJoinery::Joinery::JointFace face1(normal, corners, targetArea);
 
     // Create a Joint instance with the created face
-    std::vector<RoundwoodJoinery::Joinery::JointFace> faces = {face1};
+    std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::JointFace>> faces = {std::make_shared<RoundwoodJoinery::Joinery::JointFace>(face1)};
     RoundwoodJoinery::Joinery::Joint joint(faces);
     std::vector<RoundwoodJoinery::Joinery::JointGroup> jointGroups = {RoundwoodJoinery::Joinery::JointGroup({std::make_shared<RoundwoodJoinery::Joinery::Joint>(joint)})};
 

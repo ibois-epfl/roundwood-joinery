@@ -108,7 +108,7 @@ namespace RoundwoodJoinery::Joinery
     class Joint
     {
         public:
-            Joint(std::vector<JointFace> faces);
+            Joint(std::vector<std::shared_ptr<JointFace>> faces);
             Joint() = default;
             ~Joint() = default;
 
@@ -116,7 +116,7 @@ namespace RoundwoodJoinery::Joinery
             * @brief Returns the faces that make up the joint.
             * @return A vector of JointFace objects representing the faces of the joint.
             */
-            std::vector<JointFace> GetFaces()
+            std::vector<std::shared_ptr<JointFace>> GetFaces()
             {
                 return this->_faces;
             }
@@ -164,7 +164,7 @@ namespace RoundwoodJoinery::Joinery
             void ApplyTransformation(Eigen::Matrix4d transformation);
 
         private:
-            std::vector<JointFace> _faces;
+            std::vector<std::shared_ptr<JointFace>> _faces;
             Eigen::Vector3d _center = Eigen::Vector3d::Zero();
             Eigen::Vector3d _closestPointOnSkeleton = Eigen::Vector3d::Zero();
     };

@@ -16,7 +16,7 @@ int main()
     RoundwoodJoinery::Joinery::JointFace face1(normal, corners, targetArea);
 
     // Create a Joint instance with the created face
-    std::vector<RoundwoodJoinery::Joinery::JointFace> faces = {face1};
+    std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::JointFace>> faces = {std::make_shared<RoundwoodJoinery::Joinery::JointFace>(face1)};
     RoundwoodJoinery::Joinery::Joint joint(faces);
 
     if (joint.GetNumFaces() != 1)
@@ -25,20 +25,20 @@ int main()
         return 1;
     }
 
-    if (joint.GetFaces()[0].GetTargetArea() != targetArea)
+    if (joint.GetFaces()[0]->GetTargetArea() != targetArea)
     {
-        std::cerr << "Test failed: Expected target area " << targetArea << ", got " << joint.GetFaces()[0].GetTargetArea() << std::endl;
+        std::cerr << "Test failed: Expected target area " << targetArea << ", got " << joint.GetFaces()[0]->GetTargetArea() << std::endl;
         return 1;
     }
 
-    if (joint.GetFaces()[0].GetNormal() - normal != Eigen::Vector3d::Zero())
+    if (joint.GetFaces()[0]->GetNormal() - normal != Eigen::Vector3d::Zero())
     {
-        std::cerr << "Test failed: Expected normal " << normal.transpose() << ", got " << joint.GetFaces()[0].GetNormal().transpose() << std::endl;
+        std::cerr << "Test failed: Expected normal " << normal.transpose() << ", got " << joint.GetFaces()[0]->GetNormal().transpose() << std::endl;
         return 1;
     }
-    if (joint.GetFaces()[0].GetCenter() - center != Eigen::Vector3d::Zero())
+    if (joint.GetFaces()[0]->GetCenter() - center != Eigen::Vector3d::Zero())
     {
-        std::cerr << "Test failed: Expected center " << center.transpose() << ", got " << joint.GetFaces()[0].GetCenter().transpose() << std::endl;
+        std::cerr << "Test failed: Expected center " << center.transpose() << ", got " << joint.GetFaces()[0]->GetCenter().transpose() << std::endl;
         return 1;
     }
 
@@ -48,9 +48,9 @@ int main()
         std::cerr << "Failed to load point cloud from file." << std::endl;
         return 1;
     }
-    if( joint.GetFaces()[0].ComputeCurrentArea(pointCloud) < 11870.0 || joint.GetFaces()[0].ComputeCurrentArea(pointCloud) > 11880.0 )
+    if( joint.GetFaces()[0]->ComputeCurrentArea(pointCloud) < 11870.0 || joint.GetFaces()[0]->ComputeCurrentArea(pointCloud) > 11880.0 )
     {
-        std::cerr << "Test failed: Expected current area between 11870.0 and 11880.0, got " << joint.GetFaces()[0].ComputeCurrentArea(pointCloud) << std::endl;
+        std::cerr << "Test failed: Expected current area between 11870.0 and 11880.0, got " << joint.GetFaces()[0]->ComputeCurrentArea(pointCloud) << std::endl;
         return 1;
     }
     return 0;
