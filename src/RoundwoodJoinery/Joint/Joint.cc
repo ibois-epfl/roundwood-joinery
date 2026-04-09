@@ -15,14 +15,47 @@ namespace RoundwoodJoinery::Joinery
 
     std::vector<Eigen::Vector3d> JointFace::ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud)
     {
-        std::vector<Eigen::Vector3d> projectedPoints;
-        Eigen::Vector3d normal = this->_normal.normalized();
+        // First some basic data about joint face
+        Eigen::Vector3d jointCenter = this->_center;
+        Eigen::Vector3d firstCorner = this->_corners[0];
+        Eigen::Vector3d farthestCorner = this->_corners[0];
+        double maxDistance = 0.0;
+        for (const auto& corner : this->_corners)
+        {
+            double distance = (corner - firstCorner).norm();
+            if (distance > maxDistance)
+            {
+                maxDistance = distance;
+                farthestCorner = corner;
+            }
+        }
+        double sphereRadius = maxDistance / 2.0;
+
+        std::list<Point> cgalPoints;
+        std::list<Point> neighborhoodPoints;
         for (const auto& point : pointCloud.GetPoints())
         {
-            double dist = (point - this->_center).dot(normal);
+            cgalPoints.push_back(Point(point.x(), point.y(), point.z()));
+        }
+        auto t0 = std::chrono::high_resolution_clock::now();
+        Tree tree(cgalPoints.begin(), cgalPoints.end());
+        auto t1 = std::chrono::high_resolution_clock::now();
+        Fuzzy_sphere fuzzySphere(Point(jointCenter.x(), jointCenter.y(), jointCenter.z()), sphereRadius);
+        tree.search(std::back_inserter(neighborhoodPoints), fuzzySphere);
+        auto t2 = std::chrono::high_resolution_clock::now();
+
+        std::cout << "Octree build: " << std::chrono::duration<double>(t1-t0).count() << "s\n";
+        std::cout << "Octree query: " << std::chrono::duration<double>(t2-t1).count() << "s\n";
+        std::vector<Eigen::Vector3d> projectedPoints;
+        std::cout << "Number of points in the neighborhood: " << neighborhoodPoints.size() << std::endl;
+        Eigen::Vector3d normal = this->_normal.normalized();
+        for (const auto& point : neighborhoodPoints)
+        {
+            Eigen::Vector3d pointVec(point.x(), point.y(), point.z());
+            double dist = (pointVec - this->_center).dot(normal);
             // if this dot product is negative, the point is "behind" the face and we should ignore it
             if (dist < 0){continue;}
-            Eigen::Vector3d projection = point - (dist * normal);
+            Eigen::Vector3d projection = pointVec - (dist * normal);
             CGAL::Projection_traits_3<K> traits({normal.x(), normal.y(), normal.z()});
             if (_outline_polygon) 
             {
