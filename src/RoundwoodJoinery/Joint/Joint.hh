@@ -36,6 +36,12 @@ namespace RoundwoodJoinery::Joinery
             JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners, double targetArea = 0.0);
             ~JointFace() = default;
 
+            /**
+             * @brief Projects points from the point cloud onto the joint face.
+             * 
+             * @param pointCloud The point cloud containing the points to be projected.
+             * @return A vector of Eigen::Vector3d representing the projected points.
+             */
             std::vector<Eigen::Vector3d> ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud);
 
             // Getters
