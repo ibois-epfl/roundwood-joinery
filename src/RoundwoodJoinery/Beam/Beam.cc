@@ -108,11 +108,11 @@ namespace RoundwoodJoinery::Beam
             std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> groupTranslations;
             for (auto& joint : jointGroup.GetJoints())
             {
-                for (RoundwoodJoinery::Joinery::JointFace& face : joint->GetFaces())
+                for (std::shared_ptr<RoundwoodJoinery::Joinery::JointFace>& face : joint->GetFaces())
                 {
-                    Eigen::Vector3d currentCenter = face.GetCenter();
-                    double targetArea = face.GetTargetArea();
-                    double currentArea = face.ComputeCurrentArea(this->_pointCloud);
+                    Eigen::Vector3d currentCenter = face->GetCenter();
+                    double targetArea = face->GetTargetArea();
+                    double currentArea = face->ComputeCurrentArea(this->_pointCloud);
 
                     double areaRatio = currentArea / targetArea;
                     Eigen::Vector3d closestPointOnSkeleton = this->_FindClosestPointOnSkeleton(currentCenter);
@@ -125,7 +125,7 @@ namespace RoundwoodJoinery::Beam
                     Eigen::Vector3d translationDirection = (currentCenter - closestPointOnSkeleton).normalized();
                     Eigen::Vector3d translation = translationMagnitude * translationDirection;
 
-                    for (Eigen::Vector3d& corner : face.GetCorners())
+                    for (Eigen::Vector3d& corner : face->GetCorners())
                     {
                         groupTranslations.push_back(std::make_pair(corner, translation));
                     }

@@ -13,10 +13,10 @@ int main()
     std::vector<Eigen::Vector3d> corners = {corner1, corner2, corner3, corner4};
     double targetArea = 15000.0;
 
-    RoundwoodJoinery::Joinery::JointFace face1(normal, corners, targetArea);
+    std::shared_ptr<RoundwoodJoinery::Joinery::JointFace> face1 = std::make_shared<RoundwoodJoinery::Joinery::JointFace>(normal, corners, targetArea);
 
     // Create a Joint instance with the created face
-    std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::JointFace>> faces = {std::make_shared<RoundwoodJoinery::Joinery::JointFace>(face1)};
+    std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::JointFace>> faces = {face1};
     RoundwoodJoinery::Joinery::Joint joint(faces);
 
     if (joint.GetNumFaces() != 1)

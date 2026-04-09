@@ -13,10 +13,10 @@ int main()
     std::vector<Eigen::Vector3d> corners = {corner1, corner2, corner3, corner4};
     double targetArea = 10000.0;
 
-    RoundwoodJoinery::Joinery::JointFace face1(normal, corners, targetArea);
+    std::shared_ptr<RoundwoodJoinery::Joinery::JointFace> face1 = std::make_shared<RoundwoodJoinery::Joinery::JointFace>(normal, corners, targetArea);
 
     // Create a Joint instance with the created face
-    std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::JointFace>> faces = {std::make_shared<RoundwoodJoinery::Joinery::JointFace>(face1)};
+    std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::JointFace>> faces = {face1};
     RoundwoodJoinery::Joinery::Joint joint(faces);
     std::vector<RoundwoodJoinery::Joinery::JointGroup> jointGroups = {RoundwoodJoinery::Joinery::JointGroup({std::make_shared<RoundwoodJoinery::Joinery::Joint>(joint)})};
 
@@ -43,7 +43,7 @@ int main()
         std::cout << "Beam reference diameter incorrect: " << retrievedReferenceDiameter << std::endl;
         return 1;
     }
-    double initialArea = face1.ComputeCurrentArea(pointCloud, 500.0);
+    double initialArea = face1->ComputeCurrentArea(pointCloud, 500.0);
     std::cout << "Initial Joint Face area: " << initialArea << std::endl;
 
     int maxIterations = 100;
@@ -53,7 +53,7 @@ int main()
     {
         std::cout << "---> Transformation: " << std::endl << transformations[index] << std::endl;
     }
-    double finalArea = face1.ComputeCurrentArea(pointCloud, 500.0);
+    double finalArea = face1->ComputeCurrentArea(pointCloud, 500.0);
     std::cout << "Final Joint Face area: " << finalArea << std::endl;
     return 0;
 }
