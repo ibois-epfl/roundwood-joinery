@@ -21,6 +21,52 @@ namespace RoundwoodJoinery::Beam
     }
 
 
+     std::vector<Eigen::Matrix4d> Beam::ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE)
+     {
+        // totalTransformations will accumulate the transformations applied to each joint group across iterations
+        std::vector<Eigen::Matrix4d> totalTransformations(this->_jointGroups.size(), Eigen::Matrix4d::Identity());
+        std::vector<Eigen::Matrix4d> previousTransformations;
+        for (int iteration = 0; iteration < maxIterations; ++iteration)
+        {
+            std::vector<Eigen::Matrix4d> transformations = this->ComputeOneIterationOfJointFaceTranslationsForOptimisation();
+
+            double translationRMSE = 0.0;            
+            for(int i = 0; i < transformations.size(); ++i)
+            {
+                std::vector<Eigen::Vector3d> jointCentersBeforeTransformation;
+                std::vector<Eigen::Vector3d> jointCentersAfterTransformation;
+
+                for (auto& joint : this->_jointGroups[i].GetJoints())
+                {
+                    jointCentersBeforeTransformation.push_back(joint->GetCenter());
+                }
+                this->_jointGroups[i].ApplyTransformation(transformations[i]);
+
+                for (auto& joint : this->_jointGroups[i].GetJoints())
+                {
+                    jointCentersAfterTransformation.push_back(joint->GetCenter());
+                }
+
+                for (size_t j = 0; j < jointCentersBeforeTransformation.size(); ++j)
+                {
+                    translationRMSE += (jointCentersAfterTransformation[j] - jointCentersBeforeTransformation[j]).squaredNorm();
+                }
+
+                totalTransformations[i] = transformations[i] * totalTransformations[i];
+            }
+            translationRMSE = std::sqrt(translationRMSE / this->_jointGroups.size());
+
+            if (translationRMSE < minRelativeTranslationRMSE)
+            {
+                std::cout << "Convergence reached at iteration " << iteration << " with translation RMSE: " << translationRMSE << std::endl;
+                return totalTransformations;
+            }
+            previousTransformations = transformations;
+        }
+     return totalTransformations;
+    }
+
+
     Eigen::Vector3d Beam::_FindClosestPointOnSkeleton(const Eigen::Vector3d& point)
     {
         Eigen::Vector3d closestPoint = Eigen::Vector3d::Zero();

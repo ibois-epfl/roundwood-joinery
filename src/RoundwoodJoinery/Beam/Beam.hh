@@ -103,6 +103,15 @@ namespace RoundwoodJoinery::Beam
             return adaptedTransformations;
         }
 
+        /**
+         * @brief Iteratively computes and applies the transformations for each joint group to optimize their positions based on the skeleton and target areas of their joint faces.
+         * 
+         * @param maxIterations The maximum number of iterations to perform for the optimization process.
+         * @param minRelativeTranslationRMSE The minimum relative translation root mean square error threshold to determine convergence of the optimization process. If the RMSE of the translations falls below this threshold, the optimization process will stop.
+         * @return The vector of total transformations applied to each joint group. They have been applied and are returned for evaluation purposes.
+         */
+        std::vector<Eigen::Matrix4d> ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE);
+
     private:
 
 
