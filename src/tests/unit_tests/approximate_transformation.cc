@@ -8,8 +8,11 @@ int main()
     Eigen::Vector3d anchor3(0.0, 0.0, 1.0);
     Eigen::Vector3d anchor4(1.0, 1.0, 1.0);
 
+    Eigen::Vector3d rotationAxis = Eigen::Vector3d(1.0, 1.0, 1.0).normalized();
+
     Eigen::Matrix4d expectedTransformation = Eigen::Matrix4d::Identity();
-    expectedTransformation.block<3, 3>(0, 0) = Eigen::AngleAxisd(RoundwoodJoinery::PI / 4, Eigen::Vector3d::UnitZ()).toRotationMatrix();
+    expectedTransformation.block<3, 3>(0, 0) = Eigen::AngleAxisd(RoundwoodJoinery::PI / 4, rotationAxis).toRotationMatrix();
+    expectedTransformation.block<3, 1>(0, 3) = Eigen::Vector3d(1.0, 2.0, 3.0);
 
     Eigen::Vector3d transformedAnchor1 = expectedTransformation.block<3, 3>(0, 0) * anchor1 + expectedTransformation.block<3, 1>(0, 3);
     Eigen::Vector3d transformedAnchor2 = expectedTransformation.block<3, 3>(0, 0) * anchor2 + expectedTransformation.block<3, 1>(0, 3);
