@@ -31,20 +31,14 @@ namespace RoundwoodJoinery::Joinery
         }
         double sphereRadius = maxDistance / 2.0;
 
-        std::list<Point> cgalPoints;
-        std::list<Point> neighborhoodPoints;
-        for (const auto& point : pointCloud.GetPoints())
-        {
-            cgalPoints.push_back(Point(point.x(), point.y(), point.z()));
-        }
-        auto t0 = std::chrono::high_resolution_clock::now();
-        Tree tree(cgalPoints.begin(), cgalPoints.end());
+        //TODO : remove timing before release 0.1.0
         auto t1 = std::chrono::high_resolution_clock::now();
         Fuzzy_sphere fuzzySphere(Point(jointCenter.x(), jointCenter.y(), jointCenter.z()), sphereRadius);
-        tree.search(std::back_inserter(neighborhoodPoints), fuzzySphere);
+        std::vector<Point> neighborhoodPoints;
+        std::shared_ptr<CGAL::Kd_tree<Traits>> tree = pointCloud.BuildKdTree();
+        tree->search(std::back_inserter(neighborhoodPoints), fuzzySphere);
+        
         auto t2 = std::chrono::high_resolution_clock::now();
-
-        std::cout << "Octree build: " << std::chrono::duration<double>(t1-t0).count() << "s\n";
         std::cout << "Octree query: " << std::chrono::duration<double>(t2-t1).count() << "s\n";
         std::vector<Eigen::Vector3d> projectedPoints;
         std::cout << "Number of points in the neighborhood: " << neighborhoodPoints.size() << std::endl;
@@ -57,7 +51,7 @@ namespace RoundwoodJoinery::Joinery
             if (dist < 0){continue;}
             Eigen::Vector3d projection = pointVec - (dist * normal);
             CGAL::Projection_traits_3<K> traits({normal.x(), normal.y(), normal.z()});
-            if (_outline_polygon) 
+            if (this->_outline_polygon) 
             {
                 switch(CGAL::bounded_side_2(this->_outline_polygon->vertices_begin(), this->_outline_polygon->vertices_end(),
                                                 Point_3(projection.x(), projection.y(), projection.z()),traits))
@@ -80,11 +74,11 @@ namespace RoundwoodJoinery::Joinery
         return projectedPoints;
     }
 
-    double RoundwoodJoinery::Joinery::JointFace::ComputeCurrentArea(PointCloud::PointCloud& beamPointCloud, double alpha)
+    double RoundwoodJoinery::Joinery::JointFace::ComputeCurrentArea(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double alpha)
     {
         if (this->_projectedPoints.empty())
         {
-            this->_projectedPoints = this->ProjectPointsOntoFace(beamPointCloud);
+            this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud);
         }
 
         if (this->_projectedPoints.size() < 3)
@@ -109,11 +103,11 @@ namespace RoundwoodJoinery::Joinery
         return this->_currentArea;
     }
 
-    std::vector<Eigen::Vector3d> RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline(PointCloud::PointCloud& beamPointCloud, double alpha)
+    std::vector<Eigen::Vector3d> RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double alpha)
     {
         if (this->_projectedPoints.empty())
         {
-            this->_projectedPoints = this->ProjectPointsOntoFace(beamPointCloud);
+            this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud);
         }
 
         if (this->_projectedPoints.size() < 3)

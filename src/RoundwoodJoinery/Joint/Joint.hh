@@ -8,20 +8,6 @@
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Polygon_2_algorithms.h>
 
-#include <CGAL/Kd_tree.h>
-#include <CGAL/Simple_cartesian.h>
-#include <CGAL/Search_traits_3.h>
-#include <CGAL/Fuzzy_sphere.h>
-#include <list>
-#include <cmath>
- 
- 
-typedef CGAL::Simple_cartesian<double> Kernel;
-typedef Kernel::Point_3 Point;
-typedef CGAL::Search_traits_3<Kernel> Traits;
-typedef CGAL::Kd_tree<Traits> Tree;
-typedef CGAL::Fuzzy_sphere<Traits> Fuzzy_sphere;
-
 #include "../PointCloud/PointCloud.hh"
 #include "../Utils/Utils.hh"
 
@@ -89,20 +75,20 @@ namespace RoundwoodJoinery::Joinery
             /**
             * @brief Computes the current area of the joint face based on the points from the beam's point cloud that are projected onto the face.
             * 
-            * @param beamPointCloud The point cloud of the beam to which the joint face belongs.
+            * @param pointCloud The point cloud of the beam to which the joint face belongs.
             * @param alpha The alpha parameter for the alpha shape computation, which is used to determine the outline of the projected points.
             * @return The computed current area of the joint face.
             */
-            double ComputeCurrentArea(PointCloud::PointCloud& beamPointCloud, double alpha = 500.0);
+            double ComputeCurrentArea(PointCloud::PointCloud& pointCloud, double alpha = 500.0);
 
             /**
             * @brief Returns the current outline of the joint face based on the points from the beam's point cloud that are projected onto the face.
             * 
-            * @param beamPointCloud The point cloud of the beam to which the joint face belongs.
+            * @param pointCloud The point cloud of the beam to which the joint face belongs.
             * @param alpha The alpha parameter for the alpha shape computation, which is used to determine the outline of the projected points.
             * @return A vector of Eigen::Vector3d representing the current outline of the joint face.
             */
-            std::vector<Eigen::Vector3d> GetCurrentOutline(PointCloud::PointCloud& beamPointCloud, double alpha = 500.0);
+            std::vector<Eigen::Vector3d> GetCurrentOutline(PointCloud::PointCloud& pointCloud, double alpha = 500.0);
 
 
             void ApplyTransformation(Eigen::Matrix4d transformation);
