@@ -15,16 +15,43 @@ namespace RoundwoodJoinery::Joinery
 
     std::vector<Eigen::Vector3d> JointFace::ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud)
     {
-        std::vector<Eigen::Vector3d> projectedPoints;
-        Eigen::Vector3d normal = this->_normal.normalized();
-        for (const auto& point : pointCloud.GetPoints())
+        // First some basic data about joint face
+        Eigen::Vector3d jointCenter = this->_center;
+        Eigen::Vector3d firstCorner = this->_corners[0];
+        Eigen::Vector3d farthestCorner = this->_corners[0];
+        double maxDistance = 0.0;
+        for (const auto& corner : this->_corners)
         {
-            double dist = (point - this->_center).dot(normal);
+            double distance = (corner - firstCorner).norm();
+            if (distance > maxDistance)
+            {
+                maxDistance = distance;
+                farthestCorner = corner;
+            }
+        }
+        double sphereRadius = maxDistance / 2.0;
+
+        //TODO : remove timing before release 0.1.0
+        auto t1 = std::chrono::high_resolution_clock::now();
+        Fuzzy_sphere fuzzySphere(Point(jointCenter.x(), jointCenter.y(), jointCenter.z()), sphereRadius);
+        std::vector<Point> neighborhoodPoints;
+        std::shared_ptr<CGAL::Kd_tree<Traits>> tree = pointCloud.BuildKdTree();
+        tree->search(std::back_inserter(neighborhoodPoints), fuzzySphere);
+        
+        auto t2 = std::chrono::high_resolution_clock::now();
+        std::cout << "Octree query: " << std::chrono::duration<double>(t2-t1).count() << "s\n";
+        std::vector<Eigen::Vector3d> projectedPoints;
+        std::cout << "Number of points in the neighborhood: " << neighborhoodPoints.size() << std::endl;
+        Eigen::Vector3d normal = this->_normal.normalized();
+        for (const auto& point : neighborhoodPoints)
+        {
+            Eigen::Vector3d pointVec(point.x(), point.y(), point.z());
+            double dist = (pointVec - this->_center).dot(normal);
             // if this dot product is negative, the point is "behind" the face and we should ignore it
             if (dist < 0){continue;}
-            Eigen::Vector3d projection = point - (dist * normal);
+            Eigen::Vector3d projection = pointVec - (dist * normal);
             CGAL::Projection_traits_3<K> traits({normal.x(), normal.y(), normal.z()});
-            if (_outline_polygon) 
+            if (this->_outline_polygon) 
             {
                 switch(CGAL::bounded_side_2(this->_outline_polygon->vertices_begin(), this->_outline_polygon->vertices_end(),
                                                 Point_3(projection.x(), projection.y(), projection.z()),traits))
@@ -47,7 +74,7 @@ namespace RoundwoodJoinery::Joinery
         return projectedPoints;
     }
 
-    double RoundwoodJoinery::Joinery::JointFace::ComputeCurrentArea(PointCloud::PointCloud& beamPointCloud, double alpha)
+    double RoundwoodJoinery::Joinery::JointFace::ComputeCurrentArea(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double alpha)
     {
 
         this->_projectedPoints = this->ProjectPointsOntoFace(beamPointCloud);
@@ -74,11 +101,11 @@ namespace RoundwoodJoinery::Joinery
         return this->_currentArea;
     }
 
-    std::vector<Eigen::Vector3d> RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline(PointCloud::PointCloud& beamPointCloud, double alpha)
+    std::vector<Eigen::Vector3d> RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double alpha)
     {
         if (this->_projectedPoints.empty())
         {
-            this->_projectedPoints = this->ProjectPointsOntoFace(beamPointCloud);
+            this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud);
         }
 
         if (this->_projectedPoints.size() < 3)

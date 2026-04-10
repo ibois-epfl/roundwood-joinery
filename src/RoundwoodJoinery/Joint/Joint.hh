@@ -22,6 +22,12 @@ namespace RoundwoodJoinery::Joinery
             JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners, double targetArea = 0.0);
             ~JointFace() = default;
 
+            /**
+             * @brief Projects points from the point cloud onto the joint face.
+             * 
+             * @param pointCloud The point cloud containing the points to be projected.
+             * @return A vector of Eigen::Vector3d representing the projected points.
+             */
             std::vector<Eigen::Vector3d> ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud);
 
             // Getters
@@ -69,20 +75,20 @@ namespace RoundwoodJoinery::Joinery
             /**
             * @brief Computes the current area of the joint face based on the points from the beam's point cloud that are projected onto the face.
             * 
-            * @param beamPointCloud The point cloud of the beam to which the joint face belongs.
+            * @param pointCloud The point cloud of the beam to which the joint face belongs.
             * @param alpha The alpha parameter for the alpha shape computation, which is used to determine the outline of the projected points.
             * @return The computed current area of the joint face.
             */
-            double ComputeCurrentArea(PointCloud::PointCloud& beamPointCloud, double alpha = 500.0);
+            double ComputeCurrentArea(PointCloud::PointCloud& pointCloud, double alpha = 500.0);
 
             /**
             * @brief Returns the current outline of the joint face based on the points from the beam's point cloud that are projected onto the face.
             * 
-            * @param beamPointCloud The point cloud of the beam to which the joint face belongs.
+            * @param pointCloud The point cloud of the beam to which the joint face belongs.
             * @param alpha The alpha parameter for the alpha shape computation, which is used to determine the outline of the projected points.
             * @return A vector of Eigen::Vector3d representing the current outline of the joint face.
             */
-            std::vector<Eigen::Vector3d> GetCurrentOutline(PointCloud::PointCloud& beamPointCloud, double alpha = 500.0);
+            std::vector<Eigen::Vector3d> GetCurrentOutline(PointCloud::PointCloud& pointCloud, double alpha = 500.0);
 
 
             void ApplyTransformation(Eigen::Matrix4d transformation);
