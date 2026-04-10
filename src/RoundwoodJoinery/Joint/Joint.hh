@@ -217,7 +217,7 @@ namespace RoundwoodJoinery::Joinery
                 // also allow transform the dof.
                 Eigen::Vector3d translation = transformation.block<3,1>(0,3);
                 Eigen::Matrix3d rotation = transformation.block<3,3>(0,0);
-                this->_degreeOfFreedom = rotation * this->_degreeOfFreedom + translation;
+                this->_degreeOfFreedom = rotation * this->_degreeOfFreedom;
             }
         private:
             std::vector<std::shared_ptr<Joint>> _joints;
