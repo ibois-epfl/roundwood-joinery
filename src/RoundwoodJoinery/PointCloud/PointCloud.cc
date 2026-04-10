@@ -24,6 +24,10 @@ namespace RoundwoodJoinery::PointCloud
 
     std::shared_ptr<CGAL::Kd_tree<Traits>> PointCloud::BuildKdTree()
     {
+        if (this->_kdTree)
+        {
+            return this->_kdTree;
+        }
         std::list<Point> cgalPoints;
         for (const auto& point : this->_points)
         {
