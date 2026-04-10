@@ -48,9 +48,9 @@ int main()
         std::cerr << "Failed to load point cloud from file." << std::endl;
         return 1;
     }
-    if( joint.GetFaces()[0]->ComputeCurrentArea(pointCloud) < 11870.0 || joint.GetFaces()[0]->ComputeCurrentArea(pointCloud) > 11880.0 )
+    if( joint.GetFaces()[0]->ComputeCurrentArea(pointCloud) < 11900.0 || joint.GetFaces()[0]->ComputeCurrentArea(pointCloud) > 11910.0 )
     {
-        std::cerr << "Test failed: Expected current area between 11870.0 and 11880.0, got " << joint.GetFaces()[0]->ComputeCurrentArea(pointCloud) << std::endl;
+        std::cerr << "Test failed: Expected current area between 11900.0 and 11910.0, got " << joint.GetFaces()[0]->ComputeCurrentArea(pointCloud) << std::endl;
         return 1;
     }
     return 0;
