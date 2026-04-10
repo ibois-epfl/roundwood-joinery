@@ -76,10 +76,8 @@ namespace RoundwoodJoinery::Joinery
 
     double RoundwoodJoinery::Joinery::JointFace::ComputeCurrentArea(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double alpha)
     {
-        if (this->_projectedPoints.empty())
-        {
-            this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud);
-        }
+
+        this->_projectedPoints = this->ProjectPointsOntoFace(beamPointCloud);
 
         if (this->_projectedPoints.size() < 3)
         {
@@ -138,12 +136,12 @@ namespace RoundwoodJoinery::Joinery
         this->_currentArea = 0.0;
     }
 
-    RoundwoodJoinery::Joinery::Joint::Joint(std::vector<RoundwoodJoinery::Joinery::JointFace> faces)
+    RoundwoodJoinery::Joinery::Joint::Joint(std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::JointFace>> faces)
         : _faces(faces)
     {
         for (const auto& face : faces)
         {
-            this->_center += face.GetCenter();
+            this->_center += face->GetCenter();
         }
         this->_center /= faces.size();
 
@@ -159,7 +157,7 @@ namespace RoundwoodJoinery::Joinery
         // then the JointFaces
         for (auto& face : this->_faces)
         {
-            face.ApplyTransformation(transformation);
+            face->ApplyTransformation(transformation);
         }
     }
 }

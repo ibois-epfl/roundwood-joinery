@@ -41,7 +41,7 @@ for joint_group in beam.get_joints_by_group():
             print(f"face target area: {face.get_target_area()}")
             for point in face.project_points_onto_face(beam_point_cloud):
                 pts.append(Rhino.Geometry.Point3d(point[0], point[1], point[2]))
-transform_matrices = beam.compute_one_iteration_of_joint_face_translations_for_optimisation()
+transform_matrices = beam.compute_joint_group_optimisation(3, 1.0)
 
 rh_transform_matrices = []
 for transform in transform_matrices:

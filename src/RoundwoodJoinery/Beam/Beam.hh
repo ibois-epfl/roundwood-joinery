@@ -91,17 +91,26 @@ namespace RoundwoodJoinery::Beam
             for (size_t i = 0; i < transformations.size(); ++i)
             {
                 Eigen::Matrix4d residualTransformation = meanTransformation.inverse() * transformations[i];
-                Eigen::Vector3d jointGroupDOF = this->_jointGroups[i].GetDegreeOfFreedom();
+                Eigen::Vector3d jointGroupDOF = this->_jointGroups[i].GetDegreeOfFreedom().normalized();
                 Eigen::Vector3d residualTranslation = residualTransformation.block<3,1>(0,3);
                 Eigen::Matrix3d residualRotation = residualTransformation.block<3,3>(0,0);
-                Eigen::Vector3d implicitTranslation = residualRotation * this->_jointGroups[i].GetCentroid() + residualTranslation - this->_jointGroups[i].GetCentroid();
-                Eigen::Vector3d projectionOfImplicitTranslationOnDOF = (implicitTranslation.dot(jointGroupDOF) / jointGroupDOF.squaredNorm()) * jointGroupDOF;
+                Eigen::Vector3d implicitTranslation = (residualRotation * this->_jointGroups[i].GetCentroid() + residualTranslation) - this->_jointGroups[i].GetCentroid();
+                Eigen::Vector3d projectionOfImplicitTranslationOnDOF = implicitTranslation.dot(jointGroupDOF) * jointGroupDOF;
                 Eigen::Matrix4d adaptedTransformation = meanTransformation;
                 adaptedTransformation.block<3,1>(0,3) += projectionOfImplicitTranslationOnDOF;
                 adaptedTransformations.push_back(adaptedTransformation);
             }
             return adaptedTransformations;
         }
+
+        /**
+         * @brief Iteratively computes and applies the transformations for each joint group to optimize their positions based on the skeleton and target areas of their joint faces.
+         * 
+         * @param maxIterations The maximum number of iterations to perform for the optimization process.
+         * @param minRelativeTranslationRMSE The minimum relative translation root mean square error threshold to determine convergence of the optimization process. If the RMSE of the translations falls below this threshold, the optimization process will stop.
+         * @return The vector of total transformations applied to each joint group. They have been applied and are returned for evaluation purposes.
+         */
+        std::vector<Eigen::Matrix4d> ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE);
 
     private:
 

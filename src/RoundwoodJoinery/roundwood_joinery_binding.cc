@@ -46,7 +46,7 @@ NB_MODULE(roundwoodJoineryBindings, m)
 
 
     nb::class_<RoundwoodJoinery::Joinery::Joint>(m, "Joint")
-        .def(nb::init<std::vector<RoundwoodJoinery::Joinery::JointFace>>(), 
+        .def(nb::init<std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::JointFace>>>(), 
                       "Constructor for Joint with given faces",
                       nb::arg("faces"))
         .def("get_faces", &RoundwoodJoinery::Joinery::Joint::GetFaces)
@@ -91,7 +91,11 @@ NB_MODULE(roundwoodJoineryBindings, m)
         .def("find_joint_closest_points_on_skeleton", &RoundwoodJoinery::Beam::Beam::FindJointClosestPointsOnSkeleton, 
                                                  "For each joint of the beam, find the closest point on the beam skeleton and set it as the closest point on skeleton for the joint")
         .def("compute_one_iteration_of_joint_face_translations_for_optimisation", &RoundwoodJoinery::Beam::Beam::ComputeOneIterationOfJointFaceTranslationsForOptimisation, 
-                                                                          "Compute one iteration of joint face translations for optimization based on the current state of the beam and its joints");
+                                                                          "Compute one iteration of joint face translations for optimization based on the current state of the beam and its joints")
+        .def("compute_joint_group_optimisation", &RoundwoodJoinery::Beam::Beam::ComputeJointGroupOptimisation, 
+             "Compute an optimization of the joint group transformations to better align the joint faces with the beam's point cloud skeleton",
+             nb::arg("maxIterations") = 10, 
+             nb::arg("minRelativeTranslationRMSE") = 1.0);
 
         nb::module_ u = m.def_submodule("Utils", "Utility functions for Roundwood Joinery");
 
