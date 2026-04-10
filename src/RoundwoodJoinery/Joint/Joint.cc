@@ -77,7 +77,7 @@ namespace RoundwoodJoinery::Joinery
     double RoundwoodJoinery::Joinery::JointFace::ComputeCurrentArea(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double alpha)
     {
 
-        this->_projectedPoints = this->ProjectPointsOntoFace(beamPointCloud);
+        this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud);
 
         if (this->_projectedPoints.size() < 3)
         {
