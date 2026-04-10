@@ -74,20 +74,16 @@ namespace RoundwoodJoinery::Utils
     std::vector<Eigen::Vector3d> Compute2DAlphaShape(const std::vector<Eigen::Vector3d>& points, double alpha, Eigen::Vector3d normal)
     {
         std::vector<Eigen::Vector2d> verticesInPlane;
+
+        Eigen::Vector3d n = normal.normalized();
+        Eigen::Vector3d u = n.unitOrthogonal();
+        Eigen::Vector3d v = n.cross(u);
+
         for (const auto& point : points)
         {
-            if (normal.z() != 0)
-            {
-                verticesInPlane.emplace_back(point.x(), point.y());
-            }
-            else if (normal.y() != 0)
-            {
-                verticesInPlane.emplace_back(point.x(), point.z());
-            }
-            else if (normal.x() != 0)
-            {
-                verticesInPlane.emplace_back(point.y(), point.z());
-            }
+            double x = point.dot(u);
+            double y = point.dot(v);
+            verticesInPlane.emplace_back(x, y);
         }
         typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
         typedef CGAL::Alpha_shape_vertex_base_2<K> Vb;
@@ -148,32 +144,15 @@ namespace RoundwoodJoinery::Utils
         std::vector<Eigen::Vector3d> ordered3D;
         for (const auto& p2d : ordered2D) 
         {
-            for (const auto& p3d : points) 
+            auto it = std::find_if(points.begin(), points.end(), [&](const Eigen::Vector3d& p) 
             {
-                if(normal.z() != 0)
-                {
-                    if (std::abs(p3d.x() - p2d.first) < 1e-6 && std::abs(p3d.y() - p2d.second) < 1e-6) 
-                    {
-                        ordered3D.push_back(p3d);
-                        break;
-                    }
-                }
-                else if (normal.y() != 0)
-                {
-                    if (std::abs(p3d.x() - p2d.first) < 1e-6 && std::abs(p3d.z() - p2d.second) < 1e-6) 
-                    {
-                        ordered3D.push_back(p3d);
-                        break;
-                    }
-                }
-                else if (normal.x() != 0)
-                {
-                    if (std::abs(p3d.y() - p2d.first) < 1e-6 && std::abs(p3d.z() - p2d.second) < 1e-6) 
-                    {
-                        ordered3D.push_back(p3d);
-                        break;
-                    }
-                }
+                double x = p.dot(u);
+                double y = p.dot(v);
+                return std::abs(x - p2d.first) < 1e-6 && std::abs(y - p2d.second) < 1e-6;
+            });
+            if (it != points.end()) 
+            {
+                ordered3D.push_back(*it);
             }
         }
         return ordered3D;
@@ -215,7 +194,8 @@ namespace RoundwoodJoinery::Utils
 
     CGAL::Polygon_2<CGAL::Projection_traits_3<K>> Compute2DPolygon(std::vector<Eigen::Vector3d> points, Eigen::Vector3d normal)
     {
-        CGAL::Projection_traits_3<K> traits({normal.x(), normal.y(), normal.z()});
+        Eigen::Vector3d normal_normalized = normal.normalized();
+        CGAL::Projection_traits_3<K> traits({normal_normalized.x(), normal_normalized.y(), normal_normalized.z()});
         CGAL::Polygon_2<CGAL::Projection_traits_3<K>> cgalPolygon(traits);
         for (const auto& point : points)
         {
