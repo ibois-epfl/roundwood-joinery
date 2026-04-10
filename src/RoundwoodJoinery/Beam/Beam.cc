@@ -21,6 +21,52 @@ namespace RoundwoodJoinery::Beam
     }
 
 
+     std::vector<Eigen::Matrix4d> Beam::ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE)
+     {
+        // totalTransformations will accumulate the transformations applied to each joint group across iterations
+        std::vector<Eigen::Matrix4d> totalTransformations(this->_jointGroups.size(), Eigen::Matrix4d::Identity());
+        std::vector<Eigen::Matrix4d> previousTransformations;
+        for (int iteration = 0; iteration < maxIterations; ++iteration)
+        {
+            std::vector<Eigen::Matrix4d> transformations = this->ComputeOneIterationOfJointFaceTranslationsForOptimisation();
+
+            double translationRMSE = 0.0;            
+            for(int i = 0; i < transformations.size(); ++i)
+            {
+                std::vector<Eigen::Vector3d> jointCentersBeforeTransformation;
+                std::vector<Eigen::Vector3d> jointCentersAfterTransformation;
+
+                for (auto& joint : this->_jointGroups[i].GetJoints())
+                {
+                    jointCentersBeforeTransformation.push_back(joint->GetCenter());
+                }
+                this->_jointGroups[i].ApplyTransformation(transformations[i]);
+
+                for (auto& joint : this->_jointGroups[i].GetJoints())
+                {
+                    jointCentersAfterTransformation.push_back(joint->GetCenter());
+                }
+
+                for (size_t j = 0; j < jointCentersBeforeTransformation.size(); ++j)
+                {
+                    translationRMSE += (jointCentersAfterTransformation[j] - jointCentersBeforeTransformation[j]).squaredNorm();
+                }
+
+                totalTransformations[i] = transformations[i] * totalTransformations[i];
+            }
+            translationRMSE = std::sqrt(translationRMSE / this->_jointGroups.size());
+
+            if (translationRMSE < minRelativeTranslationRMSE)
+            {
+                std::cout << "Convergence reached at iteration " << iteration << " with translation RMSE: " << translationRMSE << std::endl;
+                return totalTransformations;
+            }
+            previousTransformations = transformations;
+        }
+     return totalTransformations;
+    }
+
+
     Eigen::Vector3d Beam::_FindClosestPointOnSkeleton(const Eigen::Vector3d& point)
     {
         Eigen::Vector3d closestPoint = Eigen::Vector3d::Zero();
@@ -62,24 +108,20 @@ namespace RoundwoodJoinery::Beam
             std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> groupTranslations;
             for (auto& joint : jointGroup.GetJoints())
             {
-                for (RoundwoodJoinery::Joinery::JointFace& face : joint->GetFaces())
+                for (std::shared_ptr<RoundwoodJoinery::Joinery::JointFace>& face : joint->GetFaces())
                 {
-                    Eigen::Vector3d currentCenter = face.GetCenter();
-                    double targetArea = face.GetTargetArea();
-                    double currentArea = face.ComputeCurrentArea(this->_pointCloud);
+                    Eigen::Vector3d currentCenter = face->GetCenter();
+                    double targetArea = face->GetTargetArea();
+                    double currentArea = face->ComputeCurrentArea(this->_pointCloud);
 
-                    double areaRatio = currentArea / targetArea;
+                    double deltaArea = (currentArea / targetArea) - 1;
                     Eigen::Vector3d closestPointOnSkeleton = this->_FindClosestPointOnSkeleton(currentCenter);
-                    double distanceToSkeleton = (currentCenter - closestPointOnSkeleton).norm();
 
-                    double openingAngle = std::acos(std::min(distanceToSkeleton / (this->_referenceDiameter / 2.0), 1.0));
-                    double newAngle = std::asin(std::min(areaRatio * std::sin(openingAngle), 1.0));
-
-                    double translationMagnitude = distanceToSkeleton - (this->_referenceDiameter / 2.0) * std::cos(newAngle);
-                    Eigen::Vector3d translationDirection = (currentCenter - closestPointOnSkeleton).normalized();
+                    double translationMagnitude = deltaArea * (this->_referenceDiameter / 2.0) * 0.25; // 0.25 is a damping factor to prevent overshooting
+                    Eigen::Vector3d translationDirection = face->GetNormal().normalized();
                     Eigen::Vector3d translation = translationMagnitude * translationDirection;
 
-                    for (Eigen::Vector3d& corner : face.GetCorners())
+                    for (Eigen::Vector3d& corner : face->GetCorners())
                     {
                         groupTranslations.push_back(std::make_pair(corner, translation));
                     }
