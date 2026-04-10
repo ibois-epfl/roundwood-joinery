@@ -114,15 +114,11 @@ namespace RoundwoodJoinery::Beam
                     double targetArea = face->GetTargetArea();
                     double currentArea = face->ComputeCurrentArea(this->_pointCloud);
 
-                    double areaRatio = currentArea / targetArea;
+                    double deltaArea = (currentArea / targetArea) - 1;
                     Eigen::Vector3d closestPointOnSkeleton = this->_FindClosestPointOnSkeleton(currentCenter);
-                    double distanceToSkeleton = (currentCenter - closestPointOnSkeleton).norm();
 
-                    double openingAngle = std::acos(std::min(distanceToSkeleton / (this->_referenceDiameter / 2.0), 1.0));
-                    double newAngle = std::asin(std::min(areaRatio * std::sin(openingAngle), 1.0));
-
-                    double translationMagnitude = distanceToSkeleton - (this->_referenceDiameter / 2.0) * std::cos(newAngle);
-                    Eigen::Vector3d translationDirection = (currentCenter - closestPointOnSkeleton).normalized();
+                    double translationMagnitude = deltaArea * (this->_referenceDiameter / 2.0) * 0.25; // 0.25 is a damping factor to prevent overshooting
+                    Eigen::Vector3d translationDirection = face->GetNormal().normalized();
                     Eigen::Vector3d translation = translationMagnitude * translationDirection;
 
                     for (Eigen::Vector3d& corner : face->GetCorners())

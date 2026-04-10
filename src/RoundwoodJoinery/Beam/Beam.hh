@@ -91,11 +91,11 @@ namespace RoundwoodJoinery::Beam
             for (size_t i = 0; i < transformations.size(); ++i)
             {
                 Eigen::Matrix4d residualTransformation = meanTransformation.inverse() * transformations[i];
-                Eigen::Vector3d jointGroupDOF = this->_jointGroups[i].GetDegreeOfFreedom();
+                Eigen::Vector3d jointGroupDOF = this->_jointGroups[i].GetDegreeOfFreedom().normalized();
                 Eigen::Vector3d residualTranslation = residualTransformation.block<3,1>(0,3);
                 Eigen::Matrix3d residualRotation = residualTransformation.block<3,3>(0,0);
-                Eigen::Vector3d implicitTranslation = residualRotation * this->_jointGroups[i].GetCentroid() + residualTranslation - this->_jointGroups[i].GetCentroid();
-                Eigen::Vector3d projectionOfImplicitTranslationOnDOF = (implicitTranslation.dot(jointGroupDOF) / jointGroupDOF.squaredNorm()) * jointGroupDOF;
+                Eigen::Vector3d implicitTranslation = (residualRotation * this->_jointGroups[i].GetCentroid() + residualTranslation) - this->_jointGroups[i].GetCentroid();
+                Eigen::Vector3d projectionOfImplicitTranslationOnDOF = implicitTranslation.dot(jointGroupDOF) * jointGroupDOF;
                 Eigen::Matrix4d adaptedTransformation = meanTransformation;
                 adaptedTransformation.block<3,1>(0,3) += projectionOfImplicitTranslationOnDOF;
                 adaptedTransformations.push_back(adaptedTransformation);
