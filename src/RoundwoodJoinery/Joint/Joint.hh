@@ -46,6 +46,7 @@ namespace RoundwoodJoinery::Joinery
             void FlipNormal()
             {
                 this->_normal = -this->_normal;
+                std::reverse(this->_corners.begin(), this->_corners.end());
             }
 
             std::vector<Eigen::Vector3d> GetCorners() const

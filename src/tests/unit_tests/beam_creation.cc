@@ -4,7 +4,7 @@
 int main()
 {
     // Create a JointFace instance
-    Eigen::Vector3d normal(0.0, 0.0, 1.0);
+    Eigen::Vector3d normal(0.0, 0.0, -1.0);
     Eigen::Vector3d center(700.0, -390.0, 350.0);
     Eigen::Vector3d corner1(650.0, -490.0, 350.0);
     Eigen::Vector3d corner2(650.0, -290.0, 350.0);
@@ -41,6 +41,16 @@ int main()
     if (retrievedReferenceDiameter != referenceDiameter)
     {
         std::cout << "Beam reference diameter incorrect: " << retrievedReferenceDiameter << std::endl;
+        return 1;
+    }
+    if (beam.GetJointGroups()[0].GetJoints()[0]->GetFaces()[0]->GetNormal() != Eigen::Vector3d(0.0, 0.0, 1.0))
+    {
+        std::cout << "Beam joint face normal should have been flipped to (0,0,1) but is: " << beam.GetJointGroups()[0].GetJoints()[0]->GetFaces()[0]->GetNormal().transpose() << std::endl;
+        return 1;
+    }
+    if (beam.GetJointGroups().size() != jointGroups.size())
+    {
+        std::cout << "Beam joint groups incorrect: " << beam.GetJointGroups().size() << std::endl;
         return 1;
     }
     double initialArea = face1->ComputeCurrentArea(pointCloud, 500.0);

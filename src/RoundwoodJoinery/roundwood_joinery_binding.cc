@@ -49,7 +49,7 @@ NB_MODULE(roundwoodJoineryBindings, m)
         .def(nb::init<std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::JointFace>>>(), 
                       "Constructor for Joint with given faces",
                       nb::arg("faces"))
-        .def("get_faces", &RoundwoodJoinery::Joinery::Joint::GetFaces)
+        .def("get_faces", &RoundwoodJoinery::Joinery::Joint::GetFaces,  nb::rv_policy::reference_internal)
         .def("get_center", &RoundwoodJoinery::Joinery::Joint::GetCenter)
         .def("get_num_faces", &RoundwoodJoinery::Joinery::Joint::GetNumFaces)
         .def("set_closest_point_on_skeleton", &RoundwoodJoinery::Joinery::Joint::SetClosestPointOnSkeleton, 
@@ -62,7 +62,7 @@ NB_MODULE(roundwoodJoineryBindings, m)
         .def(nb::init<std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::Joint>>>(), 
                       "Constructor for JointGroup with given joints",
                       nb::arg("joints"))
-        .def("get_joints", &RoundwoodJoinery::Joinery::JointGroup::GetJoints)
+        .def("get_joints", &RoundwoodJoinery::Joinery::JointGroup::GetJoints, nb::rv_policy::reference_internal)
         .def("set_degree_of_freedom", &RoundwoodJoinery::Joinery::JointGroup::SetDegreeOfFreedom, 
              "Set the degree of freedom for this joint group", 
              nb::arg("degreeOfFreedom"))
@@ -85,7 +85,7 @@ NB_MODULE(roundwoodJoineryBindings, m)
                       nb::arg("skeleton"), 
                       nb::arg("pointCloud"))
         .def("get_reference_diameter", &RoundwoodJoinery::Beam::Beam::GetReferenceDiameter)
-        .def("get_joints_by_group", &RoundwoodJoinery::Beam::Beam::GetJointGroups)
+        .def("get_joints_by_group", &RoundwoodJoinery::Beam::Beam::GetJointGroups, nb::rv_policy::reference_internal)
         .def("get_skeleton", &RoundwoodJoinery::Beam::Beam::GetSkeleton)
         .def("get_point_cloud", &RoundwoodJoinery::Beam::Beam::GetPointCloud)
         .def("find_joint_closest_points_on_skeleton", &RoundwoodJoinery::Beam::Beam::FindJointClosestPointsOnSkeleton, 

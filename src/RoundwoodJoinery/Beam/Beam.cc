@@ -11,11 +11,20 @@ namespace RoundwoodJoinery::Beam
               _skeleton(skeleton), 
               _pointCloud(pointCloud)
     {
-        for (auto& jointGroup : _jointGroups)
+        for (Joinery::JointGroup& jointGroup : this->_jointGroups)
         {
-            for (auto& joint : jointGroup.GetJoints())
+            for (std::shared_ptr<Joinery::Joint>& joint : jointGroup.GetJoints())
             {
-                joint->SetClosestPointOnSkeleton(this->_FindClosestPointOnSkeleton(joint->GetCenter()));
+                Eigen::Vector3d closestPointOnSkeleton = this->_FindClosestPointOnSkeleton(joint->GetCenter());
+                joint->SetClosestPointOnSkeleton(closestPointOnSkeleton);
+                Eigen::Vector3d outwardDirection = (joint->GetCenter() - closestPointOnSkeleton).normalized();
+                for(std::shared_ptr<Joinery::JointFace> face : joint->GetFaces())
+                {
+                    if (face->GetNormal().dot(outwardDirection) < 0)
+                    {
+                        face->FlipNormal();
+                    }
+                }
             }
         }
     }
