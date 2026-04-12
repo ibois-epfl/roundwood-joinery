@@ -1,0 +1,96 @@
+{
+    "name": "RWJ_optimize_joint_placement",
+    "nickname": "RWJ_optimize_joint_placement",
+    "category": "Roundwood Joinery",
+    "subcategory": "optimisation",
+    "description": "This component optimizes the placement of joints in roundwood elements based on their surfaces and degrees of freedom.",
+    "exposure": 4,
+    "instanceGuid": "bc1c05de-c584-4292-ad69-8597137ba893",
+    "ghpython": {
+        "hideOutput": true,
+        "hideInput": true,
+        "isAdvancedMode": true,
+        "marshalOutGuids": true,
+        "iconDisplay": 2,
+        "inputParameters": [
+            {
+                "name": "i_joinery",
+                "nickname": "i_joinery",
+                "description": "The defined joinery for a single beam.",
+                "optional": false,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "list",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "none"
+            },
+            {
+                "name": "i_point_cloud",
+                "nickname": "i_point_cloud",
+                "description": "The point cloud of the roundwood element.",
+                "optional": false,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "item",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "pointcloud"
+            },
+            {
+                "name": "i_reference_diameter",
+                "nickname": "i_reference_diameter",
+                "description": "The reference diameter of the roundwood element. This is used to scale the optimisation steps.",
+                "optional": false,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "item",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "float"
+            },
+            {
+                "name": "i_n_steps",
+                "nickname": "i_n_steps",
+                "description": "The maximum number of optimization steps to perform. if the i_epsilon is met before the i_n_steps, the optimisation is interrupted.",
+                "optional": true,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "item",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "int"
+            },
+            {
+                "name": "i_epsilon",
+                "nickname": "i_epsilon",
+                "description": "The convergence threshold for the optimization. Lower values might be unreachable depending on the geometry and constraints. Use reasonable values such as 1.0 mm.",
+                "optional": true,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "item",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "float"
+            }
+        ],
+        "outputParameters": [
+            {
+                "name": "o_beam",
+                "nickname": "o_beam",
+                "description": "The beam object with its joints optimally placed.",
+                "optional": false,
+                "sourceCount": 0,
+                "graft": false
+            },
+            {
+                "name": "o_transform_matrices",
+                "nickname": "o_transform_matrices",
+                "description": "A list of transformation matrices for each joint group.",
+                "optional": false,
+                "sourceCount": 0,
+                "graft": false
+            }
+        ]
+    }
+}
