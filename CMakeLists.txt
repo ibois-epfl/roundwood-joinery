@@ -108,5 +108,5 @@ add_custom_command(
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_FILE:${BINDINGS_MODULE_NAME}>
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/py_binding_test/
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/python_package/roundwood_joinery/
 )
