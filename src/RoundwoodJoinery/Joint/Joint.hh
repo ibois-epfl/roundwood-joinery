@@ -30,7 +30,7 @@ namespace RoundwoodJoinery::Joinery
              */
             std::vector<Eigen::Vector3d> ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud);
 
-            // Getters
+            // Getters and small utils
             /**
             * @brief Returns the normal vector of the joint face.
             * @return The normal vector of the joint face.
@@ -38,6 +38,14 @@ namespace RoundwoodJoinery::Joinery
             Eigen::Vector3d GetNormal() const
             {
                 return this->_normal;
+            }
+
+            /**
+            * @brief Flips the normal vector of the joint face.
+            */
+            void FlipNormal()
+            {
+                this->_normal = -this->_normal;
             }
 
             std::vector<Eigen::Vector3d> GetCorners() const
