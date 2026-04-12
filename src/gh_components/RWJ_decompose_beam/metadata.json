@@ -52,6 +52,14 @@
                 "graft": false
             },
             {
+                "name": "o_jointface_normals",
+                "nickname": "o_jointface_normals",
+                "description": "A datatree of the normals for each joint face.",
+                "optional": false,
+                "sourceCount": 0,
+                "graft": false
+            },
+            {
                 "name": "o_beam_skeleton",
                 "nickname": "o_beam_skeleton",
                 "description": "The computed skeleton of the beam.",
