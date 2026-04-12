@@ -1,10 +1,11 @@
 
 from setuptools import setup, find_packages
-
+import os
+__version__ = open(os.path.join(os.path.dirname(__file__), "../../version")).read().strip()
 
 setup(
     name="roundwood_joinery",
-    version="0.1.0",
+    version=__version__,
     packages=find_packages(),
     install_requires=[
         "numpy==2.0.2",
