@@ -53,7 +53,7 @@ int main()
         std::cout << "Beam joint groups incorrect: " << beam.GetJointGroups().size() << std::endl;
         return 1;
     }
-    double initialArea = face1->ComputeCurrentArea(pointCloud, 500.0);
+    double initialArea = face1->ComputeCurrentAreaAndDepth(pointCloud, 500.0).first;
     std::cout << "Initial Joint Face area: " << initialArea << std::endl;
 
     int maxIterations = 100;
@@ -63,7 +63,7 @@ int main()
     {
         std::cout << "---> Transformation: " << std::endl << transformations[index] << std::endl;
     }
-    double finalArea = face1->ComputeCurrentArea(pointCloud, 500.0);
+    double finalArea = face1->ComputeCurrentAreaAndDepth(pointCloud, 500.0).first;
     std::cout << "Final Joint Face area: " << finalArea << std::endl;
     return 0;
 }

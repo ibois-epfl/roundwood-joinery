@@ -22,11 +22,13 @@ NB_MODULE(roundwoodJoineryBindings, m)
     nb::class_<RoundwoodJoinery::Joinery::JointFace>(m, "JointFace")
         .def(nb::init<Eigen::Vector3d, 
                       std::vector<Eigen::Vector3d>, 
-                      double>(), 
-                      "Constructor for JointFace with normal, corners, and target area",
+                      double, 
+                      std::optional<double>>(), 
+                      "Constructor for JointFace with normal, corners, target area, and optional max projection distance",
                       nb::arg("normal"), 
                       nb::arg("corners"), 
-                      nb::arg("targetArea") = 0.0)
+                      nb::arg("targetArea") = 0.0,
+                      nb::arg("maxProjectionDistance") = std::nullopt)
         .def("project_points_onto_face", &RoundwoodJoinery::Joinery::JointFace::ProjectPointsOntoFace,
              "Project points from the beam's point cloud onto the joint face and return the projected points that are within the face outline",
              nb::arg("pointCloud"),
@@ -36,8 +38,8 @@ NB_MODULE(roundwoodJoineryBindings, m)
         .def("get_center", &RoundwoodJoinery::Joinery::JointFace::GetCenter)
         .def("get_target_area", &RoundwoodJoinery::Joinery::JointFace::GetTargetArea)
         .def("get_current_area", &RoundwoodJoinery::Joinery::JointFace::GetCurrentArea)
-        .def("compute_current_area", &RoundwoodJoinery::Joinery::JointFace::ComputeCurrentArea,
-             "Compute the current area of the joint face based on the projected points from the beam's point cloud",
+        .def("compute_current_area_and_depth", &RoundwoodJoinery::Joinery::JointFace::ComputeCurrentAreaAndDepth,
+             "Compute the current area and depth of the joint face based on the projected points from the beam's point cloud",
              nb::arg("beamPointCloud"),
              nb::arg("alpha") = 500.0)
         .def("get_current_outline", &RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline, 
