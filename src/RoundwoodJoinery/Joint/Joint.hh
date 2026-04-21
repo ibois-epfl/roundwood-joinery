@@ -26,9 +26,10 @@ namespace RoundwoodJoinery::Joinery
              * @brief Projects points from the point cloud onto the joint face.
              * 
              * @param pointCloud The point cloud containing the points to be projected.
+             * @param maxProjectionDistance Optional maximum projection distance. The value will be updated with the maximum distance of the projected points, if provided.
              * @return A vector of Eigen::Vector3d representing the projected points.
              */
-            std::vector<Eigen::Vector3d> ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud);
+            std::vector<Eigen::Vector3d> ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, std::optional<double> maxProjectionDistance = std::nullopt);
 
             // Getters and small utils
             /**
