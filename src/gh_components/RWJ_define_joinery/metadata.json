@@ -38,6 +38,18 @@
                 "typeHintID": "vector"
             },
             {
+                "name": "i_max_joint_depths_datatree",
+                "nickname": "i_max_joint_depths_datatree",
+                "description": "The maximum depths for each joint face. The datatree structure should match the structure of the i_curves_datatree.",
+                "optional": false,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "tree",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "float"
+            },
+            {
                 "name": "i_target_areas_datatree",
                 "nickname": "i_target_areas_datatree",
                 "description": "The target areas for each joint face. The datatree structure should match the structure of the i_curves_datatree.",
@@ -48,6 +60,18 @@
                 "wireDisplay": "default",
                 "sourceCount": 0,
                 "typeHintID": "float"
+            },
+            {
+                "name": "i_jointface_normals",
+                "nickname": "i_jointface_normals",
+                "description": "The normals of the joint faces. The datatree structure should match the structure of the i_curves_datatree.",
+                "optional": false,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "tree",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "vector"
             }
         ],
         "outputParameters": [
