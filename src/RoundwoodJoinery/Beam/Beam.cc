@@ -132,9 +132,9 @@ namespace RoundwoodJoinery::Beam
                     double expectedNewDepth = currentDepth - translationMagnitude;
 
                     // Create hard floor for depth if maxProjectionDistance is set for the face
-                    if(face->GetMaxProjectionDistance() > 0.0 && expectedNewDepth < face->GetMaxProjectionDistance())
+                    if(face->GetMaxProjectionDistance() > 0.0 && expectedNewDepth > face->GetMaxProjectionDistance())
                     {
-                        translationMagnitude = currentDepth - face->GetMaxProjectionDistance();
+                        translationMagnitude = (face->GetMaxProjectionDistance() / expectedNewDepth) * translationMagnitude;
                     }
                     Eigen::Vector3d translationDirection = face->GetNormal().normalized();
                     Eigen::Vector3d translation = translationMagnitude * translationDirection;
