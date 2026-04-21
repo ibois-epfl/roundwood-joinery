@@ -3,6 +3,7 @@
 #include "nanobind/stl/vector.h"
 #include "nanobind/stl/pair.h"
 #include "nanobind/stl/shared_ptr.h"
+#include "nanobind/stl/optional.h"
 #include "RoundwoodJoinery.hh"
 
 namespace nb = nanobind;
