@@ -11,11 +11,20 @@ namespace RoundwoodJoinery::Beam
               _skeleton(skeleton), 
               _pointCloud(pointCloud)
     {
-        for (auto& jointGroup : _jointGroups)
+        for (Joinery::JointGroup& jointGroup : this->_jointGroups)
         {
-            for (auto& joint : jointGroup.GetJoints())
+            for (std::shared_ptr<Joinery::Joint>& joint : jointGroup.GetJoints())
             {
-                joint->SetClosestPointOnSkeleton(this->_FindClosestPointOnSkeleton(joint->GetCenter()));
+                Eigen::Vector3d closestPointOnSkeleton = this->_FindClosestPointOnSkeleton(joint->GetCenter());
+                joint->SetClosestPointOnSkeleton(closestPointOnSkeleton);
+                Eigen::Vector3d outwardDirection = (joint->GetCenter() - closestPointOnSkeleton).normalized();
+                for(std::shared_ptr<Joinery::JointFace> face : joint->GetFaces())
+                {
+                    if (face->GetNormal().dot(outwardDirection) < 0)
+                    {
+                        face->FlipNormal();
+                    }
+                }
             }
         }
     }
@@ -112,12 +121,21 @@ namespace RoundwoodJoinery::Beam
                 {
                     Eigen::Vector3d currentCenter = face->GetCenter();
                     double targetArea = face->GetTargetArea();
-                    double currentArea = face->ComputeCurrentArea(this->_pointCloud);
+                    std::pair<double, double> currentAreaAndDepth = face->ComputeCurrentAreaAndDepth(this->_pointCloud);
+                    double currentArea = currentAreaAndDepth.first;
+                    double currentDepth = currentAreaAndDepth.second;
 
                     double deltaArea = (currentArea / targetArea) - 1;
                     Eigen::Vector3d closestPointOnSkeleton = this->_FindClosestPointOnSkeleton(currentCenter);
 
                     double translationMagnitude = deltaArea * (this->_referenceDiameter / 2.0) * 0.25; // 0.25 is a damping factor to prevent overshooting
+                    double expectedNewDepth = currentDepth - translationMagnitude;
+
+                    // Create hard floor for depth if maxProjectionDistance is set for the face
+                    if(face->GetMaxProjectionDistance() > 0.0 && expectedNewDepth > face->GetMaxProjectionDistance())
+                    {
+                        translationMagnitude = (face->GetMaxProjectionDistance() / expectedNewDepth) * translationMagnitude;
+                    }
                     Eigen::Vector3d translationDirection = face->GetNormal().normalized();
                     Eigen::Vector3d translation = translationMagnitude * translationDirection;
 

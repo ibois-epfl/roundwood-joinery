@@ -2,8 +2,8 @@
 
 namespace RoundwoodJoinery::Joinery
 {
-    RoundwoodJoinery::Joinery::JointFace::JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners, double targetArea)
-        : _normal(normal), _corners(corners), _originalCorners(corners), _targetArea(targetArea)
+    RoundwoodJoinery::Joinery::JointFace::JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners, double targetArea, std::optional<double> maxProjectionDistance)
+        : _normal(normal), _corners(corners), _originalCorners(corners), _targetArea(targetArea), _maxProjectionDistance(maxProjectionDistance.value_or(0.0))
     {
         Eigen::Vector3d center = Eigen::Vector3d::Zero();
         for (const auto& corner : corners){center += corner;}
@@ -13,7 +13,7 @@ namespace RoundwoodJoinery::Joinery
         this->_outline_polygon = std::move(Utils::Compute2DPolygon(corners, normal));
     }
 
-    std::vector<Eigen::Vector3d> JointFace::ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud)
+    std::vector<Eigen::Vector3d> JointFace::ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, std::optional<double> maxProjectionDistance)
     {
         // First some basic data about joint face
         Eigen::Vector3d jointCenter = this->_center;
@@ -43,6 +43,7 @@ namespace RoundwoodJoinery::Joinery
         std::vector<Eigen::Vector3d> projectedPoints;
         std::cout << "Number of points in the neighborhood: " << neighborhoodPoints.size() << std::endl;
         Eigen::Vector3d normal = this->_normal.normalized();
+        double distance = 0;
         for (const auto& point : neighborhoodPoints)
         {
             Eigen::Vector3d pointVec(point.x(), point.y(), point.z());
@@ -59,6 +60,11 @@ namespace RoundwoodJoinery::Joinery
                     case CGAL::ON_BOUNDED_SIDE:
                     case CGAL::ON_BOUNDARY:
                         projectedPoints.push_back(projection);
+                        distance = (projection - this->_center).norm();
+                        if (maxProjectionDistance && distance > *maxProjectionDistance)
+                        {
+                            *maxProjectionDistance = distance;
+                        }
                         break;
                     default:
                         break;
@@ -74,20 +80,20 @@ namespace RoundwoodJoinery::Joinery
         return projectedPoints;
     }
 
-    double RoundwoodJoinery::Joinery::JointFace::ComputeCurrentArea(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double alpha)
+    std::pair<double, double> RoundwoodJoinery::Joinery::JointFace::ComputeCurrentAreaAndDepth(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double alpha)
     {
-
-        this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud);
+        std::optional<double> maxProjectionDistance = 0.0;
+        this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud, maxProjectionDistance);
 
         if (this->_projectedPoints.size() < 3)
         {
-            std::cerr << "Warning: Not enough points projected onto the face to compute area. Returning 0." << std::endl;
-            return 0.0;
+            std::cerr << "Warning: Not enough points projected onto the face to compute area. Returning {0, 0}." << std::endl;
+            return {0.0, 0.0};
         }
         if (this->_normal == Eigen::Vector3d::Zero())
         {
-            std::cerr << "Warning: Normal vector is zero. Cannot compute area. Returning 0." << std::endl;
-            return 0.0;
+            std::cerr << "Warning: Normal vector is zero. Cannot compute area. Returning {0, 0}." << std::endl;
+            return {0.0, 0.0};
         }
         
         std::vector<Eigen::Vector3d> alphaShapePoints = Utils::Compute2DAlphaShape(this->_projectedPoints, alpha, this->_normal);
@@ -98,7 +104,7 @@ namespace RoundwoodJoinery::Joinery
         cgalPolygon.reverse_orientation();
         this->_currentArea = cgalPolygon.area();
 
-        return this->_currentArea;
+        return {this->_currentArea, double(*maxProjectionDistance)};
     }
 
     std::vector<Eigen::Vector3d> RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double alpha)

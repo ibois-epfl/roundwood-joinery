@@ -3,6 +3,7 @@
 #include "nanobind/stl/vector.h"
 #include "nanobind/stl/pair.h"
 #include "nanobind/stl/shared_ptr.h"
+#include "nanobind/stl/optional.h"
 #include "RoundwoodJoinery.hh"
 
 namespace nb = nanobind;
@@ -22,21 +23,24 @@ NB_MODULE(roundwoodJoineryBindings, m)
     nb::class_<RoundwoodJoinery::Joinery::JointFace>(m, "JointFace")
         .def(nb::init<Eigen::Vector3d, 
                       std::vector<Eigen::Vector3d>, 
-                      double>(), 
-                      "Constructor for JointFace with normal, corners, and target area",
+                      double, 
+                      std::optional<double>>(), 
+                      "Constructor for JointFace with normal, corners, target area, and optional max projection distance",
                       nb::arg("normal"), 
                       nb::arg("corners"), 
-                      nb::arg("targetArea") = 0.0)
+                      nb::arg("targetArea") = 0.0,
+                      nb::arg("maxProjectionDistance") = std::nullopt)
         .def("project_points_onto_face", &RoundwoodJoinery::Joinery::JointFace::ProjectPointsOntoFace,
              "Project points from the beam's point cloud onto the joint face and return the projected points that are within the face outline",
-             nb::arg("pointCloud"))
+             nb::arg("pointCloud"),
+             nb::arg("maxProjectionDistance") = std::nullopt)
         .def("get_normal", &RoundwoodJoinery::Joinery::JointFace::GetNormal)
         .def("get_corners", &RoundwoodJoinery::Joinery::JointFace::GetCorners)
         .def("get_center", &RoundwoodJoinery::Joinery::JointFace::GetCenter)
         .def("get_target_area", &RoundwoodJoinery::Joinery::JointFace::GetTargetArea)
         .def("get_current_area", &RoundwoodJoinery::Joinery::JointFace::GetCurrentArea)
-        .def("compute_current_area", &RoundwoodJoinery::Joinery::JointFace::ComputeCurrentArea,
-             "Compute the current area of the joint face based on the projected points from the beam's point cloud",
+        .def("compute_current_area_and_depth", &RoundwoodJoinery::Joinery::JointFace::ComputeCurrentAreaAndDepth,
+             "Compute the current area and depth of the joint face based on the projected points from the beam's point cloud",
              nb::arg("beamPointCloud"),
              nb::arg("alpha") = 500.0)
         .def("get_current_outline", &RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline, 
@@ -49,7 +53,7 @@ NB_MODULE(roundwoodJoineryBindings, m)
         .def(nb::init<std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::JointFace>>>(), 
                       "Constructor for Joint with given faces",
                       nb::arg("faces"))
-        .def("get_faces", &RoundwoodJoinery::Joinery::Joint::GetFaces)
+        .def("get_faces", &RoundwoodJoinery::Joinery::Joint::GetFaces,  nb::rv_policy::reference_internal)
         .def("get_center", &RoundwoodJoinery::Joinery::Joint::GetCenter)
         .def("get_num_faces", &RoundwoodJoinery::Joinery::Joint::GetNumFaces)
         .def("set_closest_point_on_skeleton", &RoundwoodJoinery::Joinery::Joint::SetClosestPointOnSkeleton, 
@@ -62,7 +66,7 @@ NB_MODULE(roundwoodJoineryBindings, m)
         .def(nb::init<std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::Joint>>>(), 
                       "Constructor for JointGroup with given joints",
                       nb::arg("joints"))
-        .def("get_joints", &RoundwoodJoinery::Joinery::JointGroup::GetJoints)
+        .def("get_joints", &RoundwoodJoinery::Joinery::JointGroup::GetJoints, nb::rv_policy::reference_internal)
         .def("set_degree_of_freedom", &RoundwoodJoinery::Joinery::JointGroup::SetDegreeOfFreedom, 
              "Set the degree of freedom for this joint group", 
              nb::arg("degreeOfFreedom"))
@@ -85,7 +89,7 @@ NB_MODULE(roundwoodJoineryBindings, m)
                       nb::arg("skeleton"), 
                       nb::arg("pointCloud"))
         .def("get_reference_diameter", &RoundwoodJoinery::Beam::Beam::GetReferenceDiameter)
-        .def("get_joints_by_group", &RoundwoodJoinery::Beam::Beam::GetJointGroups)
+        .def("get_joints_by_group", &RoundwoodJoinery::Beam::Beam::GetJointGroups, nb::rv_policy::reference_internal)
         .def("get_skeleton", &RoundwoodJoinery::Beam::Beam::GetSkeleton)
         .def("get_point_cloud", &RoundwoodJoinery::Beam::Beam::GetPointCloud)
         .def("find_joint_closest_points_on_skeleton", &RoundwoodJoinery::Beam::Beam::FindJointClosestPointsOnSkeleton, 

@@ -19,18 +19,19 @@ namespace RoundwoodJoinery::Joinery
     class JointFace
     {
         public:
-            JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners, double targetArea = 0.0);
+            JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners, double targetArea = 0.0, std::optional<double> maxProjectionDistance = std::nullopt);
             ~JointFace() = default;
 
             /**
              * @brief Projects points from the point cloud onto the joint face.
              * 
              * @param pointCloud The point cloud containing the points to be projected.
+             * @param maxProjectionDistance Optional maximum projection distance. The value will be updated with the maximum distance of the projected points, if provided.
              * @return A vector of Eigen::Vector3d representing the projected points.
              */
-            std::vector<Eigen::Vector3d> ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud);
+            std::vector<Eigen::Vector3d> ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, std::optional<double> maxProjectionDistance = std::nullopt);
 
-            // Getters
+            // Getters and small utils
             /**
             * @brief Returns the normal vector of the joint face.
             * @return The normal vector of the joint face.
@@ -38,6 +39,15 @@ namespace RoundwoodJoinery::Joinery
             Eigen::Vector3d GetNormal() const
             {
                 return this->_normal;
+            }
+
+            /**
+            * @brief Flips the normal vector of the joint face.
+            */
+            void FlipNormal()
+            {
+                this->_normal = -this->_normal;
+                std::reverse(this->_corners.begin(), this->_corners.end());
             }
 
             std::vector<Eigen::Vector3d> GetCorners() const
@@ -73,13 +83,22 @@ namespace RoundwoodJoinery::Joinery
             }
 
             /**
+            * @brief Returns the maximum projection distance (aka depth) of the joint face.
+            * @return The maximum projection distance of the joint face.
+            */
+            double GetMaxProjectionDistance() const
+            {
+                return this->_maxProjectionDistance;
+            }
+
+            /**
             * @brief Computes the current area of the joint face based on the points from the beam's point cloud that are projected onto the face.
             * 
             * @param pointCloud The point cloud of the beam to which the joint face belongs.
             * @param alpha The alpha parameter for the alpha shape computation, which is used to determine the outline of the projected points.
-            * @return The computed current area of the joint face.
+            * @return The computed current area of the joint face and the maximum projection distance (aka depth of the joint face).
             */
-            double ComputeCurrentArea(PointCloud::PointCloud& pointCloud, double alpha = 500.0);
+            std::pair<double, double> ComputeCurrentAreaAndDepth(PointCloud::PointCloud& pointCloud, double alpha = 500.0);
 
             /**
             * @brief Returns the current outline of the joint face based on the points from the beam's point cloud that are projected onto the face.
@@ -99,6 +118,7 @@ namespace RoundwoodJoinery::Joinery
             std::vector<Eigen::Vector3d> _corners;
             std::vector<Eigen::Vector3d> _originalCorners; // A backup should it be useful...
             double _targetArea;
+            double _maxProjectionDistance = 0.0;
             double _currentArea;
             std::vector<Eigen::Vector3d> _projectedPoints;
             
