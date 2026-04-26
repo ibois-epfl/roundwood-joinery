@@ -11,12 +11,13 @@ import ghpythonlib.treehelpers as th
 from ghpythonlib.componentbase import executingcomponent as component
 
 import roundwood_joinery
-import roundwoodJoineryBindings as rwj
+import roundwood_joinery.roundwoodJoineryBindings as rwj
 
 import numpy as np
 
 class RWJ_define_joinery(component):
     def RunScript(self, i_beam):
+        o_text_dots = []
         o_joint_areas = []
         o_joint_points = []
         o_joint_face_outlines = []
@@ -34,16 +35,23 @@ class RWJ_define_joinery(component):
                 jointface_normal_per_face = []
                 for face in joint.get_faces():
                     points_on_face = []
-                    areas_per_face.append(face.get_current_area())
+                    current_area = face.compute_current_area_and_depth(i_beam.get_point_cloud())[0]
+                    target_area = face.get_target_area()
+                    area_ratio = current_area/target_area
+                    face_center = face.get_center()
+                    text_dot = Rhino.Geometry.TextDot(f"area ratio = {area_ratio:.3f}", Rhino.Geometry.Point3d(face_center[0], face_center[1], face_center[2]))
+                    o_text_dots.append(text_dot)
+                    areas_per_face.append(current_area)
                     for point in face.project_points_onto_face(i_beam.get_point_cloud()):
                         points_on_face.append(Rhino.Geometry.Point3d(point[0],point[1], point[2]))
                     points_per_face.append(points_on_face)
-                    outline_pts = [Rhino.Geometry.Point3d(pt[0], pt[1], pt[2]) for pt in face.get_current_outline(i_beam.get_point_cloud())]
-                    outline_pts.append(Rhino.Geometry.Point3d(face.get_current_outline(i_beam.get_point_cloud())[0][0], 
-                                                              face.get_current_outline(i_beam.get_point_cloud())[0][1], 
-                                                              face.get_current_outline(i_beam.get_point_cloud())[0][2]))
-                    outlines_per_face.append(Rhino.Geometry.Polyline(outline_pts))
-                    jointface_normal_per_face.append(face.get_normal())
+                    if len(face.get_current_outline(i_beam.get_point_cloud())) > 0:
+                        outline_pts = [Rhino.Geometry.Point3d(pt[0], pt[1], pt[2]) for pt in face.get_current_outline(i_beam.get_point_cloud())]
+                        outline_pts.append(Rhino.Geometry.Point3d(face.get_current_outline(i_beam.get_point_cloud())[0][0], 
+                                                                face.get_current_outline(i_beam.get_point_cloud())[0][1], 
+                                                                face.get_current_outline(i_beam.get_point_cloud())[0][2]))
+                        outlines_per_face.append(Rhino.Geometry.Polyline(outline_pts))
+                    jointface_normal_per_face.append(Rhino.Geometry.Vector3d(face.get_normal()[0], face.get_normal()[1], face.get_normal()[2]))
                 points_per_joints.append(points_per_face)
                 areas_per_joint.append(areas_per_face)
                 outlines_per_joint.append(outlines_per_face)
@@ -58,4 +66,4 @@ class RWJ_define_joinery(component):
         o_jointface_normals = th.list_to_tree(o_jointface_normals)
         o_beam_skeleton = Rhino.Geometry.Polyline([Rhino.Geometry.Point3d(pt[0], pt[1], pt[2]) for pt in i_beam.get_skeleton()])
 
-        return [o_joint_areas, o_joint_points, o_joint_outlines, o_jointface_normals, o_beam_skeleton]
+        return [o_joint_areas, o_joint_points, o_joint_outlines, o_jointface_normals, o_beam_skeleton, o_text_dots]

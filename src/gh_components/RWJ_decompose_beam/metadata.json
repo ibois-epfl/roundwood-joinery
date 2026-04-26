@@ -66,6 +66,14 @@
                 "optional": false,
                 "sourceCount": 0,
                 "graft": false
+            },
+            {
+                "name": "o_text_dots",
+                "nickname": "o_text_dots",
+                "description": "The computed area ratios of the joint faces, represented using text dots.",
+                "optional": false,
+                "sourceCount": 0,
+                "graft": false
             }
         ]
     }
