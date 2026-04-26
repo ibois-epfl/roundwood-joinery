@@ -1,5 +1,9 @@
 cmake_minimum_required (VERSION 3.18)
-project (roundwood_joinery)
+
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/version" PROJECT_VERSION_RAW)
+string(STRIP "${PROJECT_VERSION_RAW}" PROJECT_VERSION)
+
+project (roundwood_joinery VERSION ${PROJECT_VERSION})
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -108,5 +112,5 @@ add_custom_command(
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_FILE:${BINDINGS_MODULE_NAME}>
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/py_binding_test/
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/python_package/roundwood_joinery/
 )

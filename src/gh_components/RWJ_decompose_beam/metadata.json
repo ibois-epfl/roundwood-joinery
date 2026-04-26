@@ -1,0 +1,80 @@
+{
+    "name": "RWJ_decompose_beam",
+    "nickname": "RWJ_decompose_beam",
+    "category": "Roundwood Joinery",
+    "subcategory": "analysis",
+    "description": "This component decomposes a roundwood beam into its constituent joints and surfaces for analysis.",
+    "exposure": 4,
+    "instanceGuid": "46e6adf6-1779-4523-a181-670b2ee780cf",
+    "ghpython": {
+        "hideOutput": true,
+        "hideInput": true,
+        "isAdvancedMode": true,
+        "marshalOutGuids": true,
+        "iconDisplay": 2,
+        "inputParameters": [
+            {
+                "name": "i_beam",
+                "nickname": "i_beam",
+                "description": "A roundwood_joinery beam object.",
+                "optional": false,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "list",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "none"
+            }
+        ],
+        "outputParameters": [
+            {
+                "name": "o_joint_areas",
+                "nickname": "o_joint_areas",
+                "description": "The achieved joint areas after optimisation as a datatree.",
+                "optional": false,
+                "sourceCount": 0,
+                "graft": false
+            },
+            {
+                "name": "o_joint_points",
+                "nickname": "o_joint_points",
+                "description": "A datatree of points that were projected for each joint face.",
+                "optional": false,
+                "sourceCount": 0,
+                "graft": false
+            },
+            {
+                "name": "o_joint_face_outlines",
+                "nickname": "o_joint_face_outlines",
+                "description": "A list of faces that were projected for each joint.",
+                "optional": false,
+                "sourceCount": 0,
+                "graft": false
+            },
+            {
+                "name": "o_jointface_normals",
+                "nickname": "o_jointface_normals",
+                "description": "A datatree of the normals for each joint face.",
+                "optional": false,
+                "sourceCount": 0,
+                "graft": false
+            },
+            {
+                "name": "o_beam_skeleton",
+                "nickname": "o_beam_skeleton",
+                "description": "The computed skeleton of the beam.",
+                "optional": false,
+                "sourceCount": 0,
+                "graft": false
+            },
+            {
+                "name": "o_text_dots",
+                "nickname": "o_text_dots",
+                "description": "The computed area ratios of the joint faces, represented using text dots.",
+                "optional": false,
+                "sourceCount": 0,
+                "graft": false
+            }
+        ]
+    }
+}

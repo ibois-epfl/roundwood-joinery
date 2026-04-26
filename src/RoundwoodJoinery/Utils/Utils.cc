@@ -74,9 +74,16 @@ namespace RoundwoodJoinery::Utils
     std::vector<Eigen::Vector3d> Compute2DAlphaShape(const std::vector<Eigen::Vector3d>& points, double alpha, Eigen::Vector3d normal)
     {
         std::vector<Eigen::Vector2d> verticesInPlane;
+
+        Eigen::Vector3d n = normal.normalized();
+        Eigen::Vector3d u = n.unitOrthogonal();
+        Eigen::Vector3d v = n.cross(u);
+
         for (const auto& point : points)
         {
-            verticesInPlane.emplace_back(point.x(), point.y());
+            double x = point.dot(u);
+            double y = point.dot(v);
+            verticesInPlane.emplace_back(x, y);
         }
         typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
         typedef CGAL::Alpha_shape_vertex_base_2<K> Vb;
@@ -131,19 +138,21 @@ namespace RoundwoodJoinery::Utils
             prev = current;
             current = next;
         }
-        // imperfect way to reintroduce the z coordinate.
+        // imperfect way to reintroduce the 3rd coordinate.
         // We rely on the fact that the alpha shape points are a subset of the original points, 
-        // so we can find the corresponding z value in the original point cloud
+        // so we can find the corresponding 3rd dimension value in the original point cloud
         std::vector<Eigen::Vector3d> ordered3D;
         for (const auto& p2d : ordered2D) 
         {
-            for (const auto& p3d : points) 
+            auto it = std::find_if(points.begin(), points.end(), [&](const Eigen::Vector3d& p) 
             {
-                if (std::abs(p3d.x() - p2d.first) < 1e-6 && std::abs(p3d.y() - p2d.second) < 1e-6) 
-                {
-                    ordered3D.push_back(p3d);
-                    break;
-                }
+                double x = p.dot(u);
+                double y = p.dot(v);
+                return std::abs(x - p2d.first) < 1e-6 && std::abs(y - p2d.second) < 1e-6;
+            });
+            if (it != points.end()) 
+            {
+                ordered3D.push_back(*it);
             }
         }
         return ordered3D;
@@ -162,20 +171,82 @@ namespace RoundwoodJoinery::Utils
         plyOut.write(filename, happly::DataFormat::ASCII);
     }
 
-    Eigen::Matrix4d ComputeApproximatingTransformation(std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> anchorPointsAndTranslations)
+    std::vector<Eigen::Matrix4d> ComputeApproximatingTransformation(std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> groupedAnchorPointsAndTranslations)
     {
-        Eigen::MatrixXd sourcePoints(3, anchorPointsAndTranslations.size());
-        Eigen::MatrixXd targetPoints(3, anchorPointsAndTranslations.size());
-
-        for (size_t i = 0; i < anchorPointsAndTranslations.size(); ++i)
+        std::vector<Eigen::Matrix4d> transformations;
+        for (const auto& anchorPointsAndTranslations : groupedAnchorPointsAndTranslations)
         {
-            const auto& pair = anchorPointsAndTranslations[i];
-            sourcePoints.col(i) = pair.first;
-            targetPoints.col(i) = pair.first + pair.second;
+            Eigen::MatrixXd sourcePoints(3, anchorPointsAndTranslations.size());
+            Eigen::MatrixXd targetPoints(3, anchorPointsAndTranslations.size());
+
+            for (size_t i = 0; i < anchorPointsAndTranslations.size(); ++i)
+            {
+                const auto& pair = anchorPointsAndTranslations[i];
+                sourcePoints.col(i) = pair.first;
+                targetPoints.col(i) = pair.first + pair.second;
+            }
+
+            Eigen::Matrix4d transformation = Eigen::umeyama(sourcePoints, targetPoints, false);
+            transformations.push_back(transformation);
+        }
+        return transformations;
+    }
+
+    CGAL::Polygon_2<CGAL::Projection_traits_3<K>> Compute2DPolygon(std::vector<Eigen::Vector3d> points, Eigen::Vector3d normal)
+    {
+        Eigen::Vector3d normal_normalized = normal.normalized();
+        CGAL::Projection_traits_3<K> traits({normal_normalized.x(), normal_normalized.y(), normal_normalized.z()});
+        CGAL::Polygon_2<CGAL::Projection_traits_3<K>> cgalPolygon(traits);
+        for (const auto& point : points)
+        {
+            cgalPolygon.push_back(Point_3(point.x(), point.y(), point.z()));
+        }
+        return cgalPolygon;
+    }
+
+    Eigen::Matrix4d ComputeMeanTransformation(const std::vector<Eigen::Matrix4d>& transformations)
+    {
+        if (transformations.empty())
+        {
+            return Eigen::Matrix4d::Identity();
         }
 
-        Eigen::Matrix4d transformation = Eigen::umeyama(sourcePoints, targetPoints, false);
+        // Average rotation using quaternions
+        std::vector<Eigen::Quaterniond> quaternions;
+        for (const auto& transform : transformations)
+        {
+            Eigen::Matrix3d rotation = transform.block<3, 3>(0, 0);
+            Eigen::Quaterniond q(rotation);
+            quaternions.push_back(q);
+        }
 
-        return transformation;
+        Eigen::Quaterniond meanQuaternion(0, 0, 0, 0);
+        for (const auto& q : quaternions)
+        {
+            if (q.coeffs().dot(meanQuaternion.coeffs()) < 0)
+            {
+                meanQuaternion.coeffs() += -1 * (q).coeffs();
+            }
+            else 
+            {
+                meanQuaternion.coeffs() += q.coeffs();
+            }
+        }
+        meanQuaternion.normalize();
+
+        // Average translation
+        Eigen::Vector3d meanTranslation(0, 0, 0);
+        for (const auto& transform : transformations)
+        {
+            meanTranslation += transform.block<3, 1>(0, 3);
+        }
+        meanTranslation /= transformations.size();
+
+        // Construct the mean transformation matrix
+        Eigen::Matrix4d meanTransformation = Eigen::Matrix4d::Identity();
+        meanTransformation.block<3, 3>(0, 0) = meanQuaternion.toRotationMatrix();
+        meanTransformation.block<3, 1>(0, 3) = meanTranslation;
+
+        return meanTransformation;
     }
 }

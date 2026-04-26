@@ -3,19 +3,78 @@
 namespace RoundwoodJoinery::Beam
 {
     Beam::Beam(double referenceDiameter, 
-        std::vector<std::shared_ptr<Joinery::Joint>> joints, 
+        std::vector<Joinery::JointGroup> jointGroups, 
         std::vector<Eigen::Vector3d> skeleton, 
         RoundwoodJoinery::PointCloud::PointCloud pointCloud)
             : _referenceDiameter(referenceDiameter), 
-              _joints(joints), 
+              _jointGroups(jointGroups), 
               _skeleton(skeleton), 
               _pointCloud(pointCloud)
     {
-        for (const auto& joint : joints)
+        for (Joinery::JointGroup& jointGroup : this->_jointGroups)
         {
-            joint->SetClosestPointOnSkeleton(this->_FindClosestPointOnSkeleton(joint->GetCenter()));
+            for (std::shared_ptr<Joinery::Joint>& joint : jointGroup.GetJoints())
+            {
+                Eigen::Vector3d closestPointOnSkeleton = this->_FindClosestPointOnSkeleton(joint->GetCenter());
+                joint->SetClosestPointOnSkeleton(closestPointOnSkeleton);
+                Eigen::Vector3d outwardDirection = (joint->GetCenter() - closestPointOnSkeleton).normalized();
+                for(std::shared_ptr<Joinery::JointFace> face : joint->GetFaces())
+                {
+                    if (face->GetNormal().dot(outwardDirection) < 0)
+                    {
+                        face->FlipNormal();
+                    }
+                }
+            }
         }
     }
+
+
+     std::vector<Eigen::Matrix4d> Beam::ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE)
+     {
+        // totalTransformations will accumulate the transformations applied to each joint group across iterations
+        std::vector<Eigen::Matrix4d> totalTransformations(this->_jointGroups.size(), Eigen::Matrix4d::Identity());
+        std::vector<Eigen::Matrix4d> previousTransformations;
+        for (int iteration = 0; iteration < maxIterations; ++iteration)
+        {
+            std::vector<Eigen::Matrix4d> transformations = this->ComputeOneIterationOfJointFaceTranslationsForOptimisation();
+
+            double translationRMSE = 0.0;            
+            for(int i = 0; i < transformations.size(); ++i)
+            {
+                std::vector<Eigen::Vector3d> jointCentersBeforeTransformation;
+                std::vector<Eigen::Vector3d> jointCentersAfterTransformation;
+
+                for (auto& joint : this->_jointGroups[i].GetJoints())
+                {
+                    jointCentersBeforeTransformation.push_back(joint->GetCenter());
+                }
+                this->_jointGroups[i].ApplyTransformation(transformations[i]);
+
+                for (auto& joint : this->_jointGroups[i].GetJoints())
+                {
+                    jointCentersAfterTransformation.push_back(joint->GetCenter());
+                }
+
+                for (size_t j = 0; j < jointCentersBeforeTransformation.size(); ++j)
+                {
+                    translationRMSE += (jointCentersAfterTransformation[j] - jointCentersBeforeTransformation[j]).squaredNorm();
+                }
+
+                totalTransformations[i] = transformations[i] * totalTransformations[i];
+            }
+            translationRMSE = std::sqrt(translationRMSE / this->_jointGroups.size());
+
+            if (translationRMSE < minRelativeTranslationRMSE)
+            {
+                std::cout << "Convergence reached at iteration " << iteration << " with translation RMSE: " << translationRMSE << std::endl;
+                return totalTransformations;
+            }
+            previousTransformations = transformations;
+        }
+     return totalTransformations;
+    }
+
 
     Eigen::Vector3d Beam::_FindClosestPointOnSkeleton(const Eigen::Vector3d& point)
     {
@@ -49,31 +108,44 @@ namespace RoundwoodJoinery::Beam
         return closestPoint;
     }
 
-    std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> Beam::_ComputeJointFaceTranslationsForOptimisation()
+    std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> Beam::_ComputeJointFaceTranslationsForOptimisation()
     {
-        std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> anchorPointsAndTranslations;
+        std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> anchorPointsAndTranslations;
 
-        for (const std::shared_ptr<RoundwoodJoinery::Joinery::Joint>& joint : this->_joints)
+        for (auto& jointGroup : this->_jointGroups)
         {
-            for (RoundwoodJoinery::Joinery::JointFace& face : joint->GetFaces())
+            std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> groupTranslations;
+            for (auto& joint : jointGroup.GetJoints())
             {
-                Eigen::Vector3d currentCenter = face.GetCenter();
-                double targetArea = face.GetTargetArea();
-                double currentArea = face.ComputeCurrentArea(this->_pointCloud);
+                for (std::shared_ptr<RoundwoodJoinery::Joinery::JointFace>& face : joint->GetFaces())
+                {
+                    Eigen::Vector3d currentCenter = face->GetCenter();
+                    double targetArea = face->GetTargetArea();
+                    std::pair<double, double> currentAreaAndDepth = face->ComputeCurrentAreaAndDepth(this->_pointCloud);
+                    double currentArea = currentAreaAndDepth.first;
+                    double currentDepth = currentAreaAndDepth.second;
 
-                double areaRatio = currentArea / targetArea;
-                Eigen::Vector3d closestPointOnSkeleton = this->_FindClosestPointOnSkeleton(currentCenter);
-                double distanceToSkeleton = (currentCenter - closestPointOnSkeleton).norm();
+                    double deltaArea = (currentArea / targetArea) - 1;
+                    Eigen::Vector3d closestPointOnSkeleton = this->_FindClosestPointOnSkeleton(currentCenter);
 
-                double openingAngle = std::acos(distanceToSkeleton / (this->_referenceDiameter / 2.0));
-                double newAngle = std::asin(areaRatio * std::sin(openingAngle));
+                    double translationMagnitude = deltaArea * (this->_referenceDiameter / 2.0) * 0.25; // 0.25 is a damping factor to prevent overshooting
+                    double expectedNewDepth = currentDepth - translationMagnitude;
 
-                double translationMagnitude = distanceToSkeleton - (this->_referenceDiameter / 2.0) * std::cos(newAngle);
-                Eigen::Vector3d translationDirection = (currentCenter - closestPointOnSkeleton).normalized();
-                Eigen::Vector3d translation = translationMagnitude * translationDirection;
+                    // Create hard floor for depth if maxProjectionDistance is set for the face
+                    if(face->GetMaxProjectionDistance() > 0.0 && expectedNewDepth > face->GetMaxProjectionDistance())
+                    {
+                        translationMagnitude = (face->GetMaxProjectionDistance() / expectedNewDepth) * translationMagnitude;
+                    }
+                    Eigen::Vector3d translationDirection = face->GetNormal().normalized();
+                    Eigen::Vector3d translation = translationMagnitude * translationDirection;
 
-                anchorPointsAndTranslations.push_back(std::make_pair(currentCenter, translation));
+                    for (Eigen::Vector3d& corner : face->GetCorners())
+                    {
+                        groupTranslations.push_back(std::make_pair(corner, translation));
+                    }
+                }
             }
+            anchorPointsAndTranslations.push_back(groupTranslations);
         }
         return anchorPointsAndTranslations;
     }
