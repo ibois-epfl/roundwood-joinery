@@ -30,17 +30,61 @@ namespace RoundwoodJoinery::Beam
     }
 
 
-     std::vector<Eigen::Matrix4d> Beam::ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE)
-     {
+    std::vector<Eigen::Matrix4d> Beam::ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE, std::optional<std::string> outputFolderPath)
+    {
         // totalTransformations will accumulate the transformations applied to each joint group across iterations
         std::vector<Eigen::Matrix4d> totalTransformations(this->_jointGroups.size(), Eigen::Matrix4d::Identity());
         std::vector<Eigen::Matrix4d> previousTransformations;
+
+        std::ofstream outputFile;
+        if (outputFolderPath.has_value())
+        {
+            outputFile.open(outputFolderPath.value());
+            if (!outputFile.is_open())
+            {
+                std::cerr << "Failed to open output file for writing area ratios." << std::endl;
+                return totalTransformations; // Return identity transformations if file cannot be opened
+            }
+            outputFile << "Iteration,JointGroupIndex,JointIndex,FaceIndex,CurrentArea,TargetArea,AreaRatio\n";
+        }
+        std::cout << "Starting joint group optimization with max iterations: " << maxIterations << " and minimum relative translation RMSE: " << minRelativeTranslationRMSE << std::endl;
+        
         for (int iteration = 0; iteration < maxIterations; ++iteration)
         {
             std::vector<Eigen::Matrix4d> transformations = this->ComputeOneIterationOfJointFaceTranslationsForOptimisation();
 
-            double translationRMSE = 0.0;            
-            for(int i = 0; i < transformations.size(); ++i)
+            for (int i = 0; i < this->_jointGroups.size(); ++i)
+            {
+                std::cout << "pif" << std::endl;
+                std::shared_ptr<Joinery::JointGroup>& jointGroup = this->_jointGroups[i];
+                for ( int j = 0; j < jointGroup->GetJoints().size(); ++j)
+                {
+                    std::cout << "paf" << std::endl;
+                    std::shared_ptr<Joinery::Joint>& joint = jointGroup->GetJoints()[j];
+                    std::cout << "puf"<< std::endl;
+                    std::cout << "joint ptr: " << joint.get() << std::endl;
+                    if (joint == nullptr)
+                    {
+                        std::cerr << "Null joint encountered in joint group " << i << ", skipping." << std::endl;
+                        continue;
+                    }
+                    for (size_t k = 0; k < joint->GetNumFaces(); ++k)
+                    {
+                        std::cout << "pouf" << std::endl;
+                        std::shared_ptr<Joinery::JointFace>& face = joint->GetFaces()[k];
+                        double currentArea = face->GetCurrentArea();
+                        double targetArea = face->GetTargetArea();
+                        double areaRatio = currentArea / targetArea;
+                        if (outputFile.is_open() && outputFolderPath.has_value())
+                        {
+                            outputFile << iteration << "," << i << "," << j << "," << k << "," << currentArea << "," << targetArea << "," << areaRatio << "\n";
+                        }
+                    }
+                }
+            }
+
+            double translationRMSE = 0.0;
+            for (int i = 0; i < transformations.size(); ++i)
             {
                 std::vector<Eigen::Vector3d> jointCentersBeforeTransformation;
                 std::vector<Eigen::Vector3d> jointCentersAfterTransformation;
@@ -72,7 +116,11 @@ namespace RoundwoodJoinery::Beam
             }
             previousTransformations = transformations;
         }
-     return totalTransformations;
+        if (outputFile.is_open() && outputFolderPath.has_value())
+        {
+            outputFile.close();
+        }
+        return totalTransformations;
     }
 
 
