@@ -80,7 +80,7 @@ NB_MODULE(roundwoodJoineryBindings, m)
 
     nb::class_<RoundwoodJoinery::Beam::Beam>(m, "Beam")
         .def(nb::init<double, 
-                      std::vector<RoundwoodJoinery::Joinery::JointGroup>, 
+                      std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::JointGroup>>, 
                       std::vector<Eigen::Vector3d>, 
                       RoundwoodJoinery::PointCloud::PointCloud>(), 
                       "Constructor for Beam with reference diameter, joints, skeleton, and point cloud", 
