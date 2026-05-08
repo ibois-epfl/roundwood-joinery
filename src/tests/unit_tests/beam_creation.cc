@@ -1,5 +1,6 @@
 #include "../../RoundwoodJoinery/RoundwoodJoinery.hh"
 #include <iostream>
+#include <optional>
 
 int main()
 {
@@ -17,8 +18,8 @@ int main()
 
     // Create a Joint instance with the created face
     std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::JointFace>> faces = {face1};
-    RoundwoodJoinery::Joinery::Joint joint(faces);
-    std::vector<RoundwoodJoinery::Joinery::JointGroup> jointGroups = {RoundwoodJoinery::Joinery::JointGroup({std::make_shared<RoundwoodJoinery::Joinery::Joint>(joint)})};
+    std::shared_ptr<RoundwoodJoinery::Joinery::Joint> joint = std::make_shared<RoundwoodJoinery::Joinery::Joint>(faces);
+    std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::JointGroup>> jointGroups = {std::make_shared<RoundwoodJoinery::Joinery::JointGroup>(std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::Joint>>{joint})};
 
     // Computing the skeleton of the pointcloud
     RoundwoodJoinery::PointCloud::PointCloud pointCloud = RoundwoodJoinery::PointCloud::PointCloud();
@@ -43,9 +44,9 @@ int main()
         std::cout << "Beam reference diameter incorrect: " << retrievedReferenceDiameter << std::endl;
         return 1;
     }
-    if (beam.GetJointGroups()[0].GetJoints()[0]->GetFaces()[0]->GetNormal() != Eigen::Vector3d(0.0, 0.0, 1.0))
+    if (beam.GetJointGroups()[0]->GetJoints()[0]->GetFaces()[0]->GetNormal() != Eigen::Vector3d(0.0, 0.0, 1.0))
     {
-        std::cout << "Beam joint face normal should have been flipped to (0,0,1) but is: " << beam.GetJointGroups()[0].GetJoints()[0]->GetFaces()[0]->GetNormal().transpose() << std::endl;
+        std::cout << "Beam joint face normal should have been flipped to (0,0,1) but is: " << beam.GetJointGroups()[0]->GetJoints()[0]->GetFaces()[0]->GetNormal().transpose() << std::endl;
         return 1;
     }
     if (beam.GetJointGroups().size() != jointGroups.size())
@@ -58,7 +59,9 @@ int main()
 
     int maxIterations = 100;
     double minRelativeTranslationRMSE = 1.0; // mm
-    std::vector<Eigen::Matrix4d> transformations = beam.ComputeJointGroupOptimisation(maxIterations, minRelativeTranslationRMSE);
+    std::cout << "Starting optimization..." << std::endl;
+    std::vector<Eigen::Matrix4d> transformations = beam.ComputeJointGroupOptimisation(maxIterations, minRelativeTranslationRMSE, std::optional<std::string>("area_ratios.csv"));
+    std::cout << "Optimization completed." << std::endl;
     for (size_t index = 0; index < transformations.size(); ++index)
     {
         std::cout << "---> Transformation: " << std::endl << transformations[index] << std::endl;
