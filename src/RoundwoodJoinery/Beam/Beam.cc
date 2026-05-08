@@ -3,7 +3,7 @@
 namespace RoundwoodJoinery::Beam
 {
     Beam::Beam(double referenceDiameter, 
-        std::vector<Joinery::JointGroup> jointGroups, 
+        std::vector<std::shared_ptr<Joinery::JointGroup>> jointGroups, 
         std::vector<Eigen::Vector3d> skeleton, 
         RoundwoodJoinery::PointCloud::PointCloud pointCloud)
             : _referenceDiameter(referenceDiameter), 
@@ -11,9 +11,9 @@ namespace RoundwoodJoinery::Beam
               _skeleton(skeleton), 
               _pointCloud(pointCloud)
     {
-        for (Joinery::JointGroup& jointGroup : this->_jointGroups)
+        for (std::shared_ptr<Joinery::JointGroup>& jointGroup : this->_jointGroups)
         {
-            for (std::shared_ptr<Joinery::Joint>& joint : jointGroup.GetJoints())
+            for (std::shared_ptr<Joinery::Joint>& joint : jointGroup->GetJoints())
             {
                 Eigen::Vector3d closestPointOnSkeleton = this->_FindClosestPointOnSkeleton(joint->GetCenter());
                 joint->SetClosestPointOnSkeleton(closestPointOnSkeleton);
@@ -45,13 +45,13 @@ namespace RoundwoodJoinery::Beam
                 std::vector<Eigen::Vector3d> jointCentersBeforeTransformation;
                 std::vector<Eigen::Vector3d> jointCentersAfterTransformation;
 
-                for (auto& joint : this->_jointGroups[i].GetJoints())
+                for (auto& joint : this->_jointGroups[i]->GetJoints())
                 {
                     jointCentersBeforeTransformation.push_back(joint->GetCenter());
                 }
-                this->_jointGroups[i].ApplyTransformation(transformations[i]);
+                this->_jointGroups[i]->ApplyTransformation(transformations[i]);
 
-                for (auto& joint : this->_jointGroups[i].GetJoints())
+                for (auto& joint : this->_jointGroups[i]->GetJoints())
                 {
                     jointCentersAfterTransformation.push_back(joint->GetCenter());
                 }
@@ -115,7 +115,7 @@ namespace RoundwoodJoinery::Beam
         for (auto& jointGroup : this->_jointGroups)
         {
             std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> groupTranslations;
-            for (auto& joint : jointGroup.GetJoints())
+            for (auto& joint : jointGroup->GetJoints())
             {
                 for (std::shared_ptr<RoundwoodJoinery::Joinery::JointFace>& face : joint->GetFaces())
                 {

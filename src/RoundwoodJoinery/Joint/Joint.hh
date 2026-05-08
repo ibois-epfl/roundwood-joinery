@@ -136,13 +136,16 @@ namespace RoundwoodJoinery::Joinery
         public:
             Joint(std::vector<std::shared_ptr<JointFace>> faces);
             Joint() = default;
-            ~Joint() = default;
+            ~Joint()
+            {
+                std::cout << "Joint destroyed at " << this << std::endl;
+            }
 
             /**
             * @brief Returns the faces that make up the joint.
             * @return A vector of JointFace objects representing the faces of the joint.
             */
-            std::vector<std::shared_ptr<JointFace>> GetFaces()
+            std::vector<std::shared_ptr<JointFace>>& GetFaces()
             {
                 return this->_faces;
             }
@@ -208,7 +211,7 @@ namespace RoundwoodJoinery::Joinery
             * @brief Returns the joints that make up the joint group.
             * @return A vector of shared pointers to Joint objects representing the joints in the group.
             */
-            std::vector<std::shared_ptr<Joint>> GetJoints()
+            std::vector<std::shared_ptr<Joint>>& GetJoints()
             {
                 return this->_joints;
             }
