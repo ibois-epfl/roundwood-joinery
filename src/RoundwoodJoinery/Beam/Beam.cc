@@ -176,7 +176,14 @@ namespace RoundwoodJoinery::Beam
                     double deltaArea = (currentArea / targetArea) - 1;
                     Eigen::Vector3d closestPointOnSkeleton = this->_FindClosestPointOnSkeleton(currentCenter);
 
-                    double translationMagnitude = deltaArea * (this->_referenceDiameter / 2.0) * 0.25; // 0.25 is a damping factor to prevent overshooting
+                    double dampingFactor = 0.25;
+                    if ((currentCenter - closestPointOnSkeleton).norm() < this->_referenceDiameter / 2.0)
+                    {
+                        double f = std::cos(std::asin(std::min((currentCenter - closestPointOnSkeleton).norm() / (this->_referenceDiameter / 2.0), 1.0))) + 0.01; // The +0.01 prevents the factor from becoming exactly 0, which would cause no translation and thus no optimization for faces very close to the skeleton
+                        dampingFactor = f * dampingFactor;
+                    }
+
+                    double translationMagnitude = deltaArea * (this->_referenceDiameter / 2.0) * dampingFactor; // 0.25 is a damping factor to prevent overshooting
                     double expectedNewDepth = currentDepth - translationMagnitude;
 
                     // Create hard floor for depth if maxProjectionDistance is set for the face
