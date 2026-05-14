@@ -33,6 +33,7 @@ NB_MODULE(roundwoodJoineryBindings, m)
         .def("project_points_onto_face", &RoundwoodJoinery::Joinery::JointFace::ProjectPointsOntoFace,
              "Project points from the beam's point cloud onto the joint face and return the projected points that are within the face outline",
              nb::arg("pointCloud"),
+             nb::arg("radiusSearch"),
              nb::arg("maxProjectionDistance") = std::nullopt)
         .def("get_normal", &RoundwoodJoinery::Joinery::JointFace::GetNormal)
         .def("get_corners", &RoundwoodJoinery::Joinery::JointFace::GetCorners)
@@ -42,10 +43,12 @@ NB_MODULE(roundwoodJoineryBindings, m)
         .def("compute_current_area_and_depth", &RoundwoodJoinery::Joinery::JointFace::ComputeCurrentAreaAndDepth,
              "Compute the current area and depth of the joint face based on the projected points from the beam's point cloud",
              nb::arg("beamPointCloud"),
+             nb::arg("radiusSearch"),
              nb::arg("alpha") = 500.0)
         .def("get_current_outline", &RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline, 
              "Get the current outline of the joint face based on the projected points from the beam's point cloud", 
              nb::arg("beamPointCloud"), 
+             nb::arg("radiusSearch"),
              nb::arg("alpha") = 500.0);
 
 
@@ -99,7 +102,8 @@ NB_MODULE(roundwoodJoineryBindings, m)
         .def("compute_joint_group_optimisation", &RoundwoodJoinery::Beam::Beam::ComputeJointGroupOptimisation, 
              "Compute an optimization of the joint group transformations to better align the joint faces with the beam's point cloud skeleton",
              nb::arg("maxIterations") = 10, 
-             nb::arg("minRelativeTranslationRMSE") = 1.0);
+             nb::arg("minRelativeTranslationRMSE") = 1.0,
+             nb::arg("outputFolderPath") = std::nullopt);
 
         nb::module_ u = m.def_submodule("Utils", "Utility functions for Roundwood Joinery");
 

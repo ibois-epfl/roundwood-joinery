@@ -26,10 +26,11 @@ namespace RoundwoodJoinery::Joinery
              * @brief Projects points from the point cloud onto the joint face.
              * 
              * @param pointCloud The point cloud containing the points to be projected.
+             * @param radiusSearch The radius within which to search for neighboring points.
              * @param maxProjectionDistance Optional maximum projection distance. The value will be updated with the maximum distance of the projected points, if provided.
              * @return A vector of Eigen::Vector3d representing the projected points.
              */
-            std::vector<Eigen::Vector3d> ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, std::optional<double> maxProjectionDistance = std::nullopt);
+            std::vector<Eigen::Vector3d> ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, std::optional<double> maxProjectionDistance = std::nullopt);
 
             // Getters and small utils
             /**
@@ -95,19 +96,21 @@ namespace RoundwoodJoinery::Joinery
             * @brief Computes the current area of the joint face based on the points from the beam's point cloud that are projected onto the face.
             * 
             * @param pointCloud The point cloud of the beam to which the joint face belongs.
+            * @param radiusSearch The radius within which to search for neighboring points when projecting onto the face.
             * @param alpha The alpha parameter for the alpha shape computation, which is used to determine the outline of the projected points.
             * @return The computed current area of the joint face and the maximum projection distance (aka depth of the joint face).
             */
-            std::pair<double, double> ComputeCurrentAreaAndDepth(PointCloud::PointCloud& pointCloud, double alpha = 500.0);
+            std::pair<double, double> ComputeCurrentAreaAndDepth(PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha = 500.0);
 
             /**
             * @brief Returns the current outline of the joint face based on the points from the beam's point cloud that are projected onto the face.
             * 
             * @param pointCloud The point cloud of the beam to which the joint face belongs.
+            * @param radiusSearch The radius within which to search for neighboring points when projecting onto the face.
             * @param alpha The alpha parameter for the alpha shape computation, which is used to determine the outline of the projected points.
             * @return A vector of Eigen::Vector3d representing the current outline of the joint face.
             */
-            std::vector<Eigen::Vector3d> GetCurrentOutline(PointCloud::PointCloud& pointCloud, double alpha = 500.0);
+            std::vector<Eigen::Vector3d> GetCurrentOutline(PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha = 500.0);
 
 
             void ApplyTransformation(Eigen::Matrix4d transformation);

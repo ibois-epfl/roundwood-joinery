@@ -169,7 +169,7 @@ namespace RoundwoodJoinery::Beam
                 {
                     Eigen::Vector3d currentCenter = face->GetCenter();
                     double targetArea = face->GetTargetArea();
-                    std::pair<double, double> currentAreaAndDepth = face->ComputeCurrentAreaAndDepth(this->_pointCloud);
+                    std::pair<double, double> currentAreaAndDepth = face->ComputeCurrentAreaAndDepth(this->_pointCloud, this->_referenceDiameter);
                     double currentArea = currentAreaAndDepth.first;
                     double currentDepth = currentAreaAndDepth.second;
 

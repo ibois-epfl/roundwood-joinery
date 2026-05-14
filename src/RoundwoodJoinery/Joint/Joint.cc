@@ -13,27 +13,14 @@ namespace RoundwoodJoinery::Joinery
         this->_outline_polygon = std::move(Utils::Compute2DPolygon(corners, normal));
     }
 
-    std::vector<Eigen::Vector3d> JointFace::ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, std::optional<double> maxProjectionDistance)
+    std::vector<Eigen::Vector3d> JointFace::ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, std::optional<double> maxProjectionDistance)
     {
         // First some basic data about joint face
         Eigen::Vector3d jointCenter = this->_center;
-        Eigen::Vector3d firstCorner = this->_corners[0];
-        Eigen::Vector3d farthestCorner = this->_corners[0];
-        double maxDistance = 0.0;
-        for (const auto& corner : this->_corners)
-        {
-            double distance = (corner - firstCorner).norm();
-            if (distance > maxDistance)
-            {
-                maxDistance = distance;
-                farthestCorner = corner;
-            }
-        }
-        double sphereRadius = maxDistance / 2.0;
 
         //TODO : remove timing before release 0.1.0
         auto t1 = std::chrono::high_resolution_clock::now();
-        Fuzzy_sphere fuzzySphere(Point(jointCenter.x(), jointCenter.y(), jointCenter.z()), sphereRadius);
+        Fuzzy_sphere fuzzySphere(Point(jointCenter.x(), jointCenter.y(), jointCenter.z()), radiusSearch);
         std::vector<Point> neighborhoodPoints;
         std::shared_ptr<CGAL::Kd_tree<Traits>> tree = pointCloud.BuildKdTree();
         tree->search(std::back_inserter(neighborhoodPoints), fuzzySphere);
@@ -80,10 +67,10 @@ namespace RoundwoodJoinery::Joinery
         return projectedPoints;
     }
 
-    std::pair<double, double> RoundwoodJoinery::Joinery::JointFace::ComputeCurrentAreaAndDepth(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double alpha)
+    std::pair<double, double> RoundwoodJoinery::Joinery::JointFace::ComputeCurrentAreaAndDepth(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha)
     {
         std::optional<double> maxProjectionDistance = 0.0;
-        this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud, maxProjectionDistance);
+        this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud, radiusSearch, maxProjectionDistance);
 
         if (this->_projectedPoints.size() < 3)
         {
@@ -107,11 +94,11 @@ namespace RoundwoodJoinery::Joinery
         return {this->_currentArea, double(*maxProjectionDistance)};
     }
 
-    std::vector<Eigen::Vector3d> RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double alpha)
+    std::vector<Eigen::Vector3d> RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha)
     {
         if (this->_projectedPoints.empty())
         {
-            this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud);
+            this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud, radiusSearch);
         }
 
         if (this->_projectedPoints.size() < 3)
