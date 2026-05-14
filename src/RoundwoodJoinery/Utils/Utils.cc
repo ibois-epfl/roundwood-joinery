@@ -29,15 +29,41 @@ namespace RoundwoodJoinery::Utils
         std::vector<Eigen::Vector3d> skeleton = std::vector<Eigen::Vector3d>();
         auto point = cgalSkeletonGraph[0].point;
         skeleton.emplace_back(point[0], point[1], point[2]);
+        double minX = point[0];
+        double maxX = point[0];
+        double minY = point[1];
+        double maxY = point[1];
+        double minZ = point[2];
+        double maxZ = point[2];
+        for(int v = 1; v < boost::num_vertices(cgalSkeletonGraph); v++)
+        {
+            auto point = cgalSkeletonGraph[v].point;
+            if (point[0] < minX) minX = point[0];
+            if (point[0] > maxX) maxX = point[0];
+            if (point[1] < minY) minY = point[1];
+            if (point[1] > maxY) maxY = point[1];
+            if (point[2] < minZ) minZ = point[2];
+            if (point[2] > maxZ) maxZ = point[2];
+        }
+        double xRange = maxX - minX;
+        double yRange = maxY - minY;
+        double zRange = maxZ - minZ;
+
+        int longestAxis = 0;
+
+        if(xRange > yRange && xRange > zRange){longestAxis = 0;}
+        else if (yRange > xRange && yRange > zRange){longestAxis = 1;} 
+        else{longestAxis = 2;}
+        
         std::vector<std::array<double, 3>> meshVertexPositions;
 
         for (int v = 1; v < boost::num_vertices(cgalSkeletonGraph); v++)
         {
             auto point = cgalSkeletonGraph[v].point;
-            // sorting along x coordinates
+            // sorting along the longest axis
             for (int i = 0; i < skeleton.size(); i++)
             {
-                if (point[0] < skeleton[i][0])
+                if (point[longestAxis] < skeleton[i][longestAxis])
                 {
                     skeleton.insert(skeleton.begin() + i, Eigen::Vector3d(point[0], point[1], point[2]));
                     break;
