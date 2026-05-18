@@ -27,6 +27,7 @@ namespace RoundwoodJoinery::Joinery
              * 
              * @param pointCloud The point cloud containing the points to be projected.
              * @param radiusSearch The radius within which to search for neighboring points.
+             * @param minProjectionDistance Optional minimum projection distance. The value will be updated with the minimum distance of the projected points, if provided.
              * @param maxProjectionDistance Optional maximum projection distance. The value will be updated with the maximum distance of the projected points, if provided.
              * @return A vector of Eigen::Vector3d representing the projected points.
              */
@@ -98,9 +99,9 @@ namespace RoundwoodJoinery::Joinery
             * @param pointCloud The point cloud of the beam to which the joint face belongs.
             * @param radiusSearch The radius within which to search for neighboring points when projecting onto the face.
             * @param alpha The alpha parameter for the alpha shape computation, which is used to determine the outline of the projected points.
-            * @return The computed current area of the joint face and the maximum projection distance (aka depth of the joint face).
+            * @return The computed current area of the joint face, the minimum projection distance and maximum projection distances (so the depth range) of the joint face.
             */
-            std::pair<double, double> ComputeCurrentAreaAndDepth(PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha = 500.0);
+            std::vector<double> ComputeCurrentAreaAndDepths(PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha = 500.0);
 
             /**
             * @brief Returns the current outline of the joint face based on the points from the beam's point cloud that are projected onto the face.

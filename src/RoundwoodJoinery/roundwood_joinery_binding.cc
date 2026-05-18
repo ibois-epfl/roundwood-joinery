@@ -43,7 +43,7 @@ NB_MODULE(roundwoodJoineryBindings, m)
         .def("get_max_allowable_depth", &RoundwoodJoinery::Joinery::JointFace::GetMaxAllowableDepth)
         .def("get_target_area", &RoundwoodJoinery::Joinery::JointFace::GetTargetArea)
         .def("get_current_area", &RoundwoodJoinery::Joinery::JointFace::GetCurrentArea)
-        .def("compute_current_area_and_depth", &RoundwoodJoinery::Joinery::JointFace::ComputeCurrentAreaAndDepth,
+        .def("compute_current_area_and_depths", &RoundwoodJoinery::Joinery::JointFace::ComputeCurrentAreaAndDepths,
              "Compute the current area and depth of the joint face based on the projected points from the beam's point cloud",
              nb::arg("beamPointCloud"),
              nb::arg("radiusSearch"),
