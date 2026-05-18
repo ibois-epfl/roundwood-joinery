@@ -54,19 +54,19 @@ int main()
         std::cout << "Beam joint groups incorrect: " << beam.GetJointGroups().size() << std::endl;
         return 1;
     }
-    double initialArea = face1->ComputeCurrentAreaAndDepth(pointCloud, 500.0).first;
+    double initialArea = face1->ComputeCurrentAreaAndDepths(pointCloud, 500.0)[0];
     std::cout << "Initial Joint Face area: " << initialArea << std::endl;
 
     int maxIterations = 100;
     double minRelativeTranslationRMSE = 1.0; // mm
     std::cout << "Starting optimization..." << std::endl;
-    std::vector<Eigen::Matrix4d> transformations = beam.ComputeJointGroupOptimisation(maxIterations, minRelativeTranslationRMSE, std::optional<std::string>("area_ratios.csv"));
+    std::vector<Eigen::Matrix4d> transformations = beam.ComputeJointGroupOptimisation(maxIterations, minRelativeTranslationRMSE, "area_ratios.csv");
     std::cout << "Optimization completed." << std::endl;
     for (size_t index = 0; index < transformations.size(); ++index)
     {
         std::cout << "---> Transformation: " << std::endl << transformations[index] << std::endl;
     }
-    double finalArea = face1->ComputeCurrentAreaAndDepth(pointCloud, 500.0).first;
+    double finalArea = face1->ComputeCurrentAreaAndDepths(pointCloud, 500.0)[0];
     std::cout << "Final Joint Face area: " << finalArea << std::endl;
     return 0;
 }
