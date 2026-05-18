@@ -25,12 +25,12 @@ NB_MODULE(roundwoodJoineryBindings, m)
         .def(nb::init<Eigen::Vector3d, 
                       std::vector<Eigen::Vector3d>, 
                       double, 
-                      std::optional<double>>(), 
+                      double>(), 
                       "Constructor for JointFace with normal, corners, target area, and optional max projection distance",
                       nb::arg("normal"), 
                       nb::arg("corners"), 
                       nb::arg("targetArea") = 0.0,
-                      nb::arg("maxProjectionDistance") = std::nullopt)
+                      nb::arg("maxAllowableDepth") = 50.0)
         .def("project_points_onto_face", &RoundwoodJoinery::Joinery::JointFace::ProjectPointsOntoFace,
              "Project points from the beam's point cloud onto the joint face and return the projected points that are within the face outline",
              nb::arg("pointCloud"),
@@ -39,6 +39,7 @@ NB_MODULE(roundwoodJoineryBindings, m)
         .def("get_normal", &RoundwoodJoinery::Joinery::JointFace::GetNormal)
         .def("get_corners", &RoundwoodJoinery::Joinery::JointFace::GetCorners)
         .def("get_center", &RoundwoodJoinery::Joinery::JointFace::GetCenter)
+        .def("get_max_allowable_depth", &RoundwoodJoinery::Joinery::JointFace::GetMaxAllowableDepth)
         .def("get_target_area", &RoundwoodJoinery::Joinery::JointFace::GetTargetArea)
         .def("get_current_area", &RoundwoodJoinery::Joinery::JointFace::GetCurrentArea)
         .def("compute_current_area_and_depth", &RoundwoodJoinery::Joinery::JointFace::ComputeCurrentAreaAndDepth,

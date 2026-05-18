@@ -186,10 +186,10 @@ namespace RoundwoodJoinery::Beam
                     double translationMagnitude = deltaArea * (this->_referenceDiameter / 2.0) * dampingFactor; // 0.25 is a damping factor to prevent overshooting
                     double expectedNewDepth = currentDepth - translationMagnitude;
 
-                    // Create hard floor for depth if maxProjectionDistance is set for the face
-                    if(face->GetMaxProjectionDistance() > 0.0 && expectedNewDepth > face->GetMaxProjectionDistance())
+                    // Create hard floor for depth if maxAllowableDepth is set for the face
+                    if(face->GetMaxAllowableDepth() > 0.0 && expectedNewDepth > face->GetMaxAllowableDepth())
                     {
-                        translationMagnitude = (face->GetMaxProjectionDistance() / expectedNewDepth) * translationMagnitude;
+                        translationMagnitude = (face->GetMaxAllowableDepth() / expectedNewDepth) * translationMagnitude;
                     }
                     Eigen::Vector3d translationDirection = face->GetNormal().normalized();
                     Eigen::Vector3d translation = translationMagnitude * translationDirection;

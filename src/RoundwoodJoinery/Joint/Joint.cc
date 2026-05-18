@@ -2,8 +2,8 @@
 
 namespace RoundwoodJoinery::Joinery
 {
-    RoundwoodJoinery::Joinery::JointFace::JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners, double targetArea, std::optional<double> maxProjectionDistance)
-        : _normal(normal), _corners(corners), _originalCorners(corners), _targetArea(targetArea), _maxProjectionDistance(maxProjectionDistance.value_or(0.0))
+    RoundwoodJoinery::Joinery::JointFace::JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners, double targetArea, double maxAllowableDepth)
+        : _normal(normal), _corners(corners), _originalCorners(corners), _targetArea(targetArea), _maxAllowableDepth(maxAllowableDepth)
     {
         Eigen::Vector3d center = Eigen::Vector3d::Zero();
         for (const auto& corner : corners){center += corner;}

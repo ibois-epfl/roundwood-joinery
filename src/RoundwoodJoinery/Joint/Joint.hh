@@ -19,7 +19,7 @@ namespace RoundwoodJoinery::Joinery
     class JointFace
     {
         public:
-            JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners, double targetArea = 0.0, std::optional<double> maxProjectionDistance = std::nullopt);
+            JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners, double targetArea = 0.0, double maxAllowableDepth = 50.0);
             ~JointFace() = default;
 
             /**
@@ -30,7 +30,7 @@ namespace RoundwoodJoinery::Joinery
              * @param maxProjectionDistance Optional maximum projection distance. The value will be updated with the maximum distance of the projected points, if provided.
              * @return A vector of Eigen::Vector3d representing the projected points.
              */
-            std::vector<Eigen::Vector3d> ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, std::optional<double> maxProjectionDistance = std::nullopt);
+            std::vector<Eigen::Vector3d> ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double& minProjectionDistance, double& maxProjectionDistance);
 
             // Getters and small utils
             /**
@@ -84,12 +84,12 @@ namespace RoundwoodJoinery::Joinery
             }
 
             /**
-            * @brief Returns the maximum projection distance (aka depth) of the joint face.
-            * @return The maximum projection distance of the joint face.
+            * @brief Returns the maximum allowable projection distance (aka depth) of the joint face.
+            * @return The maximum allowable projection distance of the joint face.
             */
-            double GetMaxProjectionDistance() const
+            double GetMaxAllowableDepth() const
             {
-                return this->_maxProjectionDistance;
+                return this->_maxAllowableDepth;
             }
 
             /**
@@ -121,7 +121,7 @@ namespace RoundwoodJoinery::Joinery
             std::vector<Eigen::Vector3d> _corners;
             std::vector<Eigen::Vector3d> _originalCorners; // A backup should it be useful...
             double _targetArea;
-            double _maxProjectionDistance = 0.0;
+            double _maxAllowableDepth = 50.0;
             double _currentArea;
             std::vector<Eigen::Vector3d> _projectedPoints;
             
