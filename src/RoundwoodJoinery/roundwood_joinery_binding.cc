@@ -35,7 +35,8 @@ NB_MODULE(roundwoodJoineryBindings, m)
              "Project points from the beam's point cloud onto the joint face and return the projected points that are within the face outline",
              nb::arg("pointCloud"),
              nb::arg("radiusSearch"),
-             nb::arg("maxProjectionDistance") = std::nullopt)
+             nb::arg("minProjectionDistance"),
+             nb::arg("maxProjectionDistance"))
         .def("get_normal", &RoundwoodJoinery::Joinery::JointFace::GetNormal)
         .def("get_corners", &RoundwoodJoinery::Joinery::JointFace::GetCorners)
         .def("get_center", &RoundwoodJoinery::Joinery::JointFace::GetCenter)
