@@ -161,6 +161,20 @@ namespace RoundwoodJoinery::Beam
     std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> Beam::_ComputeJointFaceTranslationsForOptimisation()
     {
         std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> anchorPointsAndTranslations;
+        double cumulatedAreas = 0.0;
+        int faceCount = 0;
+        for (auto& jointGroup : this->_jointGroups)
+        {
+            for (auto& joint : jointGroup->GetJoints())
+            {
+                for (std::shared_ptr<Joinery::JointFace>& face : joint->GetFaces())
+                {
+                    cumulatedAreas += face->GetTargetArea();
+                    faceCount++;
+                }
+            }
+        }
+        double averageTargetArea = cumulatedAreas / faceCount;
 
         for (auto& jointGroup : this->_jointGroups)
         {
@@ -175,19 +189,30 @@ namespace RoundwoodJoinery::Beam
                     double currentArea = currentAreaAndDepths[0];
                     double minProjectionDistance = currentAreaAndDepths[1];
                     double currentDepth = currentAreaAndDepths[2];
+ 
+                    if (currentArea < 10.0 && targetArea > 0.0) // If current area is very small, we can get extreme ratios, so we set a floor to avoid numerical issues
+                    {
+                        currentArea = 10.0; // Avoid division by zero
+                    }
 
-                    double areaRatio = (currentArea / targetArea);
+                    double areaRatio = currentArea / targetArea;
+                    double inverseAreaRatio = targetArea / currentArea;
+                    areaRatio = inverseAreaRatio;
+
                     Eigen::Vector3d closestPointOnSkeleton = this->_FindClosestPointOnSkeleton(currentCenter);
 
                     double distanceFromCenter = (currentCenter - closestPointOnSkeleton).norm();
-                    double diffRadiusDistance = std::pow(this->_referenceDiameter, 2) - std::pow(distanceFromCenter, 2);
-                    diffRadiusDistance = std::max(std::min(diffRadiusDistance, 2.0), 0.0); // Clamp to avoid numerical issues
+                    double diffRadiusDistance = std::pow(this->_referenceDiameter/2, 2) - std::pow(distanceFromCenter, 2);
+                    areaRatio = std::max(std::min(areaRatio, 2.0), 0.1); // Clamp to avoid numerical issues
                     int orientationSign = 1;
-                    if (areaRatio < 1.0)
+                    if (areaRatio > 1.0)
                     {
                         orientationSign = -1;
                     }
-                    double translationMagnitude = orientationSign * (std::sqrt(std::pow(this->_referenceDiameter, 2) - (std::pow(areaRatio, 2) * diffRadiusDistance)) - distanceFromCenter);
+                    
+                    double power = std::max(0.0, std::pow(this->_referenceDiameter/2, 2) - (std::pow(areaRatio, 2) * diffRadiusDistance));
+
+                    double translationMagnitude = orientationSign * std::abs((std::sqrt(power) - distanceFromCenter));
                     double expectedNewDepth = currentDepth - translationMagnitude;
 
                     // Create hard floor for depth if maxAllowableDepth is set for the face
@@ -197,7 +222,9 @@ namespace RoundwoodJoinery::Beam
                     }
                     
                     Eigen::Vector3d translationDirection = face->GetNormal().normalized();
-                    Eigen::Vector3d translation = translationMagnitude * translationDirection * 0.1;
+                    double weight = std::pow((targetArea / averageTargetArea), 0.250); 
+                    weight = std::min(weight, 1.0) * 0.15; // Clamp weight to avoid extreme transformations
+                    Eigen::Vector3d translation = translationMagnitude * translationDirection * weight;
 
                     for (Eigen::Vector3d& corner : face->GetCorners())
                     {
