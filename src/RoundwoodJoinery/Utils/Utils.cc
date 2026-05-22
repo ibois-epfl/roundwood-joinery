@@ -249,4 +249,25 @@ namespace RoundwoodJoinery::Utils
 
         return meanTransformation;
     }
+
+    Eigen::Matrix4d ComputeCurveToCurveTransformation(const std::vector<Eigen::Vector3d>& sourceCurve, const std::vector<Eigen::Vector3d>& targetCurve)
+    {
+        cpd::Matrix source(sourceCurve.size(), 3);
+        cpd::Matrix target(targetCurve.size(), 3);
+
+        for (size_t i = 0; i < sourceCurve.size(); ++i)
+        {
+            source.row(i) = sourceCurve[i];
+        }
+        for (size_t i = 0; i < targetCurve.size(); ++i)
+        {
+            target.row(i) = targetCurve[i];
+        }
+        cpd::RigidResult result = cpd::rigid(source, target);
+        cpd::Matrix transform = result.matrix();
+        Eigen::Matrix4d transformation = Eigen::Matrix4d::Identity();
+        transformation.block<3, 3>(0, 0) = transform.block<3, 3>(0, 0);
+        transformation.block<3, 1>(0, 3) = transform.block<3, 1>(0, 3);
+        return transformation;
+    }
 }
