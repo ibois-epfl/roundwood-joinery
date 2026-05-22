@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.18)
 
-file(READ "${CMAKE_CURRENT_SOURCE_DIR}/version" PROJECT_VERSION_RAW)
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" PROJECT_VERSION_RAW)
 string(STRIP "${PROJECT_VERSION_RAW}" PROJECT_VERSION)
 
 project (roundwood_joinery VERSION ${PROJECT_VERSION})
@@ -42,6 +42,7 @@ endif()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/3rd_party/eigen)
 target_include_directories(${SHARED_LIB_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src/3rd_party/eigen)
 
+
 # Boost
 file(GLOB BOOST_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/3rd_party/boost/libs/*/include")
 foreach(dir ${BOOST_INCLUDE_DIRS})
@@ -49,6 +50,7 @@ foreach(dir ${BOOST_INCLUDE_DIRS})
     include_directories(${dir})
     target_include_directories(${SHARED_LIB_NAME} PUBLIC ${dir})
 endforeach()
+
 
 # CGAL
 file(GLOB CGAL_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/3rd_party/cgal/*/include")
@@ -73,6 +75,22 @@ endif()
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/3rd_party/nanobind)
 nanobind_add_module(${BINDINGS_MODULE_NAME} ${PROJECT_SOURCE_DIR}/src/RoundwoodJoinery/roundwood_joinery_binding.cc)
 target_link_libraries(${BINDINGS_MODULE_NAME} PRIVATE ${SHARED_LIB_NAME})
+
+
+# CPD
+set(WITH_TESTS OFF)
+list(PREPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/3rd_party/cpd)
+
+# Because CPD is a static lib an d I use a shared lib...
+if(TARGET Library-C++)
+    set_target_properties(Library-C++ PROPERTIES POSITION_INDEPENDENT_CODE ON)
+endif()
+
+
+target_include_directories(${SHARED_LIB_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/3rd_party/cpd/include")
+target_link_libraries(${SHARED_LIB_NAME} PUBLIC Library-C++)
+
 
 
 #############
