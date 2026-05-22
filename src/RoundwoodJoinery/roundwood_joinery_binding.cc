@@ -129,4 +129,9 @@ NB_MODULE(roundwoodJoineryBindings, m)
         u.def("compute_approximating_transformation", &RoundwoodJoinery::Utils::ComputeApproximatingTransformation,
             "Compute an approximating transformation matrix based on a set of anchor points and their corresponding translations",
             nb::arg("anchorPointsAndTranslations"));
+
+        u.def("compute_curve_to_curve_transformation", &RoundwoodJoinery::Utils::ComputeCurveToCurveTransformation,
+            "Compute a transformation matrix that aligns a source curve to a target curve using coherent point drift",
+            nb::arg("sourceCurve"),
+            nb::arg("targetCurve"));
 }
