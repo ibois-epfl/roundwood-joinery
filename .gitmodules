@@ -13,3 +13,6 @@
 [submodule "src/3rd_party/boost"]
 	path = src/3rd_party/boost
 	url = https://github.com/boostorg/boost.git
+[submodule "src/3rd_party/cpd"]
+	path = src/3rd_party/cpd
+	url = https://github.com/gadomski/cpd.git
