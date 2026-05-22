@@ -22,7 +22,7 @@ int main()
     {
         testPoints.push_back(skeleton[i*10]);
     }
-    Eigen::Matrix3d rotation = Eigen::AngleAxisd(M_PI / 4, Eigen::Vector3d::UnitY()).toRotationMatrix();
+    Eigen::Matrix3d rotation = Eigen::AngleAxisd(RoundwoodJoinery::PI / 4, Eigen::Vector3d::UnitY()).toRotationMatrix();
     Eigen::Matrix4d transformation = Eigen::Matrix4d::Identity();
     transformation.block<3,3>(0,0) = rotation;
     transformation.block<3,1>(0,3) = Eigen::Vector3d(1000.0, 500.0, -300.0);
