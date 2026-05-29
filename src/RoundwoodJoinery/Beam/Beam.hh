@@ -88,7 +88,7 @@ namespace RoundwoodJoinery::Beam
         {
             std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> pointsAndTranslations = this->_ComputeJointFaceTranslationsForOptimisation();
             std::vector<Eigen::Matrix4d> transformations = RoundwoodJoinery::Utils::ComputeApproximatingTransformation(pointsAndTranslations);
-            Eigen::Matrix4d meanTransformation = RoundwoodJoinery::Utils::ComputeMeanTransformation(transformations);
+            Eigen::Matrix4d meanTransformation = RoundwoodJoinery::Utils::ComputeCollectiveApproximatingTransformation(pointsAndTranslations);
             std::vector<Eigen::Matrix4d> adaptedTransformations;
 
             for (size_t i = 0; i < transformations.size(); ++i)
