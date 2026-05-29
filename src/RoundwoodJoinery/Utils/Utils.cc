@@ -218,6 +218,39 @@ namespace RoundwoodJoinery::Utils
         return transformations;
     }
 
+    Eigen::Matrix4d ComputeCollectiveApproximatingTransformation(std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> groupedAnchorPointsAndTranslations)
+    {
+        Eigen::Matrix4d transformation;
+        int totalPairs = 0;
+        for(const auto& group : groupedAnchorPointsAndTranslations)
+        {
+            totalPairs += group.size();
+        }
+        Eigen::MatrixXd sourcePoints(3,totalPairs);
+        Eigen::MatrixXd targetPoints(3,totalPairs);
+
+        size_t colIndex = 0;
+
+        for (const auto& anchorPointsAndTranslations : groupedAnchorPointsAndTranslations)
+        {
+            for (size_t i = 0; i < anchorPointsAndTranslations.size(); ++i)
+            {
+                const auto& pair = anchorPointsAndTranslations[i];
+                sourcePoints.col(colIndex) = pair.first;
+                targetPoints.col(colIndex) = pair.first + pair.second;
+                ++colIndex;
+            }
+        }
+        transformation = Eigen::umeyama(sourcePoints, targetPoints, false);
+        if (transformation.hasNaN())
+        {
+            std::cerr << "Warning: Computed transformation contains NaN values. Check input data for validity." << std::endl;
+            
+            transformation = Eigen::Matrix4d::Identity();
+        }
+        return transformation;
+    }
+
     CGAL::Polygon_2<CGAL::Projection_traits_3<K>> Compute2DPolygon(std::vector<Eigen::Vector3d> points, Eigen::Vector3d normal)
     {
         Eigen::Vector3d normal_normalized = normal.normalized();
