@@ -192,39 +192,29 @@ namespace RoundwoodJoinery::Beam
  
                     if (currentArea < 10.0 && targetArea > 0.0) // If current area is very small, we can get extreme ratios, so we set a floor to avoid numerical issues
                     {
-                        currentArea = 10.0; // Avoid division by zero
+                        currentArea = 1.0; // Avoid division by zero
                     }
 
-                    double areaRatio = currentArea / targetArea;
-                    double inverseAreaRatio = targetArea / currentArea;
-                    areaRatio = inverseAreaRatio;
+                    double radius = this->_referenceDiameter / 2.0;
+                    double areaRatio = currentArea / std::max(targetArea, 1e-3);
 
-                    Eigen::Vector3d closestPointOnSkeleton = this->_FindClosestPointOnSkeleton(currentCenter);
+                    // log(areaRatio): zero at 1.0, positive when over, negative when under
+                    double error = std::log(areaRatio);
+                    error = std::clamp(error, -1.0, 1.0); // prevent wild steps
+                    error *= std::clamp(std::abs(1-areaRatio), 0.0, 1.0);
+                    double step = 0.1 * radius; // tune this gain
+                    double translationMagnitude = step * error; // negative: push in when ratio > 1
 
-                    double distanceFromCenter = (currentCenter - closestPointOnSkeleton).norm();
-                    double diffRadiusDistance = std::pow(this->_referenceDiameter/2, 2) - std::pow(distanceFromCenter, 2);
-                    areaRatio = std::max(std::min(areaRatio, 2.0), 0.1); // Clamp to avoid numerical issues
-                    int orientationSign = 1;
-                    if (areaRatio > 1.0)
+                    double largeAreaFavorism =  std::pow(targetArea / averageTargetArea, 2);
+                    largeAreaFavorism = std::clamp(largeAreaFavorism, 0.5, 2.0); // limit how much we favor large areas
+
+                    translationMagnitude *= largeAreaFavorism;
+                    if (face->GetMaxAllowableDepth() > 0.0 && currentDepth > face->GetMaxAllowableDepth())
                     {
-                        orientationSign = -1;
+                        translationMagnitude = currentDepth - face->GetMaxAllowableDepth();
                     }
-                    
-                    double power = std::max(0.0, std::pow(this->_referenceDiameter/2, 2) - (std::pow(areaRatio, 2) * diffRadiusDistance));
 
-                    double translationMagnitude = orientationSign * std::abs((std::sqrt(power) - distanceFromCenter));
-                    double expectedNewDepth = currentDepth - translationMagnitude;
-
-                    // Create hard floor for depth if maxAllowableDepth is set for the face
-                    if(face->GetMaxAllowableDepth() > 0.0 && expectedNewDepth > face->GetMaxAllowableDepth())
-                    {
-                        translationMagnitude = (face->GetMaxAllowableDepth() / expectedNewDepth) * translationMagnitude;
-                    }
-                    
-                    Eigen::Vector3d translationDirection = face->GetNormal().normalized();
-                    double weight = std::pow((targetArea / averageTargetArea), 0.250); 
-                    weight = std::min(weight, 1.0) * 0.15; // Clamp weight to avoid extreme transformations
-                    Eigen::Vector3d translation = translationMagnitude * translationDirection * weight;
+                    Eigen::Vector3d translation = translationMagnitude * face->GetNormal().normalized();
 
                     for (Eigen::Vector3d& corner : face->GetCorners())
                     {
