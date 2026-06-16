@@ -23,7 +23,7 @@
                 "scriptParamAccess": "list",
                 "wireDisplay": "default",
                 "sourceCount": 0,
-                "typeHintID": "none"
+                "typeHintID": "point"
             },
             {
                 "name": "i_skeleton",
@@ -32,10 +32,10 @@
                 "optional": false,
                 "allowTreeAccess": true,
                 "showTypeHints": true,
-                "scriptParamAccess": "item",
+                "scriptParamAccess": "list",
                 "wireDisplay": "default",
                 "sourceCount": 0,
-                "typeHintID": "none"
+                "typeHintID": "point"
             }
         ],
         "outputParameters": [
