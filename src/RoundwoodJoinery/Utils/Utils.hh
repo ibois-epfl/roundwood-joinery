@@ -32,6 +32,9 @@
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_3 Point_3;
 
+// for Coherent Point Drift
+#include <cpd/rigid.hpp>
+
 #include "../PointCloud/PointCloud.hh"
 
 namespace RoundwoodJoinery::Utils
@@ -84,6 +87,14 @@ namespace RoundwoodJoinery::Utils
     std::vector<Eigen::Matrix4d> ComputeApproximatingTransformation(std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> groupedAnchorPointsAndTranslations);
 
 
+    /**
+     * @brief Computes a transformation matrix that aligns a source curve to a target curve using coherent point drift. This methods allows for 2 sets of point of different size, and only partial overlap.
+     * 
+     * @param sourceCurve The source curve represented as a vector of 3D points.
+     * @param targetCurve The target curve represented as a vector of 3D points.
+     * @return A 4x4 transformation matrix that aligns the source curve to the target curve.
+     */
+    Eigen::Matrix4d ComputeCurveToCurveTransformation(const std::vector<Eigen::Vector3d>& sourceCurve, const std::vector<Eigen::Vector3d>& targetCurve);
     /**
      * @brief Computes a 2D polygon from a set of 3D points projected onto a plane defined by a normal vector.
      * 
