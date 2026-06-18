@@ -2,8 +2,8 @@
 
 namespace RoundwoodJoinery::Joinery
 {
-    RoundwoodJoinery::Joinery::JointFace::JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners, double targetArea, std::optional<double> maxProjectionDistance)
-        : _normal(normal), _corners(corners), _originalCorners(corners), _targetArea(targetArea), _maxProjectionDistance(maxProjectionDistance.value_or(0.0))
+    RoundwoodJoinery::Joinery::JointFace::JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners, double targetArea, double maxAllowableDepth)
+        : _normal(normal), _corners(corners), _originalCorners(corners), _targetArea(targetArea), _maxAllowableDepth(maxAllowableDepth)
     {
         Eigen::Vector3d center = Eigen::Vector3d::Zero();
         for (const auto& corner : corners){center += corner;}
@@ -13,27 +13,14 @@ namespace RoundwoodJoinery::Joinery
         this->_outline_polygon = std::move(Utils::Compute2DPolygon(corners, normal));
     }
 
-    std::vector<Eigen::Vector3d> JointFace::ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, std::optional<double> maxProjectionDistance)
+    std::vector<Eigen::Vector3d> JointFace::ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double& minProjectionDistance, double& maxProjectionDistance)
     {
         // First some basic data about joint face
         Eigen::Vector3d jointCenter = this->_center;
-        Eigen::Vector3d firstCorner = this->_corners[0];
-        Eigen::Vector3d farthestCorner = this->_corners[0];
-        double maxDistance = 0.0;
-        for (const auto& corner : this->_corners)
-        {
-            double distance = (corner - firstCorner).norm();
-            if (distance > maxDistance)
-            {
-                maxDistance = distance;
-                farthestCorner = corner;
-            }
-        }
-        double sphereRadius = maxDistance / 2.0;
 
         //TODO : remove timing before release 0.1.0
         auto t1 = std::chrono::high_resolution_clock::now();
-        Fuzzy_sphere fuzzySphere(Point(jointCenter.x(), jointCenter.y(), jointCenter.z()), sphereRadius);
+        Fuzzy_sphere fuzzySphere(Point(jointCenter.x(), jointCenter.y(), jointCenter.z()), radiusSearch);
         std::vector<Point> neighborhoodPoints;
         std::shared_ptr<CGAL::Kd_tree<Traits>> tree = pointCloud.BuildKdTree();
         tree->search(std::back_inserter(neighborhoodPoints), fuzzySphere);
@@ -60,10 +47,14 @@ namespace RoundwoodJoinery::Joinery
                     case CGAL::ON_BOUNDED_SIDE:
                     case CGAL::ON_BOUNDARY:
                         projectedPoints.push_back(projection);
-                        distance = (projection - this->_center).norm();
-                        if (maxProjectionDistance && distance > *maxProjectionDistance)
+                        distance = (projection - pointVec).norm();
+                        if (distance > maxProjectionDistance)
                         {
-                            *maxProjectionDistance = distance;
+                            maxProjectionDistance = distance;
+                        }
+                        if (distance < minProjectionDistance)
+                        {
+                            minProjectionDistance = distance;
                         }
                         break;
                     default:
@@ -80,20 +71,21 @@ namespace RoundwoodJoinery::Joinery
         return projectedPoints;
     }
 
-    std::pair<double, double> RoundwoodJoinery::Joinery::JointFace::ComputeCurrentAreaAndDepth(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double alpha)
+    std::vector<double> RoundwoodJoinery::Joinery::JointFace::ComputeCurrentAreaAndDepths(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha)
     {
-        std::optional<double> maxProjectionDistance = 0.0;
-        this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud, maxProjectionDistance);
+        double maxProjectionDistance = 0.0;
+        double minProjectionDistance = std::numeric_limits<double>::max();
+        this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud, radiusSearch, minProjectionDistance, maxProjectionDistance);
 
         if (this->_projectedPoints.size() < 3)
         {
-            std::cerr << "Warning: Not enough points projected onto the face to compute area. Returning {0, 0}." << std::endl;
-            return {0.0, 0.0};
+            std::cerr << "Warning: Not enough points projected onto the face to compute area. Returning {0, 0, 0}." << std::endl;
+            return {0.0, 0.0, 0.0};
         }
         if (this->_normal == Eigen::Vector3d::Zero())
         {
-            std::cerr << "Warning: Normal vector is zero. Cannot compute area. Returning {0, 0}." << std::endl;
-            return {0.0, 0.0};
+            std::cerr << "Warning: Normal vector is zero. Cannot compute area. Returning {0, 0, 0}." << std::endl;
+            return {0.0, 0.0, 0.0};
         }
         
         std::vector<Eigen::Vector3d> alphaShapePoints = Utils::Compute2DAlphaShape(this->_projectedPoints, alpha, this->_normal);
@@ -103,15 +95,17 @@ namespace RoundwoodJoinery::Joinery
 
         cgalPolygon.reverse_orientation();
         this->_currentArea = cgalPolygon.area();
-
-        return {this->_currentArea, double(*maxProjectionDistance)};
+        
+        return {this->_currentArea, minProjectionDistance, maxProjectionDistance};
     }
 
-    std::vector<Eigen::Vector3d> RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double alpha)
+    std::vector<Eigen::Vector3d> RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha)
     {
         if (this->_projectedPoints.empty())
         {
-            this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud);
+            double maxProjectionDistance = 0.0;
+            double minProjectionDistance = std::numeric_limits<double>::max();
+            this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud, radiusSearch, minProjectionDistance, maxProjectionDistance);
         }
 
         if (this->_projectedPoints.size() < 3)

@@ -19,17 +19,19 @@ namespace RoundwoodJoinery::Joinery
     class JointFace
     {
         public:
-            JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners, double targetArea = 0.0, std::optional<double> maxProjectionDistance = std::nullopt);
+            JointFace(Eigen::Vector3d normal, std::vector<Eigen::Vector3d> corners, double targetArea = 0.0, double maxAllowableDepth = 50.0);
             ~JointFace() = default;
 
             /**
              * @brief Projects points from the point cloud onto the joint face.
              * 
              * @param pointCloud The point cloud containing the points to be projected.
+             * @param radiusSearch The radius within which to search for neighboring points.
+             * @param minProjectionDistance Optional minimum projection distance. The value will be updated with the minimum distance of the projected points, if provided.
              * @param maxProjectionDistance Optional maximum projection distance. The value will be updated with the maximum distance of the projected points, if provided.
              * @return A vector of Eigen::Vector3d representing the projected points.
              */
-            std::vector<Eigen::Vector3d> ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, std::optional<double> maxProjectionDistance = std::nullopt);
+            std::vector<Eigen::Vector3d> ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double& minProjectionDistance, double& maxProjectionDistance);
 
             // Getters and small utils
             /**
@@ -83,31 +85,33 @@ namespace RoundwoodJoinery::Joinery
             }
 
             /**
-            * @brief Returns the maximum projection distance (aka depth) of the joint face.
-            * @return The maximum projection distance of the joint face.
+            * @brief Returns the maximum allowable projection distance (aka depth) of the joint face.
+            * @return The maximum allowable projection distance of the joint face.
             */
-            double GetMaxProjectionDistance() const
+            double GetMaxAllowableDepth() const
             {
-                return this->_maxProjectionDistance;
+                return this->_maxAllowableDepth;
             }
 
             /**
             * @brief Computes the current area of the joint face based on the points from the beam's point cloud that are projected onto the face.
             * 
             * @param pointCloud The point cloud of the beam to which the joint face belongs.
+            * @param radiusSearch The radius within which to search for neighboring points when projecting onto the face.
             * @param alpha The alpha parameter for the alpha shape computation, which is used to determine the outline of the projected points.
-            * @return The computed current area of the joint face and the maximum projection distance (aka depth of the joint face).
+            * @return The computed current area of the joint face, the minimum projection distance and maximum projection distances (so the depth range) of the joint face.
             */
-            std::pair<double, double> ComputeCurrentAreaAndDepth(PointCloud::PointCloud& pointCloud, double alpha = 500.0);
+            std::vector<double> ComputeCurrentAreaAndDepths(PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha = 500.0);
 
             /**
             * @brief Returns the current outline of the joint face based on the points from the beam's point cloud that are projected onto the face.
             * 
             * @param pointCloud The point cloud of the beam to which the joint face belongs.
+            * @param radiusSearch The radius within which to search for neighboring points when projecting onto the face.
             * @param alpha The alpha parameter for the alpha shape computation, which is used to determine the outline of the projected points.
             * @return A vector of Eigen::Vector3d representing the current outline of the joint face.
             */
-            std::vector<Eigen::Vector3d> GetCurrentOutline(PointCloud::PointCloud& pointCloud, double alpha = 500.0);
+            std::vector<Eigen::Vector3d> GetCurrentOutline(PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha = 500.0);
 
 
             void ApplyTransformation(Eigen::Matrix4d transformation);
@@ -118,7 +122,7 @@ namespace RoundwoodJoinery::Joinery
             std::vector<Eigen::Vector3d> _corners;
             std::vector<Eigen::Vector3d> _originalCorners; // A backup should it be useful...
             double _targetArea;
-            double _maxProjectionDistance = 0.0;
+            double _maxAllowableDepth = 50.0;
             double _currentArea;
             std::vector<Eigen::Vector3d> _projectedPoints;
             
@@ -136,13 +140,16 @@ namespace RoundwoodJoinery::Joinery
         public:
             Joint(std::vector<std::shared_ptr<JointFace>> faces);
             Joint() = default;
-            ~Joint() = default;
+            ~Joint()
+            {
+                std::cout << "Joint destroyed at " << this << std::endl;
+            }
 
             /**
             * @brief Returns the faces that make up the joint.
             * @return A vector of JointFace objects representing the faces of the joint.
             */
-            std::vector<std::shared_ptr<JointFace>> GetFaces()
+            std::vector<std::shared_ptr<JointFace>>& GetFaces()
             {
                 return this->_faces;
             }
@@ -208,7 +215,7 @@ namespace RoundwoodJoinery::Joinery
             * @brief Returns the joints that make up the joint group.
             * @return A vector of shared pointers to Joint objects representing the joints in the group.
             */
-            std::vector<std::shared_ptr<Joint>> GetJoints()
+            std::vector<std::shared_ptr<Joint>>& GetJoints()
             {
                 return this->_joints;
             }

@@ -1,5 +1,6 @@
 #pragma once
-
+#include <iostream>
+#include <fstream>
 // for eigen umeyama
 #include <Eigen/Geometry>
 
@@ -87,6 +88,15 @@ namespace RoundwoodJoinery::Utils
     std::vector<Eigen::Matrix4d> ComputeApproximatingTransformation(std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> groupedAnchorPointsAndTranslations);
 
 
+    /**
+     * @brief Computes a collective approximating transformation matrix by averaging the transformations computed for each group of joints. It does the same as ComputeApproximatingTransformation but but without the per-joint granularity, and returns only one transformation.
+     * 
+     * @param groupedAnchorPointsAndTranslations A vector of vectors of pairs, where each inner vector corresponds to a group of anchor points,
+     *  and each pair consists of an anchor point and its corresponding translation.
+     * @return A single 4x4 transformation matrix representing the collective transformation for all groups of joints.
+     */
+    Eigen::Matrix4d ComputeCollectiveApproximatingTransformation(std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> groupedAnchorPointsAndTranslations);
+    
     /**
      * @brief Computes a transformation matrix that aligns a source curve to a target curve using coherent point drift. This methods allows for 2 sets of point of different size, and only partial overlap.
      * 

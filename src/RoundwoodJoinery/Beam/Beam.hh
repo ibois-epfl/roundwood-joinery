@@ -3,6 +3,9 @@
 #include <vector>
 #include <memory>
 #include <cmath>
+#include <string>
+#include <optional>
+#include <fstream>
 
 #include <Eigen/Dense>
 
@@ -15,7 +18,7 @@ namespace RoundwoodJoinery::Beam
     {
     public:
         Beam(double referenceDiameter, 
-            std::vector<Joinery::JointGroup> jointGroups, 
+            std::vector<std::shared_ptr<Joinery::JointGroup>> jointGroups, 
             std::vector<Eigen::Vector3d> skeleton, 
             RoundwoodJoinery::PointCloud::PointCloud pointCloud);
             
@@ -36,7 +39,7 @@ namespace RoundwoodJoinery::Beam
          * 
          * @return A vector of shared pointers to the joints associated with the beam.
          */
-        std::vector<Joinery::JointGroup> GetJointGroups() const
+        std::vector<std::shared_ptr<Joinery::JointGroup>> GetJointGroups() const
         {
             return this->_jointGroups;
         }
@@ -69,7 +72,7 @@ namespace RoundwoodJoinery::Beam
         {
             for (auto& jointGroup : this->_jointGroups)
             {
-                for (auto& joint : jointGroup.GetJoints())
+                for (auto& joint : jointGroup->GetJoints())
                 {
                     Eigen::Vector3d jointCenter = joint->GetCenter();
                     Eigen::Vector3d correspondance = this->_FindClosestPointOnSkeleton(jointCenter);
@@ -85,16 +88,16 @@ namespace RoundwoodJoinery::Beam
         {
             std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> pointsAndTranslations = this->_ComputeJointFaceTranslationsForOptimisation();
             std::vector<Eigen::Matrix4d> transformations = RoundwoodJoinery::Utils::ComputeApproximatingTransformation(pointsAndTranslations);
-            Eigen::Matrix4d meanTransformation = RoundwoodJoinery::Utils::ComputeMeanTransformation(transformations);
+            Eigen::Matrix4d meanTransformation = RoundwoodJoinery::Utils::ComputeCollectiveApproximatingTransformation(pointsAndTranslations);
             std::vector<Eigen::Matrix4d> adaptedTransformations;
 
             for (size_t i = 0; i < transformations.size(); ++i)
             {
                 Eigen::Matrix4d residualTransformation = meanTransformation.inverse() * transformations[i];
-                Eigen::Vector3d jointGroupDOF = this->_jointGroups[i].GetDegreeOfFreedom().normalized();
+                Eigen::Vector3d jointGroupDOF = this->_jointGroups[i]->GetDegreeOfFreedom().normalized();
                 Eigen::Vector3d residualTranslation = residualTransformation.block<3,1>(0,3);
                 Eigen::Matrix3d residualRotation = residualTransformation.block<3,3>(0,0);
-                Eigen::Vector3d implicitTranslation = (residualRotation * this->_jointGroups[i].GetCentroid() + residualTranslation) - this->_jointGroups[i].GetCentroid();
+                Eigen::Vector3d implicitTranslation = (residualRotation * this->_jointGroups[i]->GetCentroid() + residualTranslation) - this->_jointGroups[i]->GetCentroid();
                 Eigen::Vector3d projectionOfImplicitTranslationOnDOF = implicitTranslation.dot(jointGroupDOF) * jointGroupDOF;
                 Eigen::Matrix4d adaptedTransformation = meanTransformation;
                 adaptedTransformation.block<3,1>(0,3) += projectionOfImplicitTranslationOnDOF;
@@ -108,9 +111,10 @@ namespace RoundwoodJoinery::Beam
          * 
          * @param maxIterations The maximum number of iterations to perform for the optimization process.
          * @param minRelativeTranslationRMSE The minimum relative translation root mean square error threshold to determine convergence of the optimization process. If the RMSE of the translations falls below this threshold, the optimization process will stop.
+         * @param outputFolderPath The path to the folder where the area ratios will be outputted for each iteration. If not provided, no output will be generated.
          * @return The vector of total transformations applied to each joint group. They have been applied and are returned for evaluation purposes.
          */
-        std::vector<Eigen::Matrix4d> ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE);
+        std::vector<Eigen::Matrix4d> ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE, std::optional<std::string> outputFolderPath);
 
     private:
 
@@ -134,7 +138,7 @@ namespace RoundwoodJoinery::Beam
          */
         std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> _ComputeJointFaceTranslationsForOptimisation();
 
-        std::vector<Joinery::JointGroup> _jointGroups;
+        std::vector<std::shared_ptr<Joinery::JointGroup>> _jointGroups;
         std::vector<Eigen::Vector3d> _skeleton;
         RoundwoodJoinery::PointCloud::PointCloud _pointCloud;
         double _referenceDiameter;

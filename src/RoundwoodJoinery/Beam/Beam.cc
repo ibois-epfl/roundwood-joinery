@@ -3,7 +3,7 @@
 namespace RoundwoodJoinery::Beam
 {
     Beam::Beam(double referenceDiameter, 
-        std::vector<Joinery::JointGroup> jointGroups, 
+        std::vector<std::shared_ptr<Joinery::JointGroup>> jointGroups, 
         std::vector<Eigen::Vector3d> skeleton, 
         RoundwoodJoinery::PointCloud::PointCloud pointCloud)
             : _referenceDiameter(referenceDiameter), 
@@ -11,9 +11,9 @@ namespace RoundwoodJoinery::Beam
               _skeleton(skeleton), 
               _pointCloud(pointCloud)
     {
-        for (Joinery::JointGroup& jointGroup : this->_jointGroups)
+        for (std::shared_ptr<Joinery::JointGroup>& jointGroup : this->_jointGroups)
         {
-            for (std::shared_ptr<Joinery::Joint>& joint : jointGroup.GetJoints())
+            for (std::shared_ptr<Joinery::Joint>& joint : jointGroup->GetJoints())
             {
                 Eigen::Vector3d closestPointOnSkeleton = this->_FindClosestPointOnSkeleton(joint->GetCenter());
                 joint->SetClosestPointOnSkeleton(closestPointOnSkeleton);
@@ -30,28 +30,68 @@ namespace RoundwoodJoinery::Beam
     }
 
 
-     std::vector<Eigen::Matrix4d> Beam::ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE)
-     {
+    std::vector<Eigen::Matrix4d> Beam::ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE, std::optional<std::string> outputFolderPath)
+    {
         // totalTransformations will accumulate the transformations applied to each joint group across iterations
         std::vector<Eigen::Matrix4d> totalTransformations(this->_jointGroups.size(), Eigen::Matrix4d::Identity());
         std::vector<Eigen::Matrix4d> previousTransformations;
+
+        std::ofstream outputFile;
+        if (outputFolderPath.has_value())
+        {
+            outputFile.open(outputFolderPath.value());
+            if (!outputFile.is_open())
+            {
+                std::cerr << "Failed to open output file for writing area ratios." << std::endl;
+                return totalTransformations; // Return identity transformations if file cannot be opened
+            }
+            outputFile << "Iteration,JointGroupIndex,JointIndex,FaceIndex,CurrentArea,TargetArea,AreaRatio\n";
+        }
+        std::cout << "Starting joint group optimization with max iterations: " << maxIterations << " and minimum relative translation RMSE: " << minRelativeTranslationRMSE << std::endl;
+        
         for (int iteration = 0; iteration < maxIterations; ++iteration)
         {
             std::vector<Eigen::Matrix4d> transformations = this->ComputeOneIterationOfJointFaceTranslationsForOptimisation();
 
-            double translationRMSE = 0.0;            
-            for(int i = 0; i < transformations.size(); ++i)
+            for (int i = 0; i < this->_jointGroups.size(); ++i)
+            {
+                std::shared_ptr<Joinery::JointGroup>& jointGroup = this->_jointGroups[i];
+                for ( int j = 0; j < jointGroup->GetJoints().size(); ++j)
+                {
+                    std::shared_ptr<Joinery::Joint>& joint = jointGroup->GetJoints()[j];
+                    if (joint == nullptr)
+                    {
+                        std::cerr << "Null joint encountered in joint group " << i << ", skipping." << std::endl;
+                        continue;
+                    }
+                    for (size_t k = 0; k < joint->GetNumFaces(); ++k)
+                    {
+                        std::cout << "pouf" << std::endl;
+                        std::shared_ptr<Joinery::JointFace>& face = joint->GetFaces()[k];
+                        double currentArea = face->GetCurrentArea();
+                        double targetArea = face->GetTargetArea();
+                        double areaRatio = currentArea / targetArea;
+                        if (outputFile.is_open() && outputFolderPath.has_value())
+                        {
+                            outputFile << iteration << "," << i << "," << j << "," << k << "," << currentArea << "," << targetArea << "," << areaRatio << "\n";
+                        }
+                    }
+                }
+            }
+
+            double translationRMSE = 0.0;
+            for (int i = 0; i < transformations.size(); ++i)
             {
                 std::vector<Eigen::Vector3d> jointCentersBeforeTransformation;
                 std::vector<Eigen::Vector3d> jointCentersAfterTransformation;
 
-                for (auto& joint : this->_jointGroups[i].GetJoints())
+                for (auto& joint : this->_jointGroups[i]->GetJoints())
                 {
                     jointCentersBeforeTransformation.push_back(joint->GetCenter());
                 }
-                this->_jointGroups[i].ApplyTransformation(transformations[i]);
+                this->_jointGroups[i]->ApplyTransformation(transformations[i]);
 
-                for (auto& joint : this->_jointGroups[i].GetJoints())
+                for (auto& joint : this->_jointGroups[i]->GetJoints())
                 {
                     jointCentersAfterTransformation.push_back(joint->GetCenter());
                 }
@@ -68,11 +108,21 @@ namespace RoundwoodJoinery::Beam
             if (translationRMSE < minRelativeTranslationRMSE)
             {
                 std::cout << "Convergence reached at iteration " << iteration << " with translation RMSE: " << translationRMSE << std::endl;
+                if (outputFile.is_open() && outputFolderPath.has_value())
+                {
+                    outputFile << "Convergence reached at iteration " << iteration << " with translation RMSE: " << translationRMSE << "\n";
+                    outputFile.close();
+                }
+                
                 return totalTransformations;
             }
             previousTransformations = transformations;
         }
-     return totalTransformations;
+        if (outputFile.is_open() && outputFolderPath.has_value())
+        {
+            outputFile.close();
+        }
+        return totalTransformations;
     }
 
 
@@ -111,33 +161,60 @@ namespace RoundwoodJoinery::Beam
     std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> Beam::_ComputeJointFaceTranslationsForOptimisation()
     {
         std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> anchorPointsAndTranslations;
+        double cumulatedAreas = 0.0;
+        int faceCount = 0;
+        for (auto& jointGroup : this->_jointGroups)
+        {
+            for (auto& joint : jointGroup->GetJoints())
+            {
+                for (std::shared_ptr<Joinery::JointFace>& face : joint->GetFaces())
+                {
+                    cumulatedAreas += face->GetTargetArea();
+                    faceCount++;
+                }
+            }
+        }
+        double averageTargetArea = cumulatedAreas / faceCount;
 
         for (auto& jointGroup : this->_jointGroups)
         {
             std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> groupTranslations;
-            for (auto& joint : jointGroup.GetJoints())
+            for (auto& joint : jointGroup->GetJoints())
             {
                 for (std::shared_ptr<RoundwoodJoinery::Joinery::JointFace>& face : joint->GetFaces())
                 {
                     Eigen::Vector3d currentCenter = face->GetCenter();
                     double targetArea = face->GetTargetArea();
-                    std::pair<double, double> currentAreaAndDepth = face->ComputeCurrentAreaAndDepth(this->_pointCloud);
-                    double currentArea = currentAreaAndDepth.first;
-                    double currentDepth = currentAreaAndDepth.second;
-
-                    double deltaArea = (currentArea / targetArea) - 1;
-                    Eigen::Vector3d closestPointOnSkeleton = this->_FindClosestPointOnSkeleton(currentCenter);
-
-                    double translationMagnitude = deltaArea * (this->_referenceDiameter / 2.0) * 0.25; // 0.25 is a damping factor to prevent overshooting
-                    double expectedNewDepth = currentDepth - translationMagnitude;
-
-                    // Create hard floor for depth if maxProjectionDistance is set for the face
-                    if(face->GetMaxProjectionDistance() > 0.0 && expectedNewDepth > face->GetMaxProjectionDistance())
+                    std::vector<double> currentAreaAndDepths = face->ComputeCurrentAreaAndDepths(this->_pointCloud, this->_referenceDiameter);
+                    double currentArea = currentAreaAndDepths[0];
+                    double minProjectionDistance = currentAreaAndDepths[1];
+                    double currentDepth = currentAreaAndDepths[2];
+ 
+                    if (currentArea < 10.0 && targetArea > 0.0) // If current area is very small, we can get extreme ratios, so we set a floor to avoid numerical issues
                     {
-                        translationMagnitude = (face->GetMaxProjectionDistance() / expectedNewDepth) * translationMagnitude;
+                        currentArea = 1.0; // Avoid division by zero
                     }
-                    Eigen::Vector3d translationDirection = face->GetNormal().normalized();
-                    Eigen::Vector3d translation = translationMagnitude * translationDirection;
+
+                    double radius = this->_referenceDiameter / 2.0;
+                    double areaRatio = currentArea / std::max(targetArea, 1e-3);
+
+                    // log(areaRatio): zero at 1.0, positive when over, negative when under
+                    double error = std::log(areaRatio);
+                    error = std::clamp(error, -1.0, 1.0); // prevent wild steps
+                    error *= std::clamp(std::abs(1-areaRatio), 0.0, 1.0);
+                    double step = 0.1 * radius; // tune this gain
+                    double translationMagnitude = step * error; // negative: push in when ratio > 1
+
+                    double largeAreaFavorism =  std::pow(targetArea / averageTargetArea, 2);
+                    largeAreaFavorism = std::clamp(largeAreaFavorism, 0.5, 2.0); // limit how much we favor large areas
+
+                    translationMagnitude *= largeAreaFavorism;
+                    if (face->GetMaxAllowableDepth() > 0.0 && currentDepth > face->GetMaxAllowableDepth())
+                    {
+                        translationMagnitude = currentDepth - face->GetMaxAllowableDepth();
+                    }
+
+                    Eigen::Vector3d translation = translationMagnitude * face->GetNormal().normalized();
 
                     for (Eigen::Vector3d& corner : face->GetCorners())
                     {

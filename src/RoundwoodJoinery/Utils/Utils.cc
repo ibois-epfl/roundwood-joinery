@@ -29,15 +29,41 @@ namespace RoundwoodJoinery::Utils
         std::vector<Eigen::Vector3d> skeleton = std::vector<Eigen::Vector3d>();
         auto point = cgalSkeletonGraph[0].point;
         skeleton.emplace_back(point[0], point[1], point[2]);
+        double minX = point[0];
+        double maxX = point[0];
+        double minY = point[1];
+        double maxY = point[1];
+        double minZ = point[2];
+        double maxZ = point[2];
+        for(int v = 1; v < boost::num_vertices(cgalSkeletonGraph); v++)
+        {
+            auto point = cgalSkeletonGraph[v].point;
+            if (point[0] < minX) minX = point[0];
+            if (point[0] > maxX) maxX = point[0];
+            if (point[1] < minY) minY = point[1];
+            if (point[1] > maxY) maxY = point[1];
+            if (point[2] < minZ) minZ = point[2];
+            if (point[2] > maxZ) maxZ = point[2];
+        }
+        double xRange = maxX - minX;
+        double yRange = maxY - minY;
+        double zRange = maxZ - minZ;
+
+        int longestAxis = 0;
+
+        if(xRange > yRange && xRange > zRange){longestAxis = 0;}
+        else if (yRange > xRange && yRange > zRange){longestAxis = 1;} 
+        else{longestAxis = 2;}
+        
         std::vector<std::array<double, 3>> meshVertexPositions;
 
         for (int v = 1; v < boost::num_vertices(cgalSkeletonGraph); v++)
         {
             auto point = cgalSkeletonGraph[v].point;
-            // sorting along x coordinates
+            // sorting along the longest axis
             for (int i = 0; i < skeleton.size(); i++)
             {
-                if (point[0] < skeleton[i][0])
+                if (point[longestAxis] < skeleton[i][longestAxis])
                 {
                     skeleton.insert(skeleton.begin() + i, Eigen::Vector3d(point[0], point[1], point[2]));
                     break;
@@ -190,6 +216,39 @@ namespace RoundwoodJoinery::Utils
             transformations.push_back(transformation);
         }
         return transformations;
+    }
+
+    Eigen::Matrix4d ComputeCollectiveApproximatingTransformation(std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> groupedAnchorPointsAndTranslations)
+    {
+        Eigen::Matrix4d transformation;
+        int totalPairs = 0;
+        for(const auto& group : groupedAnchorPointsAndTranslations)
+        {
+            totalPairs += group.size();
+        }
+        Eigen::MatrixXd sourcePoints(3,totalPairs);
+        Eigen::MatrixXd targetPoints(3,totalPairs);
+
+        size_t colIndex = 0;
+
+        for (const auto& anchorPointsAndTranslations : groupedAnchorPointsAndTranslations)
+        {
+            for (size_t i = 0; i < anchorPointsAndTranslations.size(); ++i)
+            {
+                const auto& pair = anchorPointsAndTranslations[i];
+                sourcePoints.col(colIndex) = pair.first;
+                targetPoints.col(colIndex) = pair.first + pair.second;
+                ++colIndex;
+            }
+        }
+        transformation = Eigen::umeyama(sourcePoints, targetPoints, false);
+        if (transformation.hasNaN())
+        {
+            std::cerr << "Warning: Computed transformation contains NaN values. Check input data for validity." << std::endl;
+            
+            transformation = Eigen::Matrix4d::Identity();
+        }
+        return transformation;
     }
 
     CGAL::Polygon_2<CGAL::Projection_traits_3<K>> Compute2DPolygon(std::vector<Eigen::Vector3d> points, Eigen::Vector3d normal)

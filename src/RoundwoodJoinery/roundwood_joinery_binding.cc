@@ -1,4 +1,5 @@
 #include "nanobind/nanobind.h"
+#include <nanobind/stl/string.h>
 #include "nanobind/eigen/dense.h"
 #include "nanobind/stl/vector.h"
 #include "nanobind/stl/pair.h"
@@ -24,28 +25,33 @@ NB_MODULE(roundwoodJoineryBindings, m)
         .def(nb::init<Eigen::Vector3d, 
                       std::vector<Eigen::Vector3d>, 
                       double, 
-                      std::optional<double>>(), 
+                      double>(), 
                       "Constructor for JointFace with normal, corners, target area, and optional max projection distance",
                       nb::arg("normal"), 
                       nb::arg("corners"), 
                       nb::arg("targetArea") = 0.0,
-                      nb::arg("maxProjectionDistance") = std::nullopt)
+                      nb::arg("maxAllowableDepth") = 50.0)
         .def("project_points_onto_face", &RoundwoodJoinery::Joinery::JointFace::ProjectPointsOntoFace,
              "Project points from the beam's point cloud onto the joint face and return the projected points that are within the face outline",
              nb::arg("pointCloud"),
-             nb::arg("maxProjectionDistance") = std::nullopt)
+             nb::arg("radiusSearch"),
+             nb::arg("minProjectionDistance"),
+             nb::arg("maxProjectionDistance"))
         .def("get_normal", &RoundwoodJoinery::Joinery::JointFace::GetNormal)
         .def("get_corners", &RoundwoodJoinery::Joinery::JointFace::GetCorners)
         .def("get_center", &RoundwoodJoinery::Joinery::JointFace::GetCenter)
+        .def("get_max_allowable_depth", &RoundwoodJoinery::Joinery::JointFace::GetMaxAllowableDepth)
         .def("get_target_area", &RoundwoodJoinery::Joinery::JointFace::GetTargetArea)
         .def("get_current_area", &RoundwoodJoinery::Joinery::JointFace::GetCurrentArea)
-        .def("compute_current_area_and_depth", &RoundwoodJoinery::Joinery::JointFace::ComputeCurrentAreaAndDepth,
+        .def("compute_current_area_and_depths", &RoundwoodJoinery::Joinery::JointFace::ComputeCurrentAreaAndDepths,
              "Compute the current area and depth of the joint face based on the projected points from the beam's point cloud",
              nb::arg("beamPointCloud"),
+             nb::arg("radiusSearch"),
              nb::arg("alpha") = 500.0)
         .def("get_current_outline", &RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline, 
              "Get the current outline of the joint face based on the projected points from the beam's point cloud", 
              nb::arg("beamPointCloud"), 
+             nb::arg("radiusSearch"),
              nb::arg("alpha") = 500.0);
 
 
@@ -80,7 +86,7 @@ NB_MODULE(roundwoodJoineryBindings, m)
 
     nb::class_<RoundwoodJoinery::Beam::Beam>(m, "Beam")
         .def(nb::init<double, 
-                      std::vector<RoundwoodJoinery::Joinery::JointGroup>, 
+                      std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::JointGroup>>, 
                       std::vector<Eigen::Vector3d>, 
                       RoundwoodJoinery::PointCloud::PointCloud>(), 
                       "Constructor for Beam with reference diameter, joints, skeleton, and point cloud", 
@@ -99,7 +105,8 @@ NB_MODULE(roundwoodJoineryBindings, m)
         .def("compute_joint_group_optimisation", &RoundwoodJoinery::Beam::Beam::ComputeJointGroupOptimisation, 
              "Compute an optimization of the joint group transformations to better align the joint faces with the beam's point cloud skeleton",
              nb::arg("maxIterations") = 10, 
-             nb::arg("minRelativeTranslationRMSE") = 1.0);
+             nb::arg("minRelativeTranslationRMSE") = 1.0,
+             nb::arg("outputFolderPath") = std::optional<std::string>());
 
         nb::module_ u = m.def_submodule("Utils", "Utility functions for Roundwood Joinery");
 
