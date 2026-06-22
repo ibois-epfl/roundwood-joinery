@@ -124,6 +124,7 @@ namespace RoundwoodJoinery::Joinery
             double _targetArea;
             double _maxAllowableDepth = 50.0;
             double _currentArea;
+            double _jointScale;
             std::vector<Eigen::Vector3d> _projectedPoints;
             
             /**

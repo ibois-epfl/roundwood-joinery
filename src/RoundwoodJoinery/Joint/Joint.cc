@@ -9,8 +9,19 @@ namespace RoundwoodJoinery::Joinery
         for (const auto& corner : corners){center += corner;}
         center /= corners.size();
         this->_center = center;
-
         this->_outline_polygon = std::move(Utils::Compute2DPolygon(corners, normal));
+
+        for(int i = 0; i < this->_corners.size(); ++i)
+        {
+            for (int j = i + 1; j < this->_corners.size(); ++j)
+            {
+                double dist = (this->_corners[i] - this->_corners[j]).norm();
+                if (dist > this->_jointScale)
+                {
+                    this->_jointScale = dist;
+                }
+            }
+        }
     }
 
     std::vector<Eigen::Vector3d> JointFace::ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double& minProjectionDistance, double& maxProjectionDistance)
@@ -20,7 +31,7 @@ namespace RoundwoodJoinery::Joinery
 
         //TODO : remove timing before release 0.1.0
         auto t1 = std::chrono::high_resolution_clock::now();
-        Fuzzy_sphere fuzzySphere(Point(jointCenter.x(), jointCenter.y(), jointCenter.z()), radiusSearch);
+        Fuzzy_sphere fuzzySphere(Point(jointCenter.x(), jointCenter.y(), jointCenter.z()), this->_jointScale + radiusSearch);
         std::vector<Point> neighborhoodPoints;
         std::shared_ptr<CGAL::Kd_tree<Traits>> tree = pointCloud.BuildKdTree();
         tree->search(std::back_inserter(neighborhoodPoints), fuzzySphere);
