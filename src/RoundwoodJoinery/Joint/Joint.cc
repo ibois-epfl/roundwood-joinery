@@ -86,7 +86,10 @@ namespace RoundwoodJoinery::Joinery
     {
         double maxProjectionDistance = 0.0;
         double minProjectionDistance = std::numeric_limits<double>::max();
-        this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud, radiusSearch, minProjectionDistance, maxProjectionDistance);
+        if (this->_projectedPoints.empty())
+        {
+            this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud, radiusSearch, minProjectionDistance, maxProjectionDistance);
+        }
 
         if (this->_projectedPoints.size() < 3)
         {
@@ -104,7 +107,7 @@ namespace RoundwoodJoinery::Joinery
         CGAL::Projection_traits_3<K> traits({this->_normal.x(), this->_normal.y(), this->_normal.z()});
         CGAL::Polygon_2<CGAL::Projection_traits_3<K>> cgalPolygon = Utils::Compute2DPolygon(alphaShapePoints, this->_normal);
 
-        cgalPolygon.reverse_orientation();
+        // cgalPolygon.reverse_orientation();
         this->_currentArea = cgalPolygon.area();
         
         return {this->_currentArea, minProjectionDistance, maxProjectionDistance};

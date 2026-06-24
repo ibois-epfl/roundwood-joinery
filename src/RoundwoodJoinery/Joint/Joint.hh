@@ -123,8 +123,8 @@ namespace RoundwoodJoinery::Joinery
             std::vector<Eigen::Vector3d> _originalCorners; // A backup should it be useful...
             double _targetArea;
             double _maxAllowableDepth = 50.0;
-            double _currentArea;
-            double _jointScale;
+            double _currentArea = 0.0;
+            double _jointScale = 0.0; 
             std::vector<Eigen::Vector3d> _projectedPoints;
             
             /**
