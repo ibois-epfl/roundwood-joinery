@@ -172,6 +172,24 @@ namespace RoundwoodJoinery::Joinery
                 return this->_faces.size();
             }
 
+            /**
+            * @brief Returns the remaining area of the beam under this joint.
+            * @return The remaining area of the beam under this joint.
+            */
+            double GetRemainingArea() const
+            {
+                return this->_remainingArea;
+            }
+
+            /**
+            * @brief Returns the remaining inertia of the beam under this joint.
+            * @return The remaining inertia of the beam under this joint.
+            */
+            double GetRemainingInertia() const
+            {
+                return this->_remainingInertia;
+            }
+
             void SetClosestPointOnSkeleton(Eigen::Vector3d correspondance)
             {
                 this->_closestPointOnSkeleton = correspondance;
@@ -200,6 +218,8 @@ namespace RoundwoodJoinery::Joinery
             std::vector<std::shared_ptr<JointFace>> _faces;
             Eigen::Vector3d _center = Eigen::Vector3d::Zero();
             Eigen::Vector3d _closestPointOnSkeleton = Eigen::Vector3d::Zero();
+            double _remainingArea = 0.0;
+            double _remainingInertia = 0.0;
     };
 
     /**

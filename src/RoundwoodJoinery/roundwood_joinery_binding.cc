@@ -65,7 +65,9 @@ NB_MODULE(roundwoodJoineryBindings, m)
         .def("set_closest_point_on_skeleton", &RoundwoodJoinery::Joinery::Joint::SetClosestPointOnSkeleton, 
                                           "Set the closest point on the skeleton for this joint", 
                                           nb::arg("point"))
-        .def("get_closest_point_on_skeleton", &RoundwoodJoinery::Joinery::Joint::GetClosestPointOnSkeleton);
+        .def("get_closest_point_on_skeleton", &RoundwoodJoinery::Joinery::Joint::GetClosestPointOnSkeleton)
+        .def("get_remaining_area", &RoundwoodJoinery::Joinery::Joint::GetRemainingArea)
+        .def("get_remaining_inertia", &RoundwoodJoinery::Joinery::Joint::GetRemainingInertia);
 
 
     nb::class_<RoundwoodJoinery::Joinery::JointGroup>(m, "JointGroup")
