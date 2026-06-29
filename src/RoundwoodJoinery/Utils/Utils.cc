@@ -371,4 +371,25 @@ namespace RoundwoodJoinery::Utils
 
         return {closestPointCurve1, closestPointCurve2};
     }
+
+    std::pair<Eigen::Vector3d, bool> ProjectPointOnPlaneAlongDirection(const Eigen::Vector3d& point, const Eigen::Vector3d& planePoint, const Eigen::Vector3d& planeNormal, const Eigen::Vector3d& direction)
+    {
+        Eigen::Vector3d normalizedDirection = direction.normalized();
+        Eigen::Vector3d normalizedPlaneNormal = planeNormal.normalized();
+        bool valid = true;
+
+        double dotProduct = normalizedDirection.dot(normalizedPlaneNormal);
+        if (std::abs(dotProduct) < 1e-6)
+        {
+            valid = false;
+            return {Eigen::Vector3d::Zero(), valid};
+        }
+        else if (dotProduct > 0)
+        {
+            valid = false;
+            return {Eigen::Vector3d::Zero(), valid};
+        }
+        double t = (planePoint - point).dot(normalizedPlaneNormal) / dotProduct;
+        return {point + t * normalizedDirection, valid};
+    }
 }

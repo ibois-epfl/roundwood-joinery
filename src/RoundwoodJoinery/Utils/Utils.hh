@@ -144,4 +144,15 @@ namespace RoundwoodJoinery::Utils
      * @return A pair of 3D points representing the closest points on each curve.
      */
     std::pair<Eigen::Vector3d, Eigen::Vector3d> ComputeClosestPointsBetweenTwoCurves(const std::vector<Eigen::Vector3d>& curve1, const std::vector<Eigen::Vector3d>& curve2);
+
+    /**
+     * @brief Projects a point onto a plane along a specified direction.
+     * 
+     * @param point The point to be projected.
+     * @param planePoint A point on the plane onto which the point is projected.
+     * @param planeNormal The normal vector of the plane.
+     * @param direction The direction along which the point is projected onto the plane. If the direction points away from the plane, the projection will not be valid.
+     * @return A pair containing the projected point on the plane and a boolean indicating whether the projection is valid.
+     */
+    std::pair<Eigen::Vector3d, bool> ProjectPointOnPlaneAlongDirection(const Eigen::Vector3d& point, const Eigen::Vector3d& planePoint, const Eigen::Vector3d& planeNormal, const Eigen::Vector3d& direction);
 }
