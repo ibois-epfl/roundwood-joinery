@@ -36,7 +36,8 @@ NB_MODULE(roundwoodJoineryBindings, m)
              nb::arg("pointCloud"),
              nb::arg("radiusSearch"),
              nb::arg("minProjectionDistance"),
-             nb::arg("maxProjectionDistance"))
+             nb::arg("maxProjectionDistance"),
+             nb::arg("maxAllowableDepth") = 50.0)
         .def("get_normal", &RoundwoodJoinery::Joinery::JointFace::GetNormal)
         .def("get_corners", &RoundwoodJoinery::Joinery::JointFace::GetCorners)
         .def("get_center", &RoundwoodJoinery::Joinery::JointFace::GetCenter)
