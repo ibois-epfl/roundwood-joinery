@@ -143,4 +143,9 @@ NB_MODULE(roundwoodJoineryBindings, m)
             "Compute a transformation matrix that aligns a source curve to a target curve using coherent point drift",
             nb::arg("sourceCurve"),
             nb::arg("targetCurve"));
+
+        u.def("compute_closest_points_between_two_curves", &RoundwoodJoinery::Utils::ComputeClosestPointsBetweenTwoCurves,
+            "Compute the closest points between two curves represented as vectors of 3D points",
+            nb::arg("curve1"),
+            nb::arg("curve2"));
 }
