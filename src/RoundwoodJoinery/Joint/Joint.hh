@@ -27,11 +27,12 @@ namespace RoundwoodJoinery::Joinery
              * 
              * @param pointCloud The point cloud containing the points to be projected.
              * @param radiusSearch The radius within which to search for neighboring points.
-             * @param minProjectionDistance Optional minimum projection distance. The value will be updated with the minimum distance of the projected points, if provided.
-             * @param maxProjectionDistance Optional maximum projection distance. The value will be updated with the maximum distance of the projected points, if provided.
+             * @param minProjectionDistance Minimum projection distance. The value will be updated with the minimum distance of the projected points.
+             * @param maxProjectionDistance Maximum projection distance. The value will be updated with the maximum distance of the projected points.
+             * @param maxAllowableDepth Maximum allowable depth for the projection. Points with a projection distance greater than this value will be ignored.
              * @return A vector of Eigen::Vector3d representing the projected points.
              */
-            std::vector<Eigen::Vector3d> ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double& minProjectionDistance, double& maxProjectionDistance);
+            std::vector<Eigen::Vector3d> ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double& minProjectionDistance, double& maxProjectionDistance, double maxAllowableDepth);
 
             // Getters and small utils
             /**
