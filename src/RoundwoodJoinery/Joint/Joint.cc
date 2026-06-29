@@ -72,11 +72,11 @@ namespace RoundwoodJoinery::Joinery
         return projectedPoints;
     }
 
-    std::vector<double> RoundwoodJoinery::Joinery::JointFace::ComputeCurrentAreaAndDepths(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha)
+    std::vector<double> RoundwoodJoinery::Joinery::JointFace::ComputeCurrentAreaAndDepths(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha, double maxAllowableDepth)
     {
         double maxProjectionDistance = 0.0;
         double minProjectionDistance = std::numeric_limits<double>::max();
-        this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud, radiusSearch, minProjectionDistance, maxProjectionDistance, radiusSearch);
+        this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud, radiusSearch, minProjectionDistance, maxProjectionDistance, maxAllowableDepth);
 
         if (this->_projectedPoints.size() < 3)
         {
@@ -100,13 +100,13 @@ namespace RoundwoodJoinery::Joinery
         return {this->_currentArea, minProjectionDistance, maxProjectionDistance};
     }
 
-    std::vector<Eigen::Vector3d> RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha)
+    std::vector<Eigen::Vector3d> RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha, double maxAllowableDepth)
     {
         if (this->_projectedPoints.empty())
         {
             double maxProjectionDistance = 0.0;
             double minProjectionDistance = std::numeric_limits<double>::max();
-            this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud, radiusSearch, minProjectionDistance, maxProjectionDistance, radiusSearch);
+            this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud, radiusSearch, minProjectionDistance, maxProjectionDistance, maxAllowableDepth);
         }
 
         if (this->_projectedPoints.size() < 3)

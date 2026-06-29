@@ -102,7 +102,7 @@ namespace RoundwoodJoinery::Joinery
             * @param alpha The alpha parameter for the alpha shape computation, which is used to determine the outline of the projected points.
             * @return The computed current area of the joint face, the minimum projection distance and maximum projection distances (so the depth range) of the joint face.
             */
-            std::vector<double> ComputeCurrentAreaAndDepths(PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha = 500.0);
+            std::vector<double> ComputeCurrentAreaAndDepths(PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha = 500.0, double maxAllowableDepth = 50.0);
 
             /**
             * @brief Returns the current outline of the joint face based on the points from the beam's point cloud that are projected onto the face.
@@ -112,7 +112,7 @@ namespace RoundwoodJoinery::Joinery
             * @param alpha The alpha parameter for the alpha shape computation, which is used to determine the outline of the projected points.
             * @return A vector of Eigen::Vector3d representing the current outline of the joint face.
             */
-            std::vector<Eigen::Vector3d> GetCurrentOutline(PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha = 500.0);
+            std::vector<Eigen::Vector3d> GetCurrentOutline(PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha = 500.0, double maxAllowableDepth = 50.0);
 
 
             void ApplyTransformation(Eigen::Matrix4d transformation);
