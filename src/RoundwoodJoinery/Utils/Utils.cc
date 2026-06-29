@@ -329,4 +329,46 @@ namespace RoundwoodJoinery::Utils
         transformation.block<3, 1>(0, 3) = transform.block<3, 1>(0, 3);
         return transformation;
     }
+
+    std::pair<Eigen::Vector3d, Eigen::Vector3d> ComputeClosestPointsBetweenTwoCurves(const std::vector<Eigen::Vector3d>& curve1, const std::vector<Eigen::Vector3d>& curve2)
+    {
+        double minDistance = std::numeric_limits<double>::max();
+        Eigen::Vector3d closestPointCurve1;
+        Eigen::Vector3d closestPointCurve2;
+
+        std::vector<PPSegment_3> segmentsCurve1;
+        std::vector<PPSegment_3> segmentsCurve2;
+        
+        for (size_t i = 0; i < curve1.size() - 1; ++i)
+        {
+            segmentsCurve1.emplace_back(PPPoint_3(curve1[i].x(), curve1[i].y(), curve1[i].z()),
+                                        PPPoint_3(curve1[i + 1].x(), curve1[i + 1].y(), curve1[i + 1].z()));
+        }
+        for (size_t i = 0; i < curve2.size() - 1; ++i)
+        {
+            segmentsCurve2.emplace_back(PPPoint_3(curve2[i].x(), curve2[i].y(), curve2[i].z()),
+                                        PPPoint_3(curve2[i + 1].x(), curve2[i + 1].y(), curve2[i + 1].z()));
+        }
+
+        PPTree treeCurve2(segmentsCurve2.begin(), segmentsCurve2.end());
+        PPTree treeCurve1(segmentsCurve1.begin(), segmentsCurve1.end());
+        PPPoint_3 closestPointOnCurve2;
+        PPPoint_3 closestPointOnCurve1;
+
+        for (const auto& segment1 : segmentsCurve1)
+        {
+            closestPointOnCurve2 = treeCurve2.closest_point(segment1.source());
+            closestPointOnCurve1 = treeCurve1.closest_point(closestPointOnCurve2);
+
+            double distance = std::sqrt(CGAL::squared_distance(segment1.source(), closestPointOnCurve2));
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                closestPointCurve1 = Eigen::Vector3d(closestPointOnCurve1.x(), closestPointOnCurve1.y(), closestPointOnCurve1.z());
+                closestPointCurve2 = Eigen::Vector3d(closestPointOnCurve2.x(), closestPointOnCurve2.y(), closestPointOnCurve2.z());
+            }
+        }
+
+        return {closestPointCurve1, closestPointCurve2};
+    }
 }

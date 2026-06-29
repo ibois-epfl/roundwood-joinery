@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <fstream>
+#include <vector>
 // for eigen umeyama
 #include <Eigen/Geometry>
 
@@ -32,6 +33,19 @@
 #include <CGAL/Polygon_2_algorithms.h>
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_3 Point_3;
+
+// for closest pair of points search
+#include <CGAL/AABB_tree.h>
+#include <CGAL/AABB_traits_3.h>
+#include <CGAL/Segment_3.h>
+#include <CGAL/squared_distance_3.h>
+typedef CGAL::Simple_cartesian<double> PPKernel;
+typedef PPKernel::Point_3 PPPoint_3;
+typedef PPKernel::Segment_3 PPSegment_3;
+typedef std::vector<PPSegment_3> PPSegmentVector;
+typedef CGAL::AABB_segment_primitive_3<PPKernel, PPSegmentVector::const_iterator> PPPrimitive;
+typedef CGAL::AABB_traits_3<PPKernel, PPPrimitive> PPTraits;
+typedef CGAL::AABB_tree<PPTraits> PPTree;
 
 // for Coherent Point Drift
 #include <cpd/rigid.hpp>
@@ -121,4 +135,13 @@ namespace RoundwoodJoinery::Utils
      * @return The mean transformation matrix.
      */
     Eigen::Matrix4d ComputeMeanTransformation(const std::vector<Eigen::Matrix4d>& transformations);
+
+    /**
+     * @brief Computes the closest points between two curves represented as vectors of 3D points.
+     * 
+     * @param curve1 The first curve represented as a vector of 3D points.
+     * @param curve2 The second curve represented as a vector of 3D points.
+     * @return A pair of 3D points representing the closest points on each curve.
+     */
+    std::pair<Eigen::Vector3d, Eigen::Vector3d> ComputeClosestPointsBetweenTwoCurves(const std::vector<Eigen::Vector3d>& curve1, const std::vector<Eigen::Vector3d>& curve2);
 }
