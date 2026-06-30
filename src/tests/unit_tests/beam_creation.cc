@@ -68,5 +68,7 @@ int main()
     }
     double finalArea = face1->ComputeCurrentAreaAndDepths(pointCloud, 500.0)[0];
     std::cout << "Final Joint Face area: " << finalArea << std::endl;
+
+    beam.ComputeRemainingSections();
     return 0;
 }
