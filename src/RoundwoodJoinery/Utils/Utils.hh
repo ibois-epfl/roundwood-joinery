@@ -51,10 +51,7 @@ typedef CGAL::AABB_tree<PPTraits> PPTree;
 #include <CGAL/Polygon_set_2.h>
 #include <CGAL/Boolean_set_operations_2.h>
 #include <CGAL/Polygon_with_holes_2.h>
-#include <CGAL/Nef_polyhedron_3.h>
 typedef K::Point_2 Point_2;
-typedef CGAL::Nef_polyhedron_3<PPKernel> Nef_polyhedron_3;
-typedef CGAL::Polyhedron_3<PPKernel> Polyhedron_3;
 
 //other stuff
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
