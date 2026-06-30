@@ -47,6 +47,24 @@ typedef CGAL::AABB_segment_primitive_3<PPKernel, PPSegmentVector::const_iterator
 typedef CGAL::AABB_traits_3<PPKernel, PPPrimitive> PPTraits;
 typedef CGAL::AABB_tree<PPTraits> PPTree;
 
+// For boolean operations
+#include <CGAL/Polygon_set_2.h>
+#include <CGAL/Boolean_set_operations_2.h>
+#include <CGAL/Polygon_with_holes_2.h>
+#include <CGAL/Nef_polyhedron_3.h>
+typedef K::Point_2 Point_2;
+typedef CGAL::Nef_polyhedron_3<PPKernel> Nef_polyhedron_3;
+typedef CGAL::Polyhedron_3<PPKernel> Polyhedron_3;
+
+//other stuff
+#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
+using BK = CGAL::Exact_predicates_exact_constructions_kernel;
+using BPoint2 = BK::Point_2;
+using BPoly2 = CGAL::Polygon_2<BK>;
+using BPolyWithHoles2 = CGAL::Polygon_with_holes_2<BK>;
+using BSet2 = CGAL::Polygon_set_2<BK>;
+
+
 // for Coherent Point Drift
 #include <cpd/rigid.hpp>
 
@@ -119,6 +137,7 @@ namespace RoundwoodJoinery::Utils
      * @return A 4x4 transformation matrix that aligns the source curve to the target curve.
      */
     Eigen::Matrix4d ComputeCurveToCurveTransformation(const std::vector<Eigen::Vector3d>& sourceCurve, const std::vector<Eigen::Vector3d>& targetCurve);
+    
     /**
      * @brief Computes a 2D polygon from a set of 3D points projected onto a plane defined by a normal vector.
      * 
@@ -127,6 +146,43 @@ namespace RoundwoodJoinery::Utils
      * @return A CGAL 2D polygon representing the projected points.
      */
     CGAL::Polygon_2<CGAL::Projection_traits_3<K>> Compute2DPolygon(std::vector<Eigen::Vector3d> points, Eigen::Vector3d normal);
+
+
+    /**
+     * @brief Computes a 2D polygon from a set of 2D points.
+     * 
+     * @param points The set of 2D points.
+     * @param normal The normal vector of the plane.
+     * @param planeOrigin A point on the plane onto which the points are projected.
+     * 
+     * @return A CGAL 2D polygon representing the points.
+     */
+    CGAL::Polygon_2<K> Compute2DPolygonInPlane(const std::vector<Eigen::Vector3d>& points, const Eigen::Vector3d& normal, const Eigen::Vector3d& planeOrigin);
+
+
+    /**
+     * @brief Builds an exact (with exact kernel) 2D polygon from a set of 3D points projected onto a plane defined by two direction vectors and a point on the plane.
+     * 
+     * @param outline The set of 3D points to be projected onto the plane.
+     * @param yDirection The first direction vector defining the plane.
+     * @param zDirection The second direction vector defining the plane.
+     * @param pointOnSkeleton A point on the plane onto which the points are projected.
+     * @return A CGAL exact 2D polygon representing the projected points.
+     */
+    BPoly2 BuildExact2DPolygon(const std::vector<Eigen::Vector3d>& outline,
+                                    const Eigen::Vector3d& yDirection,
+                                    const Eigen::Vector3d& zDirection,
+                                    const Eigen::Vector3d& pointOnSkeleton);
+
+    /**
+     * @brief Checks if a given outline intersects a specified plane.
+     * 
+     * @param outline The outline represented as a vector of 3D points.
+     * @param planePoint A point on the plane.
+     * @param planeNormal The normal vector of the plane.
+     * @return True if the outline crosses the plane, false otherwise.
+     */
+    bool IsOutlineIntersectingPlane(const std::vector<Eigen::Vector3d>& outline, const Eigen::Vector3d& planePoint, const Eigen::Vector3d& planeNormal);
 
     /**
      * @brief Computes the mean transformation from a set of transformation matrices by averaging their rotation (through quaternions) and translation components separately.
