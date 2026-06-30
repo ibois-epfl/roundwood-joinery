@@ -182,6 +182,29 @@ namespace RoundwoodJoinery::Joinery
                 return this->_remainingArea;
             }
 
+            void SetRemainingArea(double area)
+            {
+                this->_remainingArea = area;
+            }
+
+            /**
+            * @brief Returns the remaining section outline of the joint.
+            * @return A vector of 3D points representing the remaining section outline.
+            */
+            std::vector<Eigen::Vector3d> GetRemainingSectionOutline() const
+            {
+                return this->_remainingSectionOutline;
+            }
+
+            /**
+            * @brief Sets the remaining section outline of the joint.
+            * @param outline A vector of 3D points representing the remaining section outline.
+            */
+            void SetRemainingSectionOutline(const std::vector<Eigen::Vector3d>& outline)
+            {
+                this->_remainingSectionOutline = outline;
+            }
+
             /**
             * @brief Returns the remaining inertia of the beam under this joint.
             * @return The remaining inertia of the beam under this joint.
@@ -221,6 +244,7 @@ namespace RoundwoodJoinery::Joinery
             Eigen::Vector3d _closestPointOnSkeleton = Eigen::Vector3d::Zero();
             double _remainingArea = 0.0;
             double _remainingInertia = 0.0;
+            std::vector<Eigen::Vector3d> _remainingSectionOutline;  
     };
 
     /**
