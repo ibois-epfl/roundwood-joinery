@@ -125,6 +125,156 @@ namespace RoundwoodJoinery::Beam
         return totalTransformations;
     }
 
+    void Beam::ComputeRemainingSections()
+    {
+        for (auto& jointGroup : this->_jointGroups)
+        {
+            Eigen::Vector3d beamDirection = (this->_skeleton.back() - this->_skeleton.front()).normalized();
+            std::cout << "Beam direction: " << beamDirection.transpose() << std::endl;
+            Eigen::Vector3d beamYDirection = Eigen::Vector3d(0, 1, 0) - (beamDirection.dot(Eigen::Vector3d(0, 1, 0))) * beamDirection;
+            beamYDirection.normalize();
+            Eigen::Vector3d beamZDirection = beamYDirection.cross(beamDirection);
+            for (auto& joint : jointGroup->GetJoints())
+            {
+                double remainingArea = 0.0;
+                double remainingInertia = 0.0;
+                Eigen::Vector3d pointOnSkeleton;
+                Eigen::Vector3d pointOnJoint;
+                double mindistance = std::numeric_limits<double>::max();
+                for (std::shared_ptr<Joinery::JointFace>& face : joint->GetFaces())
+                {
+                    std::pair<Eigen::Vector3d, Eigen::Vector3d> closestPointsWithSkeleton =  Utils::ComputeClosestPointsBetweenTwoCurves(face->GetCorners(), this->_skeleton);
+                    double distanceToSkeleton = (closestPointsWithSkeleton.first - closestPointsWithSkeleton.second).norm();
+                    if (distanceToSkeleton < mindistance)
+                    {
+                        mindistance = distanceToSkeleton;
+                        pointOnJoint = closestPointsWithSkeleton.first;
+                        pointOnSkeleton = closestPointsWithSkeleton.second;
+                    }
+                }
+                std::cout << "Closest point on skeleton: " << pointOnSkeleton.transpose() << std::endl;
+                std::vector<Eigen::Vector3d> virtualFaceCorners = {
+                    pointOnSkeleton + this->_referenceDiameter  * beamYDirection + this->_referenceDiameter * beamZDirection,
+                    pointOnSkeleton + this->_referenceDiameter  * beamYDirection - this->_referenceDiameter * beamZDirection,
+                    pointOnSkeleton - this->_referenceDiameter  * beamYDirection - this->_referenceDiameter * beamZDirection,
+                    pointOnSkeleton - this->_referenceDiameter  * beamYDirection + this->_referenceDiameter * beamZDirection
+                };
+                RoundwoodJoinery::Joinery::JointFace virtualFace(beamDirection, virtualFaceCorners, 0.0);
+                std::vector<Eigen::Vector3d> originalSectionOutline = virtualFace.GetCurrentOutline(this->_pointCloud, this->_referenceDiameter, 20000.0, this->_referenceDiameter/10.0);
+
+                std::vector<std::vector<Eigen::Vector3d>> projectedJointFaceOutlines;
+                for (std::shared_ptr<Joinery::JointFace>& face : joint->GetFaces())
+                {
+                    std::vector<Eigen::Vector3d> projectedOutline;
+                    if(Utils::IsOutlineIntersectingPlane(originalSectionOutline, pointOnSkeleton, beamDirection))
+                    {
+                        Eigen::Vector3d projectionDirection = beamDirection - (beamDirection.dot(face->GetNormal())) * face->GetNormal();
+                        projectionDirection.normalize();
+                        std::vector<Eigen::Vector3d> projectedPoints;
+                        for (const auto& corner : face->GetCorners())
+                        {
+                            std::pair<Eigen::Vector3d, bool> projectedPointandSuccess = Utils::ProjectPointOnPlaneAlongDirection(corner, pointOnSkeleton, beamDirection, projectionDirection);
+                            projectedOutline.push_back(projectedPointandSuccess.first);
+                        }
+                        for (int i = 0; i < face->GetCorners().size(); ++i)
+                        {
+                            int j;
+                            if (i < 2){j = face->GetCorners().size() - 2 + i;}
+                            else{j = i - 2;}
+
+                            Eigen::Vector3d translatedCorner = face->GetCorners()[j] + face->GetNormal() * 10 * this->_referenceDiameter;
+                            std::pair<Eigen::Vector3d, bool> projectedTranslatedPointandSuccess = Utils::ProjectPointOnPlaneAlongDirection(translatedCorner, pointOnSkeleton, beamDirection, projectionDirection);
+                            projectedOutline.push_back(projectedTranslatedPointandSuccess.first);
+                        }
+                    }
+                    else
+                    {
+                        for (const auto& corner : face->GetCorners())
+                        {
+                            std::pair<Eigen::Vector3d, bool> projectedPointAndSuccess = Utils::ProjectPointOnPlaneAlongDirection(corner, pointOnSkeleton, beamDirection, face->GetNormal());
+                            projectedOutline.push_back(projectedPointAndSuccess.first);
+                        }
+                    }
+
+                    std::vector<Eigen::Vector3d> cleanedProjectedOutline = {projectedOutline.front()};
+                    for (size_t i = 1; i < projectedOutline.size(); ++i)
+                    {
+                        bool hasDuplicate = false;
+                        for (size_t j = 0; j < cleanedProjectedOutline.size(); ++j)
+                        {
+                            if ((projectedOutline[i] - cleanedProjectedOutline[j]).norm() < this->_referenceDiameter * 1e-2)
+                            {
+                                hasDuplicate = true;
+                                break;
+                            }
+                        }
+                        if (!hasDuplicate)
+                        {
+                            cleanedProjectedOutline.push_back(projectedOutline[i]);
+                        }
+                    }
+                    projectedJointFaceOutlines.push_back(cleanedProjectedOutline);
+                }
+                std::cout << projectedJointFaceOutlines.size() << " joint face outlines projected onto the original section." << std::endl;
+                CGAL::Polygon_2<K> originalSectionPolygon = Utils::Compute2DPolygonInPlane(originalSectionOutline, beamDirection, pointOnSkeleton);
+
+                BPoly2 originalSectionPolygonExact = Utils::BuildExact2DPolygon(originalSectionOutline, beamYDirection, beamZDirection, pointOnSkeleton);
+
+                if (originalSectionPolygonExact.size() < 3 || !originalSectionPolygonExact.is_simple())
+                {
+                    std::cerr << "Original section polygon invalid for boolean insertion." << std::endl;
+                    continue;
+                }
+
+                BSet2 remainingSet;
+                try
+                {
+                    remainingSet.insert(originalSectionPolygonExact);
+                }
+                catch (const CGAL::Assertion_exception& e)
+                {
+                    std::cerr << "Insert failed even with exact kernel: " << e.what() << std::endl;
+                    continue;
+                }
+
+                for (const auto& projectedOutline : projectedJointFaceOutlines)
+                {
+                    BPoly2 projectedPolygonExact = Utils::BuildExact2DPolygon(projectedOutline, beamYDirection, beamZDirection, pointOnSkeleton);
+
+                    if (projectedPolygonExact.size() < 3 || !projectedPolygonExact.is_simple())
+                    {
+                        std::cerr << "Projected joint face outline invalid for boolean subtraction." << std::endl;
+                        continue;
+                    }
+                    try
+                    {
+                        remainingSet.difference(projectedPolygonExact);
+                    }
+                    catch (const CGAL::Assertion_exception& e)
+                    {
+                        std::cerr << "Difference failed even with exact kernel: " << e.what() << std::endl;
+                        continue;
+                    }
+                }
+
+                std::list<BPolyWithHoles2> remainingPolygons;
+                remainingSet.polygons_with_holes(std::back_inserter(remainingPolygons));
+
+                BPoly2 outerBoundary = remainingPolygons.front().outer_boundary();
+                remainingArea = std::abs(CGAL::to_double(outerBoundary.area()));
+
+                std::vector<Eigen::Vector3d> remainingSectionOutline;
+                for (const auto& vertex : remainingPolygons.front().outer_boundary().container())
+                {
+                    Eigen::Vector3d point3D = pointOnSkeleton + CGAL::to_double(vertex.x()) * beamYDirection + CGAL::to_double(vertex.y()) * beamZDirection;
+                    remainingSectionOutline.push_back(point3D);
+                }
+                joint->SetRemainingSectionOutline(remainingSectionOutline);
+                joint->SetRemainingArea(remainingArea);
+            }
+        }
+    }
+
 
     Eigen::Vector3d Beam::_FindClosestPointOnSkeleton(const Eigen::Vector3d& point)
     {
