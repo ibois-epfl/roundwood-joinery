@@ -379,7 +379,6 @@ namespace RoundwoodJoinery::Utils
         bool valid = true;
 
         double dotProduct = normalizedDirection.dot(normalizedPlaneNormal);
-        std::cout << "Dot product: " << dotProduct << std::endl;
         if (std::abs(dotProduct) < 1e-6)
         {
             valid = false;
