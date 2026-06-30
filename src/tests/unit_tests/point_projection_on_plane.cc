@@ -7,7 +7,7 @@ int main()
     Eigen::Vector3d planeNormal(0.0, 0.0, 1.0);
     Eigen::Vector3d planePoint(0.0, 0.0, 0.0);
     Eigen::Vector3d direction1(1.0, 1.0, -1.0);
-    Eigen::Vector3d direction2(1.0, 1.0, 1.0);
+    Eigen::Vector3d direction2(1.0, 0.0, 0.0);
     Eigen::Vector3d point(1.0,1.0,1.0);
 
     bool firstSuccess;
