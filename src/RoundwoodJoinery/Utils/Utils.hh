@@ -37,6 +37,7 @@ typedef K::Point_3 Point_3;
 // for closest pair of points search
 #include <CGAL/AABB_tree.h>
 #include <CGAL/AABB_traits_3.h>
+#include <CGAL/AABB_segment_primitive_3.h>
 #include <CGAL/Segment_3.h>
 #include <CGAL/squared_distance_3.h>
 typedef CGAL::Simple_cartesian<double> PPKernel;
