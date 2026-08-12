@@ -72,7 +72,6 @@ NB_MODULE(roundwoodJoineryBindings, m)
         .def("get_remaining_area", &RoundwoodJoinery::Joinery::Joint::GetRemainingArea)
         .def("get_remaining_inertia", &RoundwoodJoinery::Joinery::Joint::GetRemainingInertia)
         .def("get_remaining_section_outline", &RoundwoodJoinery::Joinery::Joint::GetRemainingSectionOutline)
-        .def("get_remaining_area", &RoundwoodJoinery::Joinery::Joint::GetRemainingArea);
 
 
     nb::class_<RoundwoodJoinery::Joinery::JointGroup>(m, "JointGroup")
