@@ -152,6 +152,7 @@ namespace RoundwoodJoinery::Beam
                         pointOnSkeleton = closestPointsWithSkeleton.second;
                     }
                 }
+                pointOnSkeleton -= beamDirection.dot(pointOnSkeleton - pointOnJoint) * beamDirection;
                 std::cout << "Closest point on skeleton: " << pointOnSkeleton.transpose() << std::endl;
                 std::vector<Eigen::Vector3d> virtualFaceCorners = {
                     pointOnSkeleton + this->_referenceDiameter  * beamYDirection + this->_referenceDiameter * beamZDirection,
@@ -166,7 +167,7 @@ namespace RoundwoodJoinery::Beam
                 for (std::shared_ptr<Joinery::JointFace>& face : joint->GetFaces())
                 {
                     std::vector<Eigen::Vector3d> projectedOutline;
-                    if(Utils::IsOutlineIntersectingPlane(originalSectionOutline, pointOnSkeleton, beamDirection))
+                    if(Utils::IsOutlineIntersectingPlane(face->GetCorners(), pointOnSkeleton, beamDirection))
                     {
                         Eigen::Vector3d projectionDirection = beamDirection - (beamDirection.dot(face->GetNormal())) * face->GetNormal();
                         projectionDirection.normalize();
