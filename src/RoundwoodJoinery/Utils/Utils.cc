@@ -421,22 +421,28 @@ namespace RoundwoodJoinery::Utils
         PPTree treeCurve2(segmentsCurve2.begin(), segmentsCurve2.end());
         PPTree treeCurve1(segmentsCurve1.begin(), segmentsCurve1.end());
         PPPoint_3 closestPointOnCurve2;
+        Eigen::Vector3d secondClosestPointOnCurve1;
         PPPoint_3 closestPointOnCurve1;
+        Eigen::Vector3d secondClosestPointOnCurve2;
 
         for (const auto& segment1 : segmentsCurve1)
         {
             closestPointOnCurve2 = treeCurve2.closest_point(segment1.source());
             closestPointOnCurve1 = treeCurve1.closest_point(closestPointOnCurve2);
 
-            double distance = std::sqrt(CGAL::squared_distance(segment1.source(), closestPointOnCurve2));
+            double distance = std::sqrt(CGAL::squared_distance(closestPointOnCurve1, closestPointOnCurve2));
             if (distance < minDistance)
             {
                 minDistance = distance;
+                secondClosestPointOnCurve1 = closestPointCurve1;
+                secondClosestPointOnCurve2 = closestPointCurve2;
                 closestPointCurve1 = Eigen::Vector3d(closestPointOnCurve1.x(), closestPointOnCurve1.y(), closestPointOnCurve1.z());
                 closestPointCurve2 = Eigen::Vector3d(closestPointOnCurve2.x(), closestPointOnCurve2.y(), closestPointOnCurve2.z());
             }
         }
 
+        closestPointCurve1 = Utils::FindHeightOfTriangle(closestPointCurve1, secondClosestPointOnCurve1, secondClosestPointOnCurve2);
+        closestPointCurve2 = Utils::FindHeightOfTriangle(closestPointCurve2, secondClosestPointOnCurve2, closestPointCurve1);
         return {closestPointCurve1, closestPointCurve2};
     }
 
