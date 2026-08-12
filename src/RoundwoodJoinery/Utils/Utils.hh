@@ -153,7 +153,7 @@ namespace RoundwoodJoinery::Utils
      * @param normal The normal vector of the plane.
      * @param planeOrigin A point on the plane onto which the points are projected.
      * 
-     * @return A CGAL 2D polygon representing the points.
+     * @return A CGAL 2D polygon representing the projected points.
      */
     CGAL::Polygon_2<K> Compute2DPolygonInPlane(const std::vector<Eigen::Vector3d>& points, const Eigen::Vector3d& normal, const Eigen::Vector3d& planeOrigin);
 
