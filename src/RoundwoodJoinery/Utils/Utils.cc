@@ -405,9 +405,22 @@ namespace RoundwoodJoinery::Utils
 
     std::pair<Eigen::Vector3d, Eigen::Vector3d> ComputeClosestPointsBetweenTwoCurves(const std::vector<Eigen::Vector3d>& curve1, const std::vector<Eigen::Vector3d>& curve2)
     {
+        if (curve1.size() < 2 || curve2.size() < 2)
+        {
+            throw std::invalid_argument("Both curves must have at least two points.");
+            return {Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero()};
+        }
+
+        if(curve1.size() == 2 && curve2.size() == 2)
+        {
+            Eigen::Vector3d closestPointCurve1 = FindHeightOfTriangle(curve2[0], curve1[0], curve1[1]);
+            Eigen::Vector3d closestPointCurve2 = FindHeightOfTriangle(curve1[0], curve2[0], curve2[1]);
+            return {closestPointCurve1, closestPointCurve2};
+        }
+
         double minDistance = std::numeric_limits<double>::max();
-        Eigen::Vector3d closestPointCurve1;
-        Eigen::Vector3d closestPointCurve2;
+        Eigen::Vector3d closestPointCurve1 = Eigen::Vector3d::Zero();
+        Eigen::Vector3d closestPointCurve2 = Eigen::Vector3d::Zero();
 
         std::vector<PPSegment_3> segmentsCurve1;
         std::vector<PPSegment_3> segmentsCurve2;
@@ -426,9 +439,9 @@ namespace RoundwoodJoinery::Utils
         PPTree treeCurve2(segmentsCurve2.begin(), segmentsCurve2.end());
         PPTree treeCurve1(segmentsCurve1.begin(), segmentsCurve1.end());
         PPPoint_3 closestPointOnCurve2;
-        Eigen::Vector3d secondClosestPointOnCurve1;
+        // Eigen::Vector3d secondClosestPointOnCurve1 = Eigen::Vector3d::Zero();
         PPPoint_3 closestPointOnCurve1;
-        Eigen::Vector3d secondClosestPointOnCurve2;
+        // Eigen::Vector3d secondClosestPointOnCurve2 = Eigen::Vector3d::Zero();
 
         for (const auto& segment1 : segmentsCurve1)
         {
@@ -439,15 +452,15 @@ namespace RoundwoodJoinery::Utils
             if (distance < minDistance)
             {
                 minDistance = distance;
-                secondClosestPointOnCurve1 = closestPointCurve1;
-                secondClosestPointOnCurve2 = closestPointCurve2;
+                // secondClosestPointOnCurve1 = closestPointCurve1;
+                // secondClosestPointOnCurve2 = closestPointCurve2;
                 closestPointCurve1 = Eigen::Vector3d(closestPointOnCurve1.x(), closestPointOnCurve1.y(), closestPointOnCurve1.z());
                 closestPointCurve2 = Eigen::Vector3d(closestPointOnCurve2.x(), closestPointOnCurve2.y(), closestPointOnCurve2.z());
             }
         }
 
-        closestPointCurve1 = Utils::FindHeightOfTriangle(closestPointCurve1, secondClosestPointOnCurve1, secondClosestPointOnCurve2);
-        closestPointCurve2 = Utils::FindHeightOfTriangle(closestPointCurve2, secondClosestPointOnCurve2, closestPointCurve1);
+        // closestPointCurve1 = Utils::FindHeightOfTriangle(closestPointCurve2, closestPointCurve1, secondClosestPointOnCurve1);
+        // closestPointCurve2 = Utils::FindHeightOfTriangle(closestPointCurve2, secondClosestPointOnCurve1, closestPointCurve1);
         return {closestPointCurve1, closestPointCurve2};
     }
 
