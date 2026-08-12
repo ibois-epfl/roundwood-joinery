@@ -267,9 +267,14 @@ namespace RoundwoodJoinery::Utils
                                                 const Eigen::Vector3d& normal,
                                                 const Eigen::Vector3d& planeOrigin)
     {
-        Eigen::Vector3d beamYDirection = Eigen::Vector3d(0, 1, 0) - (normal.dot(Eigen::Vector3d(0, 1, 0))) * normal;
-        beamYDirection.normalize();
-        Eigen::Vector3d beamZDirection = beamYDirection.cross(normal);
+        Eigen::Vector3d n = normal.normalized();
+        Eigen::Vector3d refAxis = (std::abs(n.y()) > 0.9) ? Eigen::Vector3d(0, 1, 0) : Eigen::Vector3d(1, 0, 0);
+        Eigen::Vector3d beamYDirection = refAxis - (n.dot(refAxis)) * n;
+        if (beamYDirection.squaredNorm() < 1e-9) 
+        {
+            return CGAL::Polygon_2<K>(); // Return an empty polygon if the normal is invalid
+        }
+        Eigen::Vector3d beamZDirection = beamYDirection.cross(n);
 
         CGAL::Polygon_2<K> polygon;
         for (const auto& p : points) {
