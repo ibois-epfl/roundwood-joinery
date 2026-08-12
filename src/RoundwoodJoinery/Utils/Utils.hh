@@ -147,9 +147,9 @@ namespace RoundwoodJoinery::Utils
 
 
     /**
-     * @brief Computes a 2D polygon from a set of 2D points.
+     * @brief Computes a 2D polygon from a set of 3D points.
      * 
-     * @param points The set of 2D points.
+     * @param points The set of 3D points.
      * @param normal The normal vector of the plane.
      * @param planeOrigin A point on the plane onto which the points are projected.
      * 
