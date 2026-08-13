@@ -476,7 +476,7 @@ namespace RoundwoodJoinery::Utils
         bool valid = true;
 
         double dotProduct = normalizedDirection.dot(normalizedPlaneNormal);
-        if (dotProduct < 1e-6)
+        if (std::abs(dotProduct) < 1e-6)
         {
             valid = false;
             return {Eigen::Vector3d::Zero(), valid};
