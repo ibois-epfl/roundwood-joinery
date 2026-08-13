@@ -131,7 +131,9 @@ namespace RoundwoodJoinery::Beam
         {
             Eigen::Vector3d beamDirection = (this->_skeleton.back() - this->_skeleton.front()).normalized();
             std::cout << "Beam direction: " << beamDirection.transpose() << std::endl;
-            Eigen::Vector3d beamYDirection = Eigen::Vector3d(0, 1, 0) - (beamDirection.dot(Eigen::Vector3d(0, 1, 0))) * beamDirection;
+            const Eigen::Vector3d refAxis = (std::abs(beamDirection.y()) < 0.9) ? Eigen::Vector3d(0, 1, 0) : Eigen::Vector3d(1, 0, 0);
+            Eigen::Vector3d beamYDirection = refAxis - (beamDirection.dot(refAxis)) * beamDirection;
+            if (beamYDirection.squaredNorm() < 1e-12) { continue; }
             beamYDirection.normalize();
             Eigen::Vector3d beamZDirection = beamYDirection.cross(beamDirection);
             for (auto& joint : jointGroup->GetJoints())
