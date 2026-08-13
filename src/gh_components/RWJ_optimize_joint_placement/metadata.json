@@ -83,7 +83,7 @@
                 "scriptParamAccess": "item",
                 "wireDisplay": "default",
                 "sourceCount": 0,
-                "typeHintID": "string"
+                "typeHintID": "str"
             }
         ],
         "outputParameters": [
