@@ -187,6 +187,11 @@ namespace RoundwoodJoinery::Joinery
                 this->_remainingArea = area;
             }
 
+            void SetRemainingInertia(double inertia)
+            {
+                this->_remainingInertia = inertia;
+            }
+
             /**
             * @brief Returns the remaining section outline under the joint.
             * @return A vector of 3D points representing the remaining section outline.

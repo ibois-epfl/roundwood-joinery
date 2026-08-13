@@ -70,10 +70,17 @@ NB_MODULE(roundwoodJoineryBindings, m)
                                           nb::arg("point"))
         .def("get_closest_point_on_skeleton", &RoundwoodJoinery::Joinery::Joint::GetClosestPointOnSkeleton)
         .def("get_remaining_area", &RoundwoodJoinery::Joinery::Joint::GetRemainingArea)
+        .def("set_remaining_area", &RoundwoodJoinery::Joinery::Joint::SetRemainingArea,
+             "Set the remaining area of the beam under this joint", nb::arg("area"))
         .def("get_remaining_inertia", &RoundwoodJoinery::Joinery::Joint::GetRemainingInertia)
+        .def("set_remaining_inertia", &RoundwoodJoinery::Joinery::Joint::SetRemainingInertia,
+             "Set the remaining inertia of the beam under this joint", nb::arg("inertia"))
         .def("get_remaining_section_outline", &RoundwoodJoinery::Joinery::Joint::GetRemainingSectionOutline)
+        .def("set_remaining_section_outline", &RoundwoodJoinery::Joinery::Joint::SetRemainingSectionOutline,
+             "Set the remaining section outline under the joint", nb::arg("outline"))
         .def("get_initial_section_outline", &RoundwoodJoinery::Joinery::Joint::GetInitialSectionOutline)
-        .def("get_remaining_area", &RoundwoodJoinery::Joinery::Joint::GetRemainingArea);
+        .def("set_initial_section_outline", &RoundwoodJoinery::Joinery::Joint::SetInitialSectionOutline,
+             "Set the initial section outline under the joint", nb::arg("outline"));
 
 
     nb::class_<RoundwoodJoinery::Joinery::JointGroup>(m, "JointGroup")
