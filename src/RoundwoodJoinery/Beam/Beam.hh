@@ -84,9 +84,9 @@ namespace RoundwoodJoinery::Beam
         /**
          * @brief Just a test function
          */
-        std::vector<Eigen::Matrix4d> ComputeOneIterationOfJointFaceTranslationsForOptimisation()
+        std::vector<Eigen::Matrix4d> ComputeOneIterationOfJointFaceTranslationsForOptimisation(double alphaForAreaComputations)
         {
-            std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> pointsAndTranslations = this->_ComputeJointFaceTranslationsForOptimisation();
+            std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> pointsAndTranslations = this->_ComputeJointFaceTranslationsForOptimisation(alphaForAreaComputations);
             std::vector<Eigen::Matrix4d> transformations = RoundwoodJoinery::Utils::ComputeApproximatingTransformation(pointsAndTranslations);
             Eigen::Matrix4d meanTransformation = RoundwoodJoinery::Utils::ComputeCollectiveApproximatingTransformation(pointsAndTranslations);
             std::vector<Eigen::Matrix4d> adaptedTransformations;
@@ -111,10 +111,11 @@ namespace RoundwoodJoinery::Beam
          * 
          * @param maxIterations The maximum number of iterations to perform for the optimization process.
          * @param minRelativeTranslationRMSE The minimum relative translation root mean square error threshold to determine convergence of the optimization process. If the RMSE of the translations falls below this threshold, the optimization process will stop.
+         * @param alphaForAreaComputations The alpha parameter used in the computation of the current area and depths of the joint faces.
          * @param outputFolderPath The path to the folder where the area ratios will be outputted for each iteration. If not provided, no output will be generated.
          * @return The vector of total transformations applied to each joint group. They have been applied and are returned for evaluation purposes.
          */
-        std::vector<Eigen::Matrix4d> ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE, std::optional<std::string> outputFolderPath);
+        std::vector<Eigen::Matrix4d> ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE, double alphaForAreaComputations, std::optional<std::string> outputFolderPath);
 
     private:
 
@@ -132,11 +133,13 @@ namespace RoundwoodJoinery::Beam
          * @brief Private method that computes the translations of the joint faces for optimization purposes. 
          * This is based on the current positions of the joints, their closest points on the skeleton, and their joint faces' target areas.
          * 
+         * @param alphaForAreaComputations A parameter used in the computation of the current area and depths of the joint faces.
+         * 
          * @return A vector of vectors of pairs, where each inner vector corresponds to a group of joints,
          *  and each pair consists of an anchor point (a corner of a joint face) and a translation vector
          *  that indicates how much the joint face should be translated to better fit the skeleton and target area.
          */
-        std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> _ComputeJointFaceTranslationsForOptimisation();
+        std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> _ComputeJointFaceTranslationsForOptimisation(double alphaForAreaComputations);
 
         std::vector<std::shared_ptr<Joinery::JointGroup>> _jointGroups;
         std::vector<Eigen::Vector3d> _skeleton;

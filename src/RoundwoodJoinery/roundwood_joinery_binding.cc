@@ -106,6 +106,7 @@ NB_MODULE(roundwoodJoineryBindings, m)
              "Compute an optimization of the joint group transformations to better align the joint faces with the beam's point cloud skeleton",
              nb::arg("maxIterations") = 10, 
              nb::arg("minRelativeTranslationRMSE") = 1.0,
+             nb::arg("alphaForAreaComputations") = 500.0,
              nb::arg("outputFolderPath") = std::optional<std::string>());
 
         nb::module_ u = m.def_submodule("Utils", "Utility functions for Roundwood Joinery");

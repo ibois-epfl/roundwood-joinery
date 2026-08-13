@@ -30,7 +30,7 @@ namespace RoundwoodJoinery::Beam
     }
 
 
-    std::vector<Eigen::Matrix4d> Beam::ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE, std::optional<std::string> outputFolderPath)
+    std::vector<Eigen::Matrix4d> Beam::ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE, double alphaForAreaComputations, std::optional<std::string> outputFolderPath)
     {
         // totalTransformations will accumulate the transformations applied to each joint group across iterations
         std::vector<Eigen::Matrix4d> totalTransformations(this->_jointGroups.size(), Eigen::Matrix4d::Identity());
@@ -51,7 +51,7 @@ namespace RoundwoodJoinery::Beam
         
         for (int iteration = 0; iteration < maxIterations; ++iteration)
         {
-            std::vector<Eigen::Matrix4d> transformations = this->ComputeOneIterationOfJointFaceTranslationsForOptimisation();
+            std::vector<Eigen::Matrix4d> transformations = this->ComputeOneIterationOfJointFaceTranslationsForOptimisation(alphaForAreaComputations);
 
             for (int i = 0; i < this->_jointGroups.size(); ++i)
             {
@@ -158,7 +158,7 @@ namespace RoundwoodJoinery::Beam
         return closestPoint;
     }
 
-    std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> Beam::_ComputeJointFaceTranslationsForOptimisation()
+    std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> Beam::_ComputeJointFaceTranslationsForOptimisation(double alphaForAreaComputations)
     {
         std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> anchorPointsAndTranslations;
         double cumulatedAreas = 0.0;
@@ -185,7 +185,7 @@ namespace RoundwoodJoinery::Beam
                 {
                     Eigen::Vector3d currentCenter = face->GetCenter();
                     double targetArea = face->GetTargetArea();
-                    std::vector<double> currentAreaAndDepths = face->ComputeCurrentAreaAndDepths(this->_pointCloud, this->_referenceDiameter, 200000 * this->_referenceDiameter);
+                    std::vector<double> currentAreaAndDepths = face->ComputeCurrentAreaAndDepths(this->_pointCloud, this->_referenceDiameter, alphaForAreaComputations);
                     double currentArea = currentAreaAndDepths[0];
                     double minProjectionDistance = currentAreaAndDepths[1];
                     double currentDepth = currentAreaAndDepths[2];
