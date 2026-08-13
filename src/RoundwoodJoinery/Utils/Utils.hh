@@ -37,6 +37,7 @@ typedef K::Point_3 Point_3;
 // for closest pair of points search
 #include <CGAL/AABB_tree.h>
 #include <CGAL/AABB_traits_3.h>
+#include <CGAL/AABB_segment_primitive_3.h>
 #include <CGAL/Segment_3.h>
 #include <CGAL/squared_distance_3.h>
 typedef CGAL::Simple_cartesian<double> PPKernel;
@@ -146,13 +147,13 @@ namespace RoundwoodJoinery::Utils
 
 
     /**
-     * @brief Computes a 2D polygon from a set of 2D points.
+     * @brief Computes a 2D polygon from a set of 3D points.
      * 
-     * @param points The set of 2D points.
+     * @param points The set of 3D points.
      * @param normal The normal vector of the plane.
      * @param planeOrigin A point on the plane onto which the points are projected.
      * 
-     * @return A CGAL 2D polygon representing the points.
+     * @return A CGAL 2D polygon representing the projected points.
      */
     CGAL::Polygon_2<K> Compute2DPolygonInPlane(const std::vector<Eigen::Vector3d>& points, const Eigen::Vector3d& normal, const Eigen::Vector3d& planeOrigin);
 
