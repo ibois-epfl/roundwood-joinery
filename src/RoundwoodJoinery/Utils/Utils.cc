@@ -125,7 +125,6 @@ namespace RoundwoodJoinery::Utils
         }
 
         Alpha_shape_2 A(cgalPoints2D.begin(), cgalPoints2D.end(), alpha, Alpha_shape_2::REGULARIZED);
-        std::vector<Eigen::Vector3d> alphaShapePoints;
         
         std::map<std::pair<double, double>, std::vector<std::pair<double, double>>> adjacency;
         for (auto it = A.finite_edges_begin(); it != A.finite_edges_end(); ++it) 
