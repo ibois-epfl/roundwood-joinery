@@ -21,7 +21,7 @@ int main()
     RoundwoodJoinery::Joinery::JointFace face1(normal, corners, targetArea);
     double minProjectionDistance = std::numeric_limits<double>::max();
     double maxProjectionDistance = 0.0;
-    std::vector<Eigen::Vector3d> projectedPoints = face1.ProjectPointsOntoFace(pointCloud, 300.0, minProjectionDistance, maxProjectionDistance);
+    std::vector<Eigen::Vector3d> projectedPoints = face1.ProjectPointsOntoFace(pointCloud, 300.0, minProjectionDistance, maxProjectionDistance, 300.0);
     if(!(projectedPoints.size() == 1783 ))
     {
         std::cerr << "Test failed: Expected 1783 projected points, got " << projectedPoints.size() << std::endl;

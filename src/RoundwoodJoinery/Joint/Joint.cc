@@ -24,7 +24,7 @@ namespace RoundwoodJoinery::Joinery
         }
     }
 
-    std::vector<Eigen::Vector3d> JointFace::ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double& minProjectionDistance, double& maxProjectionDistance)
+    std::vector<Eigen::Vector3d> JointFace::ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double& minProjectionDistance, double& maxProjectionDistance, double maxAllowableDepth)
     {
         // First some basic data about joint face
         Eigen::Vector3d jointCenter = this->_center;
@@ -48,6 +48,7 @@ namespace RoundwoodJoinery::Joinery
             double dist = (pointVec - this->_center).dot(normal);
             // if this dot product is negative, the point is "behind" the face and we should ignore it
             if (dist < 0){continue;}
+            if (dist > maxAllowableDepth){continue;}
             Eigen::Vector3d projection = pointVec - (dist * normal);
             CGAL::Projection_traits_3<K> traits({normal.x(), normal.y(), normal.z()});
             if (this->_outline_polygon) 
@@ -82,13 +83,13 @@ namespace RoundwoodJoinery::Joinery
         return projectedPoints;
     }
 
-    std::vector<double> RoundwoodJoinery::Joinery::JointFace::ComputeCurrentAreaAndDepths(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha)
+    std::vector<double> RoundwoodJoinery::Joinery::JointFace::ComputeCurrentAreaAndDepths(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha, double maxAllowableDepth)
     {
         double maxProjectionDistance = 0.0;
         double minProjectionDistance = std::numeric_limits<double>::max();
         if (this->_projectedPoints.empty())
         {
-            this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud, radiusSearch, minProjectionDistance, maxProjectionDistance);
+            this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud, radiusSearch, minProjectionDistance, maxProjectionDistance, maxAllowableDepth);
         }
 
         if (this->_projectedPoints.size() < 3)
@@ -113,13 +114,13 @@ namespace RoundwoodJoinery::Joinery
         return {this->_currentArea, minProjectionDistance, maxProjectionDistance};
     }
 
-    std::vector<Eigen::Vector3d> RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha)
+    std::vector<Eigen::Vector3d> RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha, double maxAllowableDepth)
     {
         if (this->_projectedPoints.empty())
         {
             double maxProjectionDistance = 0.0;
             double minProjectionDistance = std::numeric_limits<double>::max();
-            this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud, radiusSearch, minProjectionDistance, maxProjectionDistance);
+            this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud, radiusSearch, minProjectionDistance, maxProjectionDistance, maxAllowableDepth);
         }
 
         if (this->_projectedPoints.size() < 3)

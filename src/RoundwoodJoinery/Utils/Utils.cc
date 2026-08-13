@@ -262,6 +262,79 @@ namespace RoundwoodJoinery::Utils
         return cgalPolygon;
     }
 
+    CGAL::Polygon_2<K> Compute2DPolygonInPlane(const std::vector<Eigen::Vector3d>& points, 
+                                                const Eigen::Vector3d& normal,
+                                                const Eigen::Vector3d& planeOrigin)
+    {
+        Eigen::Vector3d n = normal.normalized();
+        Eigen::Vector3d refAxis = (std::abs(n.y()) > 0.9) ? Eigen::Vector3d(0, 1, 0) : Eigen::Vector3d(1, 0, 0);
+        Eigen::Vector3d beamYDirection = refAxis - (n.dot(refAxis)) * n;
+        if (beamYDirection.squaredNorm() < 1e-9) 
+        {
+            return CGAL::Polygon_2<K>(); // Return an empty polygon if the normal is invalid
+        }
+        Eigen::Vector3d beamZDirection = beamYDirection.cross(n);
+
+        CGAL::Polygon_2<K> polygon;
+        for (const auto& p : points) {
+            Eigen::Vector3d vec = p - planeOrigin;
+            double u = vec.dot(beamYDirection); // x-coordinate in 2D
+            double v = vec.dot(beamZDirection); // y-coordinate in 2D
+            polygon.push_back(Point_2(u, v));
+        }
+        return polygon;
+    }
+
+    BPoly2 BuildExact2DPolygon(const std::vector<Eigen::Vector3d>& outline,
+                                    const Eigen::Vector3d& yDirection,
+                                    const Eigen::Vector3d& zDirection,
+                                    const Eigen::Vector3d& pointOnSkeleton)
+    {
+        BPoly2 poly;
+        if (outline.size() < 3) return poly;
+
+        const Eigen::Vector3d u = yDirection.normalized();
+        const Eigen::Vector3d v = zDirection.normalized();
+        const Eigen::Vector3d o = pointOnSkeleton;
+
+        std::vector<Eigen::Vector2d> uv;
+        uv.reserve(outline.size());
+
+        // remove near-duplicate consecutive points BEFORE CGAL polygon creation
+        constexpr double eps2 = 1e-14;
+        for (const auto& p3 : outline)
+        {
+            Eigen::Vector3d d = p3 - o;
+            Eigen::Vector2d q(d.dot(u), d.dot(v));
+            if (uv.empty() || (q - uv.back()).squaredNorm() > eps2) uv.push_back(q);
+        }
+        if (uv.size() >= 2 && (uv.front() - uv.back()).squaredNorm() <= eps2) uv.pop_back();
+        if (uv.size() < 3) return poly;
+
+        for (const auto& q : uv)
+            poly.push_back(BPoint2(BK::FT(q.x()), BK::FT(q.y())));
+
+        if (poly.is_clockwise_oriented()) poly.reverse_orientation();
+        return poly;
+    }
+
+    bool IsOutlineIntersectingPlane(const std::vector<Eigen::Vector3d>& outline, const Eigen::Vector3d& planePoint, const Eigen::Vector3d& planeNormal)
+    {
+        double firstDistance = (outline[0] - planePoint).dot(planeNormal);
+        bool firstSide = firstDistance > 0;
+        for (const auto& point : outline)
+        {
+            Eigen::Vector3d vec = point - planePoint;
+            double distance = vec.dot(planeNormal);
+            bool currentSide = distance > 0;
+            if (currentSide != firstSide)
+            {
+                return true; 
+            }
+        }
+        return false;
+    }
+
     Eigen::Matrix4d ComputeMeanTransformation(const std::vector<Eigen::Matrix4d>& transformations)
     {
         if (transformations.empty())
@@ -327,5 +400,87 @@ namespace RoundwoodJoinery::Utils
         transformation.block<3, 3>(0, 0) = transform.block<3, 3>(0, 0);
         transformation.block<3, 1>(0, 3) = transform.block<3, 1>(0, 3);
         return transformation;
+    }
+
+    std::pair<Eigen::Vector3d, Eigen::Vector3d> ComputeClosestPointsBetweenTwoCurves(const std::vector<Eigen::Vector3d>& curve1, const std::vector<Eigen::Vector3d>& curve2)
+    {
+        if (curve1.size() < 2 || curve2.size() < 2)
+        {
+            throw std::invalid_argument("Both curves must have at least two points.");
+            return {Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero()};
+        }
+
+        if(curve1.size() == 2 && curve2.size() == 2)
+        {
+            Eigen::Vector3d closestPointCurve1 = FindHeightOfTriangle(curve2[0], curve1[0], curve1[1]);
+            Eigen::Vector3d closestPointCurve2 = FindHeightOfTriangle(curve1[0], curve2[0], curve2[1]);
+            return {closestPointCurve1, closestPointCurve2};
+        }
+
+        double minDistance = std::numeric_limits<double>::max();
+        Eigen::Vector3d closestPointCurve1 = Eigen::Vector3d::Zero();
+        Eigen::Vector3d closestPointCurve2 = Eigen::Vector3d::Zero();
+
+        std::vector<PPSegment_3> segmentsCurve1;
+        std::vector<PPSegment_3> segmentsCurve2;
+        
+        for (size_t i = 0; i < curve1.size() - 1; ++i)
+        {
+            segmentsCurve1.emplace_back(PPPoint_3(curve1[i].x(), curve1[i].y(), curve1[i].z()),
+                                        PPPoint_3(curve1[i + 1].x(), curve1[i + 1].y(), curve1[i + 1].z()));
+        }
+        for (size_t i = 0; i < curve2.size() - 1; ++i)
+        {
+            segmentsCurve2.emplace_back(PPPoint_3(curve2[i].x(), curve2[i].y(), curve2[i].z()),
+                                        PPPoint_3(curve2[i + 1].x(), curve2[i + 1].y(), curve2[i + 1].z()));
+        }
+
+        PPTree treeCurve2(segmentsCurve2.begin(), segmentsCurve2.end());
+        PPTree treeCurve1(segmentsCurve1.begin(), segmentsCurve1.end());
+        PPPoint_3 closestPointOnCurve2;
+        // Eigen::Vector3d secondClosestPointOnCurve1 = Eigen::Vector3d::Zero();
+        PPPoint_3 closestPointOnCurve1;
+        // Eigen::Vector3d secondClosestPointOnCurve2 = Eigen::Vector3d::Zero();
+
+        for (const auto& segment1 : segmentsCurve1)
+        {
+            closestPointOnCurve2 = treeCurve2.closest_point(segment1.source());
+            closestPointOnCurve1 = treeCurve1.closest_point(closestPointOnCurve2);
+
+            double distance = std::sqrt(CGAL::squared_distance(closestPointOnCurve1, closestPointOnCurve2));
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                // secondClosestPointOnCurve1 = closestPointCurve1;
+                // secondClosestPointOnCurve2 = closestPointCurve2;
+                closestPointCurve1 = Eigen::Vector3d(closestPointOnCurve1.x(), closestPointOnCurve1.y(), closestPointOnCurve1.z());
+                closestPointCurve2 = Eigen::Vector3d(closestPointOnCurve2.x(), closestPointOnCurve2.y(), closestPointOnCurve2.z());
+            }
+        }
+
+        // closestPointCurve1 = Utils::FindHeightOfTriangle(closestPointCurve2, closestPointCurve1, secondClosestPointOnCurve1);
+        // closestPointCurve2 = Utils::FindHeightOfTriangle(closestPointCurve2, secondClosestPointOnCurve1, closestPointCurve1);
+        return {closestPointCurve1, closestPointCurve2};
+    }
+
+    std::pair<Eigen::Vector3d, bool> ProjectPointOnPlaneAlongDirection(const Eigen::Vector3d& point, const Eigen::Vector3d& planePoint, const Eigen::Vector3d& planeNormal, const Eigen::Vector3d& direction)
+    {
+        if (direction.norm() < 1e-6 || planeNormal.norm() < 1e-6)
+        {
+            std::cerr << "Warning: Direction vector or plane normal is too small. Cannot project point." << std::endl;
+            return {Eigen::Vector3d::Zero(), false};
+        }
+        Eigen::Vector3d normalizedDirection = direction.normalized();
+        Eigen::Vector3d normalizedPlaneNormal = planeNormal.normalized();
+        bool valid = true;
+
+        double dotProduct = normalizedDirection.dot(normalizedPlaneNormal);
+        if (std::abs(dotProduct) < 1e-6)
+        {
+            valid = false;
+            return {Eigen::Vector3d::Zero(), valid};
+        }
+        double t = (planePoint - point).dot(normalizedPlaneNormal) / dotProduct;
+        return {point + t * normalizedDirection, valid};
     }
 }

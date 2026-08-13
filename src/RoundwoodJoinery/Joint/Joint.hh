@@ -27,11 +27,12 @@ namespace RoundwoodJoinery::Joinery
              * 
              * @param pointCloud The point cloud containing the points to be projected.
              * @param radiusSearch The radius within which to search for neighboring points.
-             * @param minProjectionDistance Optional minimum projection distance. The value will be updated with the minimum distance of the projected points, if provided.
-             * @param maxProjectionDistance Optional maximum projection distance. The value will be updated with the maximum distance of the projected points, if provided.
+             * @param minProjectionDistance Minimum projection distance. The value will be updated with the minimum distance of the projected points.
+             * @param maxProjectionDistance Maximum projection distance. The value will be updated with the maximum distance of the projected points.
+             * @param maxAllowableDepth Maximum allowable depth for the projection. Points with a projection distance greater than this value will be ignored.
              * @return A vector of Eigen::Vector3d representing the projected points.
              */
-            std::vector<Eigen::Vector3d> ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double& minProjectionDistance, double& maxProjectionDistance);
+            std::vector<Eigen::Vector3d> ProjectPointsOntoFace(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double& minProjectionDistance, double& maxProjectionDistance, double maxAllowableDepth);
 
             // Getters and small utils
             /**
@@ -101,7 +102,7 @@ namespace RoundwoodJoinery::Joinery
             * @param alpha The alpha parameter for the alpha shape computation, which is used to determine the outline of the projected points.
             * @return The computed current area of the joint face, the minimum projection distance and maximum projection distances (so the depth range) of the joint face.
             */
-            std::vector<double> ComputeCurrentAreaAndDepths(PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha = 500.0);
+            std::vector<double> ComputeCurrentAreaAndDepths(PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha = 500.0, double maxAllowableDepth = 50.0);
 
             /**
             * @brief Returns the current outline of the joint face based on the points from the beam's point cloud that are projected onto the face.
@@ -111,7 +112,7 @@ namespace RoundwoodJoinery::Joinery
             * @param alpha The alpha parameter for the alpha shape computation, which is used to determine the outline of the projected points.
             * @return A vector of Eigen::Vector3d representing the current outline of the joint face.
             */
-            std::vector<Eigen::Vector3d> GetCurrentOutline(PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha = 500.0);
+            std::vector<Eigen::Vector3d> GetCurrentOutline(PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha = 500.0, double maxAllowableDepth = 50.0);
 
 
             void ApplyTransformation(Eigen::Matrix4d transformation);
@@ -173,6 +174,69 @@ namespace RoundwoodJoinery::Joinery
                 return this->_faces.size();
             }
 
+            /**
+            * @brief Returns the remaining area of the beam under this joint.
+            * @return The remaining area of the beam under this joint.
+            */
+            double GetRemainingArea() const
+            {
+                return this->_remainingArea;
+            }
+
+            void SetRemainingArea(double area)
+            {
+                this->_remainingArea = area;
+            }
+
+            void SetRemainingInertia(double inertia)
+            {
+                this->_remainingInertia = inertia;
+            }
+
+            /**
+            * @brief Returns the remaining section outline under the joint.
+            * @return A vector of 3D points representing the remaining section outline.
+            */
+            std::vector<Eigen::Vector3d> GetRemainingSectionOutline() const
+            {
+                return this->_remainingSectionOutline;
+            }
+
+            /**
+             * @brief Returns the initial section outline under the joint.
+             */
+            std::vector<Eigen::Vector3d> GetInitialSectionOutline() const
+            {
+                return this->_initialSectionOutline;
+            }
+
+            /**
+            * @brief Sets the remaining section outline under the joint.
+            * @param outline A vector of 3D points representing the remaining section outline.
+            */
+            void SetRemainingSectionOutline(const std::vector<Eigen::Vector3d>& outline)
+            {
+                this->_remainingSectionOutline = outline;
+            }
+
+            /**
+             * @brief Sets the initial section outline under the joint.
+             * @param outline A vector of 3D points representing the initial section outline.
+             */
+            void SetInitialSectionOutline(const std::vector<Eigen::Vector3d>& outline)
+            {
+                this->_initialSectionOutline = outline;
+            }
+
+            /**
+            * @brief Returns the remaining inertia of the beam under this joint.
+            * @return The remaining inertia of the beam under this joint.
+            */
+            double GetRemainingInertia() const
+            {
+                return this->_remainingInertia;
+            }
+
             void SetClosestPointOnSkeleton(Eigen::Vector3d correspondance)
             {
                 this->_closestPointOnSkeleton = correspondance;
@@ -201,6 +265,10 @@ namespace RoundwoodJoinery::Joinery
             std::vector<std::shared_ptr<JointFace>> _faces;
             Eigen::Vector3d _center = Eigen::Vector3d::Zero();
             Eigen::Vector3d _closestPointOnSkeleton = Eigen::Vector3d::Zero();
+            double _remainingArea = 0.0;
+            double _remainingInertia = 0.0;
+            std::vector<Eigen::Vector3d> _remainingSectionOutline;  
+            std::vector<Eigen::Vector3d> _initialSectionOutline;
     };
 
     /**
