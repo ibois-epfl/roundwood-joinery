@@ -188,7 +188,7 @@ namespace RoundwoodJoinery::Joinery
             }
 
             /**
-            * @brief Returns the remaining section outline of the joint.
+            * @brief Returns the remaining section outline under the joint.
             * @return A vector of 3D points representing the remaining section outline.
             */
             std::vector<Eigen::Vector3d> GetRemainingSectionOutline() const
