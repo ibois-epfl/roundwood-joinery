@@ -197,12 +197,29 @@ namespace RoundwoodJoinery::Joinery
             }
 
             /**
-            * @brief Sets the remaining section outline of the joint.
+             * @brief Returns the initial section outline under the joint.
+             */
+            std::vector<Eigen::Vector3d> GetInitialSectionOutline() const
+            {
+                return this->_initialSectionOutline;
+            }
+
+            /**
+            * @brief Sets the remaining section outline under the joint.
             * @param outline A vector of 3D points representing the remaining section outline.
             */
             void SetRemainingSectionOutline(const std::vector<Eigen::Vector3d>& outline)
             {
                 this->_remainingSectionOutline = outline;
+            }
+
+            /**
+             * @brief Sets the initial section outline under the joint.
+             * @param outline A vector of 3D points representing the initial section outline.
+             */
+            void SetInitialSectionOutline(const std::vector<Eigen::Vector3d>& outline)
+            {
+                this->_initialSectionOutline = outline;
             }
 
             /**
@@ -245,6 +262,7 @@ namespace RoundwoodJoinery::Joinery
             double _remainingArea = 0.0;
             double _remainingInertia = 0.0;
             std::vector<Eigen::Vector3d> _remainingSectionOutline;  
+            std::vector<Eigen::Vector3d> _initialSectionOutline;
     };
 
     /**

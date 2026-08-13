@@ -162,7 +162,7 @@ namespace RoundwoodJoinery::Beam
                 };
                 RoundwoodJoinery::Joinery::JointFace virtualFace(beamDirection, virtualFaceCorners, 0.0);
                 std::vector<Eigen::Vector3d> originalSectionOutline = virtualFace.GetCurrentOutline(this->_pointCloud, this->_referenceDiameter, 20000.0, this->_referenceDiameter/10.0);
-
+                joint->SetInitialSectionOutline(originalSectionOutline);
                 std::vector<std::vector<Eigen::Vector3d>> projectedJointFaceOutlines;
                 for (std::shared_ptr<Joinery::JointFace>& face : joint->GetFaces())
                 {
