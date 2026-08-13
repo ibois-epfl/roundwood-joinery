@@ -466,12 +466,17 @@ namespace RoundwoodJoinery::Utils
 
     std::pair<Eigen::Vector3d, bool> ProjectPointOnPlaneAlongDirection(const Eigen::Vector3d& point, const Eigen::Vector3d& planePoint, const Eigen::Vector3d& planeNormal, const Eigen::Vector3d& direction)
     {
+        if (direction.norm() < 1e-6 || planeNormal.norm() < 1e-6)
+        {
+            std::cerr << "Warning: Direction vector or plane normal is too small. Cannot project point." << std::endl;
+            return {Eigen::Vector3d::Zero(), false};
+        }
         Eigen::Vector3d normalizedDirection = direction.normalized();
         Eigen::Vector3d normalizedPlaneNormal = planeNormal.normalized();
         bool valid = true;
 
         double dotProduct = normalizedDirection.dot(normalizedPlaneNormal);
-        if (std::abs(dotProduct) < 1e-6)
+        if (dotProduct < 1e-6)
         {
             valid = false;
             return {Eigen::Vector3d::Zero(), valid};
