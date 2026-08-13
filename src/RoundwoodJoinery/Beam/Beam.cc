@@ -265,6 +265,13 @@ namespace RoundwoodJoinery::Beam
                 remainingArea = std::abs(CGAL::to_double(outerBoundary.area()));
 
                 std::vector<Eigen::Vector3d> remainingSectionOutline;
+                if (remainingPolygons.empty())
+                {
+                    std::cerr << "Warning: No remaining section outline after boolean operations." << std::endl;
+                    joint->SetRemainingSectionOutline({});
+                    joint->SetRemainingArea(0.0);
+                    continue;
+                }
                 for (const auto& vertex : remainingPolygons.front().outer_boundary().container())
                 {
                     Eigen::Vector3d point3D = pointOnSkeleton + CGAL::to_double(vertex.x()) * beamYDirection + CGAL::to_double(vertex.y()) * beamZDirection;
