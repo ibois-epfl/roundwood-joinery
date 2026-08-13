@@ -72,6 +72,18 @@
                 "wireDisplay": "default",
                 "sourceCount": 0,
                 "typeHintID": "float"
+            },
+            {
+                "name": "i_path_save_file",
+                "nickname": "i_path_save_file",
+                "description": "The file path to save the optimization results. If not provided, optimisation is done normally but the results at each step are not saved.",
+                "optional": true,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "item",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "str"
             }
         ],
         "outputParameters": [

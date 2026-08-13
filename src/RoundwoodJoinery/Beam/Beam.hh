@@ -116,6 +116,11 @@ namespace RoundwoodJoinery::Beam
          */
         std::vector<Eigen::Matrix4d> ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE, std::optional<std::string> outputFolderPath);
 
+        /**
+         * @brief Computes the remaining sections in the beam for each joint group, and updates their internal state accordingly.
+         */
+        void ComputeRemainingSections();
+
     private:
 
 

@@ -36,7 +36,8 @@ NB_MODULE(roundwoodJoineryBindings, m)
              nb::arg("pointCloud"),
              nb::arg("radiusSearch"),
              nb::arg("minProjectionDistance"),
-             nb::arg("maxProjectionDistance"))
+             nb::arg("maxProjectionDistance"),
+             nb::arg("maxAllowableDepth") = 50.0)
         .def("get_normal", &RoundwoodJoinery::Joinery::JointFace::GetNormal)
         .def("get_corners", &RoundwoodJoinery::Joinery::JointFace::GetCorners)
         .def("get_center", &RoundwoodJoinery::Joinery::JointFace::GetCenter)
@@ -47,12 +48,14 @@ NB_MODULE(roundwoodJoineryBindings, m)
              "Compute the current area and depth of the joint face based on the projected points from the beam's point cloud",
              nb::arg("beamPointCloud"),
              nb::arg("radiusSearch"),
-             nb::arg("alpha") = 500.0)
+             nb::arg("alpha") = 500.0,
+             nb::arg("maxAllowableDepth") = 50.0)
         .def("get_current_outline", &RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline, 
              "Get the current outline of the joint face based on the projected points from the beam's point cloud", 
              nb::arg("beamPointCloud"), 
              nb::arg("radiusSearch"),
-             nb::arg("alpha") = 500.0);
+             nb::arg("alpha") = 500.0,
+             nb::arg("maxAllowableDepth") = 50.0);
 
 
     nb::class_<RoundwoodJoinery::Joinery::Joint>(m, "Joint")
@@ -65,7 +68,19 @@ NB_MODULE(roundwoodJoineryBindings, m)
         .def("set_closest_point_on_skeleton", &RoundwoodJoinery::Joinery::Joint::SetClosestPointOnSkeleton, 
                                           "Set the closest point on the skeleton for this joint", 
                                           nb::arg("point"))
-        .def("get_closest_point_on_skeleton", &RoundwoodJoinery::Joinery::Joint::GetClosestPointOnSkeleton);
+        .def("get_closest_point_on_skeleton", &RoundwoodJoinery::Joinery::Joint::GetClosestPointOnSkeleton)
+        .def("get_remaining_area", &RoundwoodJoinery::Joinery::Joint::GetRemainingArea)
+        .def("set_remaining_area", &RoundwoodJoinery::Joinery::Joint::SetRemainingArea,
+             "Set the remaining area of the beam under this joint", nb::arg("area"))
+        .def("get_remaining_inertia", &RoundwoodJoinery::Joinery::Joint::GetRemainingInertia)
+        .def("set_remaining_inertia", &RoundwoodJoinery::Joinery::Joint::SetRemainingInertia,
+             "Set the remaining inertia of the beam under this joint", nb::arg("inertia"))
+        .def("get_remaining_section_outline", &RoundwoodJoinery::Joinery::Joint::GetRemainingSectionOutline)
+        .def("set_remaining_section_outline", &RoundwoodJoinery::Joinery::Joint::SetRemainingSectionOutline,
+             "Set the remaining section outline under the joint", nb::arg("outline"))
+        .def("get_initial_section_outline", &RoundwoodJoinery::Joinery::Joint::GetInitialSectionOutline)
+        .def("set_initial_section_outline", &RoundwoodJoinery::Joinery::Joint::SetInitialSectionOutline,
+             "Set the initial section outline under the joint", nb::arg("outline"));
 
 
     nb::class_<RoundwoodJoinery::Joinery::JointGroup>(m, "JointGroup")
@@ -106,7 +121,9 @@ NB_MODULE(roundwoodJoineryBindings, m)
              "Compute an optimization of the joint group transformations to better align the joint faces with the beam's point cloud skeleton",
              nb::arg("maxIterations") = 10, 
              nb::arg("minRelativeTranslationRMSE") = 1.0,
-             nb::arg("outputFolderPath") = std::optional<std::string>());
+             nb::arg("outputFolderPath") = std::optional<std::string>())
+        .def("compute_remaining_sections", &RoundwoodJoinery::Beam::Beam::ComputeRemainingSections, 
+             "Compute the remaining sections of the joint faces after applying the current transformations to the beam and its joints");
 
         nb::module_ u = m.def_submodule("Utils", "Utility functions for Roundwood Joinery");
 
@@ -141,4 +158,9 @@ NB_MODULE(roundwoodJoineryBindings, m)
             "Compute a transformation matrix that aligns a source curve to a target curve using coherent point drift",
             nb::arg("sourceCurve"),
             nb::arg("targetCurve"));
+
+        u.def("compute_closest_points_between_two_curves", &RoundwoodJoinery::Utils::ComputeClosestPointsBetweenTwoCurves,
+            "Compute the closest points between two curves represented as vectors of 3D points",
+            nb::arg("curve1"),
+            nb::arg("curve2"));
 }
