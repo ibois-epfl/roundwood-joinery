@@ -263,10 +263,6 @@ namespace RoundwoodJoinery::Beam
                 std::list<BPolyWithHoles2> remainingPolygons;
                 remainingSet.polygons_with_holes(std::back_inserter(remainingPolygons));
 
-                BPoly2 outerBoundary = remainingPolygons.front().outer_boundary();
-                remainingArea = std::abs(CGAL::to_double(outerBoundary.area()));
-
-                std::vector<Eigen::Vector3d> remainingSectionOutline;
                 if (remainingPolygons.empty())
                 {
                     std::cerr << "Warning: No remaining section outline after boolean operations." << std::endl;
@@ -274,6 +270,10 @@ namespace RoundwoodJoinery::Beam
                     joint->SetRemainingArea(0.0);
                     continue;
                 }
+
+                BPoly2 outerBoundary = remainingPolygons.front().outer_boundary();
+                remainingArea = std::abs(CGAL::to_double(outerBoundary.area()));
+                std::vector<Eigen::Vector3d> remainingSectionOutline;
                 for (const auto& vertex : remainingPolygons.front().outer_boundary().container())
                 {
                     Eigen::Vector3d point3D = pointOnSkeleton + CGAL::to_double(vertex.x()) * beamYDirection + CGAL::to_double(vertex.y()) * beamZDirection;
