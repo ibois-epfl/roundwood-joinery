@@ -13,6 +13,15 @@ namespace RoundwoodJoinery::PointCloud
             {
                 this->_points.emplace_back(vertex[0], vertex[1], vertex[2]);
             }
+
+            std::list<Point> cgalPoints;
+            for (const auto& point : this->_points)
+            {
+                cgalPoints.push_back(Point(point.x(), point.y(), point.z()));
+            }
+            auto tree = std::make_shared<CGAL::Kd_tree<Traits>>(cgalPoints.begin(), cgalPoints.end());
+            this->_kdTree = tree;
+
             return true;
         }
         catch (const std::exception& e)
