@@ -46,6 +46,14 @@
                 "optional": false,
                 "sourceCount": 0,
                 "graft": false
+            },
+            {
+                "name": "o_joint_outlines",
+                "nickname": "o_joint_outlines",
+                "description": "The transformed joint outlines",
+                "optional": false,
+                "sourceCount": 0,
+                "graft": true
             }
         ]
     }
