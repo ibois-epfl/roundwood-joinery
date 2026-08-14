@@ -5,7 +5,7 @@
     "subcategory": "optimisation",
     "description": "This component optimizes the placement of joints in roundwood elements based on their surfaces and degrees of freedom.",
     "exposure": 4,
-    "instanceGuid": "bc1c05de-c584-4292-ad69-8597137ba893",
+    "instanceGuid": "3ff4cbdc-d5b2-435f-87b1-0d2a55a03dfd",
     "ghpython": {
         "hideOutput": true,
         "hideInput": true,
