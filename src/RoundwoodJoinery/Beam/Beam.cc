@@ -345,7 +345,7 @@ namespace RoundwoodJoinery::Beam
                 {
                     Eigen::Vector3d currentCenter = face->GetCenter();
                     double targetArea = face->GetTargetArea();
-                    std::vector<double> currentAreaAndDepths = face->ComputeCurrentAreaAndDepths(this->_pointCloud, this->_referenceDiameter, alphaForAreaComputations);
+                    std::vector<double> currentAreaAndDepths = face->ComputeCurrentAreaAndDepths(this->_pointCloud, this->_referenceDiameter, alphaForAreaComputations, face->GetMaxAllowableDepth());
                     double currentArea = currentAreaAndDepths[0];
                     double minProjectionDistance = currentAreaAndDepths[1];
                     double currentDepth = currentAreaAndDepths[2];
