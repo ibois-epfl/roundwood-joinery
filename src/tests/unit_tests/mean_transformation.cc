@@ -1,4 +1,4 @@
-#include <../../RoundwoodJoinery/RoundwoodJoinery.hh>
+#include "../../RoundwoodJoinery/RoundwoodJoinery.hh"
 
 int main()
 {
