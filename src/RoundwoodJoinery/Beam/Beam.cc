@@ -103,7 +103,12 @@ namespace RoundwoodJoinery::Beam
 
                 totalTransformations[i] = transformations[i] * totalTransformations[i];
             }
-            translationRMSE = std::sqrt(translationRMSE / this->_jointGroups.size());
+            double numJoints = 0.0;
+            for (const auto& jointGroup : this->_jointGroups)
+            {
+                numJoints += jointGroup->GetJoints().size();
+            }
+            translationRMSE = std::sqrt(translationRMSE / numJoints);
 
             if (translationRMSE < minRelativeTranslationRMSE)
             {
