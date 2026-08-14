@@ -34,12 +34,12 @@ class RWJ_define_joinery(component):
         joint_groups = []
         for i, crv_group in enumerate(curve_lists):
             joint_group = []
-            target_area = target_areas[i][0]
-            if max_joint_depths is not None:
-                max_joint_depth = max_joint_depths[i][0]
-            else:
-                max_joint_depth = None
-            for  j, crv in enumerate(crv_group):
+            for j, crv in enumerate(crv_group):
+                target_area = target_areas[i][j]
+                if max_joint_depths is not None:
+                    max_joint_depth = max_joint_depths[i][j]
+                else:
+                    max_joint_depth = None
                 corner_pts = [np.array([pt.X, pt.Y, pt.Z]) for pt in crv]
                 if jointface_normals is None:
                     v1 = corner_pts[1] - corner_pts[0]
