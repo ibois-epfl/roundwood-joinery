@@ -62,9 +62,9 @@ def main():
     for joint_group in beam.get_joints_by_group():
         for joint in joint_group:
             for i, joint_face in enumerate(joint.get_faces()):
-                joint_actual_face = joint_face.get_current_outline(beam_point_cloud)
+                joint_actual_face = joint_face.get_current_outline(beam_point_cloud, 180.0)
                 viewer.scene.add(cg.Polygon(joint_actual_face), facecolor=Color.red(), edgecolor=Color.black(), linewidth=2)
-                print(f"Joint face {i+1} initial area:", joint_face.compute_current_area(beam_point_cloud))
+                print(f"Joint face {i+1} initial area:", joint_face.compute_current_area_and_depths(beam_point_cloud, 180.0)[0])
 
     skeleton_polyline = cg.Polyline(beam_skeleton)
     viewer.scene.add(skeleton_polyline, color=Color.blue(), linewidth=10)
