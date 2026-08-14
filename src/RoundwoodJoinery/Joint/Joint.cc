@@ -80,13 +80,15 @@ namespace RoundwoodJoinery::Joinery
             }
         }
         this->_projectedPoints = projectedPoints;
+        this->_minProjectionDistance = minProjectionDistance;
+        this->_maxProjectionDistance = maxProjectionDistance;
         return projectedPoints;
     }
 
     std::vector<double> RoundwoodJoinery::Joinery::JointFace::ComputeCurrentAreaAndDepths(RoundwoodJoinery::PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha, double maxAllowableDepth)
     {
-        double maxProjectionDistance = 0.0;
-        double minProjectionDistance = std::numeric_limits<double>::max();
+        double maxProjectionDistance = this->_maxProjectionDistance;
+        double minProjectionDistance = this->_minProjectionDistance;
         if (this->_projectedPoints.empty())
         {
             this->_projectedPoints = this->ProjectPointsOntoFace(pointCloud, radiusSearch, minProjectionDistance, maxProjectionDistance, maxAllowableDepth);

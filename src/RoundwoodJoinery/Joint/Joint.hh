@@ -136,6 +136,8 @@ namespace RoundwoodJoinery::Joinery
             double _currentArea = 0.0;
             double _jointScale = 0.0; 
             std::vector<Eigen::Vector3d> _projectedPoints;
+            double _minProjectionDistance = 0.0;
+            double _maxProjectionDistance = 0.0;
             
             /**
             * @brief the outline polygon that is optional for technical reasons, but is systematically created at construction
