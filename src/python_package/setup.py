@@ -24,6 +24,7 @@ setup(
     ],
     include_package_data=True,
     package_data={  # type: ignore[misc]
-        "roundwood_joinery": ["roundwood_joinery/*.dll", "roundwood_joinery/*.pyd"]
+        "roundwood_joinery": ["*.dll", "*.pyd", "*.so"]
+    }
     },
 )
