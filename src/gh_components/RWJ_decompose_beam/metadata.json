@@ -20,7 +20,7 @@
                 "optional": false,
                 "allowTreeAccess": true,
                 "showTypeHints": true,
-                "scriptParamAccess": "list",
+                "scriptParamAccess": "item",
                 "wireDisplay": "default",
                 "sourceCount": 0,
                 "typeHintID": "none"
@@ -71,6 +71,22 @@
                 "name": "o_text_dots",
                 "nickname": "o_text_dots",
                 "description": "The computed area ratios of the joint faces, represented using text dots.",
+                "optional": false,
+                "sourceCount": 0,
+                "graft": false
+            },
+            {
+                "name": "o_joint_remaining_section",
+                "nickname": "o_joint_remaining_section",
+                "description": "The remaining section of the beam after the joint has been applied.",
+                "optional": false,
+                "sourceCount": 0,
+                "graft": false
+            },
+            {
+                "name": "o_joint_initial_section",
+                "nickname": "o_joint_initial_section",
+                "description": "The initial section of the beam before the joint has been applied.",
                 "optional": false,
                 "sourceCount": 0,
                 "graft": false
