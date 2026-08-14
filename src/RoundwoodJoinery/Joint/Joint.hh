@@ -356,6 +356,6 @@ namespace RoundwoodJoinery::Joinery
             }
         private:
             std::vector<std::shared_ptr<Joint>> _joints;
-            Eigen::Vector3d _degreeOfFreedom;
+            Eigen::Vector3d _degreeOfFreedom = Eigen::Vector3d::Zero();
     };
 }
