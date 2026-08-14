@@ -3,6 +3,7 @@
 
 import System
 import typing
+import datetime
 
 import Rhino
 import Grasshopper
@@ -19,6 +20,7 @@ class RWJ_optimize_joint_placement(component):
             i_joinery: System.Collections.Generic.List[object],
             i_point_cloud: Rhino.Geometry.PointCloud,
             i_reference_diameter: float,
+            i_alpha_face_warping: float,
             i_n_steps: int,
             i_epsilon: float,
             i_path_save_file: str) -> typing.List[rwj.JointGroup]:
@@ -27,6 +29,8 @@ class RWJ_optimize_joint_placement(component):
             i_n_steps = 4
         if i_epsilon is None:
             i_epsilon = 1.0 
+        if i_alpha_face_warping is None:
+            i_alpha_face_warping = 2000
 
         beam_point_cloud = rwj.PointCloud(np.array([[pt.X, pt.Y, pt.Z] for pt in i_point_cloud.GetPoints()]))
         pc_skeleton = rwj.Utils.compute_point_cloud_skeleton(beam_point_cloud, i_reference_diameter/2, .01)
@@ -35,9 +39,10 @@ class RWJ_optimize_joint_placement(component):
 
         if i_n_steps > 0:
             if i_path_save_file:
-                transform_matrices = beam.compute_joint_group_optimisation(i_n_steps, i_epsilon, str(i_path_save_file))
+                path = str(i_path_save_file) + datetime.datetime.now().strftime("_%Y-%m-%d_%H-%M-%S") + ".csv"
+                transform_matrices = beam.compute_joint_group_optimisation(i_n_steps, i_epsilon, i_alpha_face_warping, path)
             else:
-                transform_matrices = beam.compute_joint_group_optimisation(i_n_steps, i_epsilon)
+                transform_matrices = beam.compute_joint_group_optimisation(i_n_steps, i_epsilon, i_alpha_face_warping)
 
             rh_transform_matrices = []
             for transform in transform_matrices:
