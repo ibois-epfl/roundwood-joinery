@@ -51,9 +51,9 @@ namespace RoundwoodJoinery::Utils
 
         int longestAxis = 0;
 
-        if(xRange > yRange && xRange > zRange){longestAxis = 0;}
-        else if (yRange > xRange && yRange > zRange){longestAxis = 1;} 
-        else{longestAxis = 2;}
+        if (xRange >= yRange && xRange >= zRange) { longestAxis = 0; }
+        else if (yRange >= zRange) { longestAxis = 1; }
+        else { longestAxis = 2; }
         
         std::vector<std::array<double, 3>> meshVertexPositions;
 
