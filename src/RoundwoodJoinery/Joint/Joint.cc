@@ -175,4 +175,23 @@ namespace RoundwoodJoinery::Joinery
             face->ApplyTransformation(transformation);
         }
     }
+
+    std::shared_ptr<Joint> RoundwoodJoinery::Joinery::Joint::Duplicate() const
+    {
+        std::vector<std::shared_ptr<JointFace>> duplicatedFaces;
+        duplicatedFaces.reserve(this->_faces.size());
+        for (const auto& face : this->_faces)
+        {
+            duplicatedFaces.push_back(face->Duplicate());
+        }
+
+        auto duplicatedJoint = std::make_shared<Joint>(duplicatedFaces);
+        duplicatedJoint->_center = this->_center;
+        duplicatedJoint->_closestPointOnSkeleton = this->_closestPointOnSkeleton;
+        duplicatedJoint->_remainingArea = this->_remainingArea;
+        duplicatedJoint->_remainingInertia = this->_remainingInertia;
+        duplicatedJoint->_remainingSectionOutline = this->_remainingSectionOutline;
+        duplicatedJoint->_initialSectionOutline = this->_initialSectionOutline;
+        return duplicatedJoint;
+    }
 }

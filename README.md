@@ -31,10 +31,11 @@ flowchart LR
     E --> F(optimised joint positions)
 ```
 
-In grey ther original joint placements, in green the optimised joint placements, and in red the projected points on optimised joint surfaces. The DOF of the joint groups were the normals to those faces. Hereunder also a graph of the area ratios (current/target) during optimisation.
+Hereunder a graph of the area ratios (current/target) during optimisation.
 
-![joint optimisation scenario](./assets/imgs/2026_04_10_optimised_joint_placement.png)
 ![evolution of areas during optimisation](./assets/imgs/2026_04_10_area_ratios_for_flat_joints_voxel_size_5mm_10_iterations.png)
 
 ## Usage
 Checkout the [Usage.md](./USAGE.md) for more info, but right now you should probably not try this at home ;) 
+For now the pipeline and its results are illustrated by this illustration:
+![illustration_of_process](./assets/imgs/2026_08_14_Roundwood_Joinery_summary.png)

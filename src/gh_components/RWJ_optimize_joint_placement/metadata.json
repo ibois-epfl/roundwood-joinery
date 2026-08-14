@@ -50,6 +50,18 @@
                 "typeHintID": "float"
             },
             {
+                "name": "i_alpha_face_warping",
+                "nickname": "i_alpha_face_warping",
+                "description": "The alpha parameter for the face warping algorithm.",
+                "optional": true,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "item",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "float"
+            },
+            {
                 "name": "i_n_steps",
                 "nickname": "i_n_steps",
                 "description": "The maximum number of optimization steps to perform. if the i_epsilon is met before the i_n_steps, the optimisation is interrupted.",

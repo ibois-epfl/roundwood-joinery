@@ -117,6 +117,15 @@ namespace RoundwoodJoinery::Joinery
 
             void ApplyTransformation(Eigen::Matrix4d transformation);
 
+            /**
+            * @brief Creates a deep copy of this joint face.
+            * @return A new JointFace with the same data as this one.
+            */
+            std::shared_ptr<JointFace> Duplicate() const
+            {
+                return std::make_shared<JointFace>(*this);
+            }
+
         private:
             Eigen::Vector3d _normal;
             Eigen::Vector3d _center = Eigen::Vector3d::Zero();
@@ -261,6 +270,12 @@ namespace RoundwoodJoinery::Joinery
             */
             void ApplyTransformation(Eigen::Matrix4d transformation);
 
+            /**
+            * @brief Creates a deep copy of this joint, including new copies of all its faces.
+            * @return A new Joint with the same data as this one.
+            */
+            std::shared_ptr<Joint> Duplicate() const;
+
         private:
             std::vector<std::shared_ptr<JointFace>> _faces;
             Eigen::Vector3d _center = Eigen::Vector3d::Zero();
@@ -320,6 +335,24 @@ namespace RoundwoodJoinery::Joinery
                 Eigen::Vector3d translation = transformation.block<3,1>(0,3);
                 Eigen::Matrix3d rotation = transformation.block<3,3>(0,0);
                 this->_degreeOfFreedom = rotation * this->_degreeOfFreedom;
+            }
+
+            /**
+            * @brief Creates a deep copy of this joint group, including new copies of all its joints and their faces.
+            * @return A new JointGroup with the same data as this one.
+            */
+            std::shared_ptr<JointGroup> Duplicate() const
+            {
+                std::vector<std::shared_ptr<Joint>> duplicatedJoints;
+                duplicatedJoints.reserve(this->_joints.size());
+                for (const auto& joint : this->_joints)
+                {
+                    duplicatedJoints.push_back(joint->Duplicate());
+                }
+
+                auto duplicatedGroup = std::make_shared<JointGroup>(duplicatedJoints);
+                duplicatedGroup->_degreeOfFreedom = this->_degreeOfFreedom;
+                return duplicatedGroup;
             }
         private:
             std::vector<std::shared_ptr<Joint>> _joints;

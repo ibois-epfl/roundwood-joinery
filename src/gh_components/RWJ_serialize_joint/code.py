@@ -10,7 +10,7 @@ import Grasshopper
 
 from ghpythonlib.componentbase import executingcomponent as component
 
-import roundwood_joinery
+import roundwood_joinery.serialization as rwj_serial
 import roundwood_joinery.roundwoodJoineryBindings as rwj
 
 import numpy as np
@@ -21,4 +21,4 @@ class RWJ_serialize_joinery(component):
             i_file_path: str):
 
         file_path = str(i_file_path) + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".json"
-        roundwood_joinery.serialization.save_joinery_to_file(i_joinery, file_path)
+        rwj_serial.save_joinery_to_file(i_joinery, file_path)
