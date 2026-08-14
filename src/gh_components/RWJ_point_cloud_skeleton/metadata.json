@@ -20,10 +20,10 @@
                 "optional": false,
                 "allowTreeAccess": true,
                 "showTypeHints": true,
-                "scriptParamAccess": "list",
+                "scriptParamAccess": "item",
                 "wireDisplay": "default",
                 "sourceCount": 0,
-                "typeHintID": "none"
+                "typeHintID": "pointcloud"
             },
             {
                 "name": "i_alpha",
