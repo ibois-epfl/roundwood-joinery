@@ -53,7 +53,7 @@ for i in range(1):
                 alpha_points = face.get_current_outline(beam_point_cloud)
                 alpha_polyline = Rhino.Geometry.Polyline([Rhino.Geometry.Point3d(pt[0], pt[1], pt[2]) for pt in alpha_points])
                 polylines.append(alpha_polyline)
-                area_ratio = face.compute_current_area(beam_point_cloud) / face.get_target_area()
+                area_ratio = face.compute_current_area_and_depths(beam_point_cloud, 200.0)[0] / face.get_target_area()
                 area_ratios_at_step.append(area_ratio)
     area_ratios.append(area_ratios_at_step)
 
