@@ -12,8 +12,10 @@ def main(
     setup_dir = os.path.dirname(setup_path)
     os.chdir(setup_dir)
     try:
-        os.system("python setup.py sdist")
-        os.system("python setup.py bdist_wheel")
+        if os.system("python setup.py sdist") != 0:
+            return False
+        if os.system("python setup.py bdist_wheel") != 0:
+            return False
     except Exception as e:
         print(f"Failed to build the package: {e}")
         return False
