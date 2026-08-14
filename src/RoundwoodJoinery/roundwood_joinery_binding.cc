@@ -97,7 +97,9 @@ NB_MODULE(roundwoodJoineryBindings, m)
              "Get the centroid of this joint group, computed as the average of the centers of its joints")
         .def("apply_transformation", &RoundwoodJoinery::Joinery::JointGroup::ApplyTransformation,
              "Apply a 4x4 transformation to this joint group, which will be applied to all its joints and their faces",
-             nb::arg("transformation"));
+             nb::arg("transformation"))
+        .def("duplicate", &RoundwoodJoinery::Joinery::JointGroup::Duplicate,
+             "Create a deep copy of this joint group, including new copies of all its joints and their faces");
 
     nb::class_<RoundwoodJoinery::Beam::Beam>(m, "Beam")
         .def(nb::init<double, 
