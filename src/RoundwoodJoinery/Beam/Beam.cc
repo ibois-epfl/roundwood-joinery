@@ -49,9 +49,12 @@ namespace RoundwoodJoinery::Beam
         }
         std::cout << "Starting joint group optimization with max iterations: " << maxIterations << " and minimum relative translation RMSE: " << minRelativeTranslationRMSE << std::endl;
         
+        double gain = 1.0;
+        double previousRMSE = std::numeric_limits<double>::max();
+        
         for (int iteration = 0; iteration < maxIterations; ++iteration)
         {
-            std::vector<Eigen::Matrix4d> transformations = this->ComputeOneIterationOfJointFaceTranslationsForOptimisation(alphaForAreaComputations);
+            std::vector<Eigen::Matrix4d> transformations = this->ComputeOneIterationOfJointFaceTranslationsForOptimisation(alphaForAreaComputations, gain);
 
             for (int i = 0; i < this->_jointGroups.size(); ++i)
             {
@@ -109,6 +112,13 @@ namespace RoundwoodJoinery::Beam
                 numJoints += jointGroup->GetJoints().size();
             }
             translationRMSE = std::sqrt(translationRMSE / numJoints);
+
+            // Adaptive gain: reduce gain if RMSE starts increasing (oscillation detected)
+            if (iteration > 0 && translationRMSE > previousRMSE) 
+            {
+                gain = std::max(0.1, gain * 0.9);
+            }
+            previousRMSE = translationRMSE;
 
             if (translationRMSE < minRelativeTranslationRMSE)
             {
@@ -323,7 +333,7 @@ namespace RoundwoodJoinery::Beam
         return closestPoint;
     }
 
-    std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> Beam::_ComputeJointFaceTranslationsForOptimisation(double alphaForAreaComputations)
+    std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> Beam::_ComputeJointFaceTranslationsForOptimisation(double alphaForAreaComputations, double gain)
     {
         std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> anchorPointsAndTranslations;
         double cumulatedAreas = 0.0;
@@ -367,7 +377,7 @@ namespace RoundwoodJoinery::Beam
                     double error = std::log(areaRatio);
                     error = std::clamp(error, -1.0, 1.0); // prevent wild steps
                     error *= std::clamp(std::abs(1-areaRatio), 0.0, 1.0);
-                    double step = 0.1 * radius; // tune this gain
+                    double step = gain * radius; // tune this gain
                     double translationMagnitude = step * error; // negative: push in when ratio > 1
 
                     double largeAreaFavorism =  std::pow(targetArea / averageTargetArea, 2);
@@ -390,5 +400,5 @@ namespace RoundwoodJoinery::Beam
             anchorPointsAndTranslations.push_back(groupTranslations);
         }
         return anchorPointsAndTranslations;
-    }
+    } 
 }

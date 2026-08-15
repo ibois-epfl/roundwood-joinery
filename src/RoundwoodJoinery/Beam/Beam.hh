@@ -84,9 +84,9 @@ namespace RoundwoodJoinery::Beam
         /**
          * @brief Just a test function
          */
-        std::vector<Eigen::Matrix4d> ComputeOneIterationOfJointFaceTranslationsForOptimisation(double alphaForAreaComputations)
+        std::vector<Eigen::Matrix4d> ComputeOneIterationOfJointFaceTranslationsForOptimisation(double alphaForAreaComputations, double gain)
         {
-            std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> pointsAndTranslations = this->_ComputeJointFaceTranslationsForOptimisation(alphaForAreaComputations);
+            std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> pointsAndTranslations = this->_ComputeJointFaceTranslationsForOptimisation(alphaForAreaComputations, gain);
             std::vector<Eigen::Matrix4d> transformations = RoundwoodJoinery::Utils::ComputeApproximatingTransformation(pointsAndTranslations);
             Eigen::Matrix4d meanTransformation = RoundwoodJoinery::Utils::ComputeCollectiveApproximatingTransformation(pointsAndTranslations);
             std::vector<Eigen::Matrix4d> adaptedTransformations;
@@ -139,12 +139,13 @@ namespace RoundwoodJoinery::Beam
          * This is based on the current positions of the joints, their closest points on the skeleton, and their joint faces' target areas.
          * 
          * @param alphaForAreaComputations A parameter used in the computation of the current area and depths of the joint faces.
+         * @param gain A gain factor that influences the magnitude of the translations applied to the joint faces.
          * 
          * @return A vector of vectors of pairs, where each inner vector corresponds to a group of joints,
          *  and each pair consists of an anchor point (a corner of a joint face) and a translation vector
          *  that indicates how much the joint face should be translated to better fit the skeleton and target area.
          */
-        std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> _ComputeJointFaceTranslationsForOptimisation(double alphaForAreaComputations);
+        std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> _ComputeJointFaceTranslationsForOptimisation(double alphaForAreaComputations, double gain);
 
         std::vector<std::shared_ptr<Joinery::JointGroup>> _jointGroups;
         std::vector<Eigen::Vector3d> _skeleton;
