@@ -45,6 +45,7 @@ def main():
     joint_face_3 = rwj.JointFace(normal3, np_corners3, 5000.0)
 
     joint = rwj.Joint([joint_face_1, joint_face_2, joint_face_3])
+    grouped_joints = rwj.JointGroup([joint])
 
     beam_point_cloud = rwj.PointCloud(np.array([[pt.x, pt.y, pt.z] for pt in pointcloud.points]))
     beam_skeleton = rwj.Utils.compute_point_cloud_skeleton(pointCloud=beam_point_cloud, alpha=80.0, offset=0.001)
@@ -57,10 +58,10 @@ def main():
     joint_face_2_polyline = cg.Polyline(corners2)
     joint_face_3_polyline = cg.Polyline(corners3)
 
-    beam = rwj.Beam(180.0, [[joint]], beam_skeleton, beam_point_cloud)
+    beam = rwj.Beam(250.0, [grouped_joints], beam_skeleton, beam_point_cloud)
     beam.find_joint_closest_points_on_skeleton()
     for joint_group in beam.get_joints_by_group():
-        for joint in joint_group:
+        for joint in joint_group.get_joints():
             for i, joint_face in enumerate(joint.get_faces()):
                 joint_actual_face = joint_face.get_current_outline(beam_point_cloud, 180.0)
                 viewer.scene.add(cg.Polygon(joint_actual_face), facecolor=Color.red(), edgecolor=Color.black(), linewidth=2)
@@ -69,35 +70,18 @@ def main():
     skeleton_polyline = cg.Polyline(beam_skeleton)
     viewer.scene.add(skeleton_polyline, color=Color.blue(), linewidth=10)
 
-    res = beam.compute_one_iteration_of_joint_face_translations_for_optimisation()
-    transforms = rwj.Utils.compute_approximating_transformation(res)
-    transform = transforms[0]
+    alpha = 5000.0
+    beam.compute_joint_group_optimisation(500, 0.01, alpha, "test.csv")
     
-    new_np_corners1 = np.hstack((np_corners1, np.ones((np_corners1.shape[0], 1))))
-    new_np_corners1 = (transform @ new_np_corners1.T).T[:, :3]
-    new_normal1 = (transform[:3, :3] @ normal1).tolist()
+    
 
-    new_np_corners2 = np.array(corners2)
-    new_np_corners2 = np.hstack((new_np_corners2, np.ones((new_np_corners2.shape[0], 1))))
-    new_np_corners2 = (transform @ new_np_corners2.T).T[:, :3]
-    new_normal2 = (transform[:3, :3] @ normal2).tolist()
+    print(f"Joint face 1 current area after 1-step correction:, {beam.get_joints_by_group()[0].get_joints()[0].get_faces()[0].compute_current_area_and_depths(beam_point_cloud, 200, 500, 50)[0]:.2f}")
+    print(f"Joint face 2 current area after 1-step correction:, {beam.get_joints_by_group()[0].get_joints()[0].get_faces()[1].compute_current_area_and_depths(beam_point_cloud, 200, 500, 50)[0]:.2f}")
+    print(f"Joint face 3 current area after 1-step correction:, {beam.get_joints_by_group()[0].get_joints()[0].get_faces()[2].compute_current_area_and_depths(beam_point_cloud, 200, 500, 50)[0]:.2f}")
 
-    new_np_corners3 = np.array(corners3)
-    new_np_corners3 = np.hstack((new_np_corners3, np.ones((new_np_corners3.shape[0], 1))))
-    new_np_corners3 = (transform @ new_np_corners3.T).T[:, :3]
-    new_normal3 = (transform[:3, :3] @ normal3).tolist()
-
-    new_joint_face_1 = rwj.JointFace(np.asarray(new_normal1), new_np_corners1, 5000.0)
-    new_joint_face_2 = rwj.JointFace(np.asarray(new_normal2), new_np_corners2, 9000.0)
-    new_joint_face_3 = rwj.JointFace(np.asarray(new_normal3), new_np_corners3, 5000.0)
-
-    print(f"Joint face 1 current area after 1-step correction:, {new_joint_face_1.compute_current_area(beam_point_cloud):.2f}")
-    print(f"Joint face 2 current area after 1-step correction:, {new_joint_face_2.compute_current_area(beam_point_cloud):.2f}")
-    print(f"Joint face 3 current area after 1-step correction:, {new_joint_face_3.compute_current_area(beam_point_cloud):.2f}")
-
-    new_joint_face_1_outline = new_joint_face_1.get_current_outline(beam_point_cloud)
-    new_joint_face_2_outline = new_joint_face_2.get_current_outline(beam_point_cloud)
-    new_joint_face_3_outline = new_joint_face_3.get_current_outline(beam_point_cloud)
+    new_joint_face_1_outline = beam.get_joints_by_group()[0].get_joints()[0].get_faces()[0].get_current_outline(beam_point_cloud, 200, 500, 50)
+    new_joint_face_2_outline = beam.get_joints_by_group()[0].get_joints()[0].get_faces()[1].get_current_outline(beam_point_cloud, 200, 500, 50)
+    new_joint_face_3_outline = beam.get_joints_by_group()[0].get_joints()[0].get_faces()[2].get_current_outline(beam_point_cloud, 200, 500, 50)
 
     new_joint_face_1_polygon = cg.Polygon(new_joint_face_1_outline)
     new_joint_face_2_polygon = cg.Polygon(new_joint_face_2_outline)
