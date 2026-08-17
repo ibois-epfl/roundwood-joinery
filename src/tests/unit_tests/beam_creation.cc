@@ -60,7 +60,7 @@ int main()
     int maxIterations = 100;
     double minRelativeTranslationRMSE = 1.0; // mm
     std::cout << "Starting optimization..." << std::endl;
-    std::vector<Eigen::Matrix4d> transformations = beam.ComputeJointGroupOptimisation(maxIterations, minRelativeTranslationRMSE, 500.0, "area_ratios.csv");
+    std::vector<Eigen::Matrix4d> transformations = beam.ComputeJointGroupOptimisation(maxIterations, minRelativeTranslationRMSE, 500.0, 1.0, "area_ratios.csv");
     std::cout << "Optimization completed." << std::endl;
     for (size_t index = 0; index < transformations.size(); ++index)
     {

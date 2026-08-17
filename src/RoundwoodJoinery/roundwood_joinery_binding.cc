@@ -126,6 +126,7 @@ NB_MODULE(roundwoodJoineryBindings, m)
              nb::arg("maxIterations") = 10, 
              nb::arg("minRelativeTranslationRMSE") = 1.0,
              nb::arg("alphaForAreaComputations") = 500.0,
+             nb::arg("initial_gain") = 0.1,
              nb::arg("outputFolderPath") = std::optional<std::string>())
   
         .def("compute_remaining_sections", &RoundwoodJoinery::Beam::Beam::ComputeRemainingSections, 

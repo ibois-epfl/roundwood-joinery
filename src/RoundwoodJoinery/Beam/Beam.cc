@@ -30,7 +30,7 @@ namespace RoundwoodJoinery::Beam
     }
 
 
-    std::vector<Eigen::Matrix4d> Beam::ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE, double alphaForAreaComputations, std::optional<std::string> outputFolderPath)
+    std::vector<Eigen::Matrix4d> Beam::ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE, double alphaForAreaComputations, double initialGain, std::optional<std::string> outputFolderPath)
     {
         // totalTransformations will accumulate the transformations applied to each joint group across iterations
         std::vector<Eigen::Matrix4d> totalTransformations(this->_jointGroups.size(), Eigen::Matrix4d::Identity());
@@ -49,7 +49,7 @@ namespace RoundwoodJoinery::Beam
         }
         std::cout << "Starting joint group optimization with max iterations: " << maxIterations << " and minimum relative translation RMSE: " << minRelativeTranslationRMSE << std::endl;
         
-        double gain = 1.0;
+        double gain = initialGain;
         double previousRMSE = std::numeric_limits<double>::max();
         
         for (int iteration = 0; iteration < maxIterations; ++iteration)

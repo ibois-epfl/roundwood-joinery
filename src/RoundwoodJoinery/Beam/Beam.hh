@@ -112,10 +112,11 @@ namespace RoundwoodJoinery::Beam
          * @param maxIterations The maximum number of iterations to perform for the optimization process.
          * @param minRelativeTranslationRMSE The minimum relative translation root mean square error threshold to determine convergence of the optimization process. If the RMSE of the translations falls below this threshold, the optimization process will stop.
          * @param alphaForAreaComputations The alpha parameter used in the computation of the current area and depths of the joint faces.
+         * @param initialGain The initial gain factor that influences the magnitude of the translations applied to the joint faces. This gain may be adjusted during the optimization process.
          * @param outputFolderPath The path to the folder where the area ratios will be outputted for each iteration. If not provided, no output will be generated.
          * @return The vector of total transformations applied to each joint group. They have been applied and are returned for evaluation purposes.
          */
-        std::vector<Eigen::Matrix4d> ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE, double alphaForAreaComputations, std::optional<std::string> outputFolderPath);
+        std::vector<Eigen::Matrix4d> ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE, double alphaForAreaComputations, double initialGain, std::optional<std::string> outputFolderPath);
 
         /**
          * @brief Computes the remaining sections in the beam for each joint group, and updates their internal state accordingly.
