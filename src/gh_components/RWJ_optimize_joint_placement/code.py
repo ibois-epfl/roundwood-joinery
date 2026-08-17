@@ -23,6 +23,7 @@ class RWJ_optimize_joint_placement(component):
             i_alpha_face_warping: float,
             i_n_steps: int,
             i_epsilon: float,
+            i_initial_gain: float,
             i_path_save_file: str) -> typing.List[rwj.JointGroup]:
 
         if i_n_steps is None:
@@ -40,9 +41,9 @@ class RWJ_optimize_joint_placement(component):
         if i_n_steps > 0:
             if i_path_save_file:
                 path = str(i_path_save_file) + datetime.datetime.now().strftime("_%Y-%m-%d_%H-%M-%S") + ".csv"
-                transform_matrices = beam.compute_joint_group_optimisation(i_n_steps, i_epsilon, i_alpha_face_warping, path)
+                transform_matrices = beam.compute_joint_group_optimisation(i_n_steps, i_epsilon, i_alpha_face_warping, i_initial_gain, path)
             else:
-                transform_matrices = beam.compute_joint_group_optimisation(i_n_steps, i_epsilon, i_alpha_face_warping)
+                transform_matrices = beam.compute_joint_group_optimisation(i_n_steps, i_epsilon, i_alpha_face_warping, i_initial_gain)
 
             rh_transform_matrices = []
             for transform in transform_matrices:
