@@ -120,13 +120,15 @@ NB_MODULE(roundwoodJoineryBindings, m)
         .def("compute_one_iteration_of_joint_face_translations_for_optimisation", &RoundwoodJoinery::Beam::Beam::ComputeOneIterationOfJointFaceTranslationsForOptimisation, 
                                                                           "Compute one iteration of joint face translations for optimization based on the current state of the beam and its joints",
                                                                           nb::arg("alpha_for_area_computations") = 500.0,
-                                                                          nb::arg("gain") = 0.1)
+                                                                          nb::arg("gain") = 0.1,
+                                                                          nb::arg("radiusSearch") = 50.0)
         .def("compute_joint_group_optimisation", &RoundwoodJoinery::Beam::Beam::ComputeJointGroupOptimisation, 
              "Compute an optimization of the joint group transformations to better align the joint faces with the beam's point cloud skeleton",
              nb::arg("maxIterations") = 10, 
              nb::arg("minRelativeTranslationRMSE") = 1.0,
              nb::arg("alphaForAreaComputations") = 500.0,
              nb::arg("initial_gain") = 0.1,
+             nb::arg("radiusSearch") = 50.0,
              nb::arg("outputFolderPath") = std::optional<std::string>())
   
         .def("compute_remaining_sections", &RoundwoodJoinery::Beam::Beam::ComputeRemainingSections, 

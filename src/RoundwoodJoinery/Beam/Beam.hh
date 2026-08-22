@@ -84,9 +84,9 @@ namespace RoundwoodJoinery::Beam
         /**
          * @brief Just a test function
          */
-        std::vector<Eigen::Matrix4d> ComputeOneIterationOfJointFaceTranslationsForOptimisation(double alphaForAreaComputations, double gain)
+        std::vector<Eigen::Matrix4d> ComputeOneIterationOfJointFaceTranslationsForOptimisation(double alphaForAreaComputations, double gain, double radiusSearch)
         {
-            std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> pointsAndTranslations = this->_ComputeJointFaceTranslationsForOptimisation(alphaForAreaComputations, gain);
+            std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> pointsAndTranslations = this->_ComputeJointFaceTranslationsForOptimisation(alphaForAreaComputations, gain, radiusSearch);
             std::vector<Eigen::Matrix4d> transformations = RoundwoodJoinery::Utils::ComputeApproximatingTransformation(pointsAndTranslations);
             Eigen::Matrix4d meanTransformation = RoundwoodJoinery::Utils::ComputeCollectiveApproximatingTransformation(pointsAndTranslations);
             std::vector<Eigen::Matrix4d> adaptedTransformations;
@@ -113,10 +113,11 @@ namespace RoundwoodJoinery::Beam
          * @param minRelativeTranslationRMSE The minimum relative translation root mean square error threshold to determine convergence of the optimization process. If the RMSE of the translations falls below this threshold, the optimization process will stop.
          * @param alphaForAreaComputations The alpha parameter used in the computation of the current area and depths of the joint faces.
          * @param initialGain The initial gain factor that influences the magnitude of the translations applied to the joint faces. This gain may be adjusted during the optimization process.
+         * @param radiusSearch The radius within which to search for points in the point cloud when computing the current area and depths of the joint faces.
          * @param outputFolderPath The path to the folder where the area ratios will be outputted for each iteration. If not provided, no output will be generated.
          * @return The vector of total transformations applied to each joint group. They have been applied and are returned for evaluation purposes.
          */
-        std::vector<Eigen::Matrix4d> ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE, double alphaForAreaComputations, double initialGain, std::optional<std::string> outputFolderPath);
+        std::vector<Eigen::Matrix4d> ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE, double alphaForAreaComputations, double initialGain, double radiusSearch, std::optional<std::string> outputFolderPath);
 
         /**
          * @brief Computes the remaining sections in the beam for each joint group, and updates their internal state accordingly.
@@ -141,12 +142,13 @@ namespace RoundwoodJoinery::Beam
          * 
          * @param alphaForAreaComputations A parameter used in the computation of the current area and depths of the joint faces.
          * @param gain A gain factor that influences the magnitude of the translations applied to the joint faces.
+         * @param radiusSearch The radius within which to search for points in the point cloud when computing the current area and depths of the joint faces.
          * 
          * @return A vector of vectors of pairs, where each inner vector corresponds to a group of joints,
          *  and each pair consists of an anchor point (a corner of a joint face) and a translation vector
          *  that indicates how much the joint face should be translated to better fit the skeleton and target area.
          */
-        std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> _ComputeJointFaceTranslationsForOptimisation(double alphaForAreaComputations, double gain);
+        std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> _ComputeJointFaceTranslationsForOptimisation(double alphaForAreaComputations, double gain, double radiusSearch);
 
         std::vector<std::shared_ptr<Joinery::JointGroup>> _jointGroups;
         std::vector<Eigen::Vector3d> _skeleton;
