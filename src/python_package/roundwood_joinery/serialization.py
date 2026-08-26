@@ -24,6 +24,7 @@ def _serialize_joint_face(face: rwj.JointFace) -> dict:
         "target_area": face.get_target_area(),
         "current_area": face.get_current_area(),
         "max_allowable_depth": face.get_max_allowable_depth(),
+        "projected_points": [_vec3_to_list(point) for point in face.get_projected_points()],
     }
 
 
@@ -31,12 +32,14 @@ def _deserialize_joint_face(data: dict) -> rwj.JointFace:
     # "center" and "current_area" are derived (center from corners at construction, current_area from
     # a point-cloud projection) and are not restored here: center is recomputed identically from the
     # corners, and current_area requires re-running ComputeCurrentAreaAndDepths against a point cloud.
-    return rwj.JointFace(
+    face = rwj.JointFace(
         _list_to_vec3(data["normal"]),
         [_list_to_vec3(corner) for corner in data["corners"]],
         data.get("target_area", 0.0),
         data.get("max_allowable_depth", 50.0),
     )
+    face.set_projected_points([_list_to_vec3(point) for point in data.get("projected_points", [])])
+    return face
 
 
 def _serialize_joint(joint: rwj.Joint) -> dict:
