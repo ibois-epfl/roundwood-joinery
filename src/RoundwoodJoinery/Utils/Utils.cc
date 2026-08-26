@@ -297,25 +297,75 @@ namespace RoundwoodJoinery::Utils
         const Eigen::Vector3d v = zDirection.normalized();
         const Eigen::Vector3d o = pointOnSkeleton;
 
+        constexpr double eps2 = 1e-12;
         std::vector<Eigen::Vector2d> uv;
         uv.reserve(outline.size());
 
-        // remove near-duplicate consecutive points BEFORE CGAL polygon creation
-        constexpr double eps2 = 1e-14;
+        // Project and remove near-duplicates globally
         for (const auto& p3 : outline)
         {
             Eigen::Vector3d d = p3 - o;
             Eigen::Vector2d q(d.dot(u), d.dot(v));
-            if (uv.empty() || (q - uv.back()).squaredNorm() > eps2) uv.push_back(q);
+
+            bool duplicate = false;
+            for (const auto& e : uv)
+            {
+                if ((q - e).squaredNorm() <= eps2)
+                {
+                    duplicate = true;
+                    break;
+                }
+            }
+            if (!duplicate) uv.push_back(q);
         }
-        if (uv.size() >= 2 && (uv.front() - uv.back()).squaredNorm() <= eps2) uv.pop_back();
+
         if (uv.size() < 3) return poly;
 
-        for (const auto& q : uv)
-            poly.push_back(BPoint2(BK::FT(q.x()), BK::FT(q.y())));
+        auto buildPoly = [](const std::vector<Eigen::Vector2d>& pts) -> BPoly2
+        {
+            BPoly2 p;
+            for (const auto& q : pts)
+            {
+                p.push_back(BPoint2(BK::FT(q.x()), BK::FT(q.y())));
+            }
+            if (p.size() >= 3 && p.is_simple() && p.is_clockwise_oriented()) p.reverse_orientation();
+            return p;
+        };
 
-        if (poly.is_clockwise_oriented()) poly.reverse_orientation();
-        return poly;
+        // Attempt 1: keep original order
+        poly = buildPoly(uv);
+        if (poly.size() >= 3 && poly.is_simple()) return poly;
+
+        // Attempt 2: sort by polar angle around centroid
+        Eigen::Vector2d c(0.0, 0.0);
+        for (const auto& q : uv) c += q;
+        c /= static_cast<double>(uv.size());
+
+        std::sort(uv.begin(), uv.end(), [&c](const Eigen::Vector2d& a, const Eigen::Vector2d& b)
+        {
+            double aa = std::atan2(a.y() - c.y(), a.x() - c.x());
+            double bb = std::atan2(b.y() - c.y(), b.x() - c.x());
+            if (aa == bb) return (a - c).squaredNorm() < (b - c).squaredNorm();
+            return aa < bb;
+        });
+
+        poly = buildPoly(uv);
+        if (poly.size() >= 3 && poly.is_simple()) return poly;
+
+        // Attempt 3: convex hull fallback
+        std::vector<BPoint2> pts;
+        pts.reserve(uv.size());
+        for (const auto& q : uv) pts.emplace_back(BK::FT(q.x()), BK::FT(q.y()));
+
+        std::vector<BPoint2> hull;
+        CGAL::convex_hull_2(pts.begin(), pts.end(), std::back_inserter(hull));
+
+        BPoly2 hullPoly;
+        for (const auto& p : hull) hullPoly.push_back(p);
+        if (hullPoly.size() >= 3 && hullPoly.is_simple() && hullPoly.is_clockwise_oriented()) hullPoly.reverse_orientation();
+        if (hullPoly.size() >= 3 && hullPoly.is_simple()) return hullPoly;
+
+        return BPoly2();
     }
 
     bool IsOutlineIntersectingPlane(const std::vector<Eigen::Vector3d>& outline, const Eigen::Vector3d& planePoint, const Eigen::Vector3d& planeNormal)

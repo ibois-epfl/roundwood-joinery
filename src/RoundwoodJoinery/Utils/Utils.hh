@@ -49,6 +49,7 @@ typedef CGAL::AABB_traits_3<PPKernel, PPPrimitive> PPTraits;
 typedef CGAL::AABB_tree<PPTraits> PPTree;
 
 // For boolean operations
+#include <CGAL/convex_hull_2.h>
 #include <CGAL/Polygon_set_2.h>
 #include <CGAL/Boolean_set_operations_2.h>
 #include <CGAL/Polygon_with_holes_2.h>
