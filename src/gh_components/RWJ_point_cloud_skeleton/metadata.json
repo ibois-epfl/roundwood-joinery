@@ -1,0 +1,64 @@
+{
+    "name": "RWJ_compute_point_cloud_skeleton",
+    "nickname": "RWJ_compute_point_cloud_skeleton",
+    "category": "Roundwood Joinery",
+    "subcategory": "utility",
+    "description": "This component computes the skeleton of a point cloud representing a roundwood beam.",
+    "exposure": 4,
+    "instanceGuid": "6072a986-97eb-4af4-9080-f6011135bb3f",
+    "ghpython": {
+        "hideOutput": true,
+        "hideInput": true,
+        "isAdvancedMode": true,
+        "marshalOutGuids": true,
+        "iconDisplay": 2,
+        "inputParameters": [
+            {
+                "name": "i_point_cloud",
+                "nickname": "i_point_cloud",
+                "description": "A point cloud representing a roundwood beam.",
+                "optional": false,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "item",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "pointcloud"
+            },
+            {
+                "name": "i_alpha",
+                "nickname": "i_alpha",
+                "description": "The alpha parameter for the skeletonization algorithm.",
+                "optional": true,
+                "allowTreeAccess": false,
+                "showTypeHints": true,
+                "scriptParamAccess": "item",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "none"
+            },
+            {
+                "name": "i_offset",
+                "nickname": "i_offset",
+                "description": "The offset parameter for the skeletonization algorithm.",
+                "optional": true,
+                "allowTreeAccess": false,
+                "showTypeHints": true,
+                "scriptParamAccess": "item",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "none"
+            }
+        ],
+        "outputParameters": [
+            {
+                "name": "o_skeleton",
+                "nickname": "o_skeleton",
+                "description": "The computed skeleton of the beam.",
+                "optional": false,
+                "sourceCount": 0,
+                "graft": false
+            }
+        ]
+    }
+}

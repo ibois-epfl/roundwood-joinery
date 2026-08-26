@@ -29,15 +29,41 @@ namespace RoundwoodJoinery::Utils
         std::vector<Eigen::Vector3d> skeleton = std::vector<Eigen::Vector3d>();
         auto point = cgalSkeletonGraph[0].point;
         skeleton.emplace_back(point[0], point[1], point[2]);
+        double minX = point[0];
+        double maxX = point[0];
+        double minY = point[1];
+        double maxY = point[1];
+        double minZ = point[2];
+        double maxZ = point[2];
+        for(int v = 1; v < boost::num_vertices(cgalSkeletonGraph); v++)
+        {
+            auto point = cgalSkeletonGraph[v].point;
+            if (point[0] < minX) minX = point[0];
+            if (point[0] > maxX) maxX = point[0];
+            if (point[1] < minY) minY = point[1];
+            if (point[1] > maxY) maxY = point[1];
+            if (point[2] < minZ) minZ = point[2];
+            if (point[2] > maxZ) maxZ = point[2];
+        }
+        double xRange = maxX - minX;
+        double yRange = maxY - minY;
+        double zRange = maxZ - minZ;
+
+        int longestAxis = 0;
+
+        if (xRange >= yRange && xRange >= zRange) { longestAxis = 0; }
+        else if (yRange >= zRange) { longestAxis = 1; }
+        else { longestAxis = 2; }
+        
         std::vector<std::array<double, 3>> meshVertexPositions;
 
         for (int v = 1; v < boost::num_vertices(cgalSkeletonGraph); v++)
         {
             auto point = cgalSkeletonGraph[v].point;
-            // sorting along x coordinates
+            // sorting along the longest axis
             for (int i = 0; i < skeleton.size(); i++)
             {
-                if (point[0] < skeleton[i][0])
+                if (point[longestAxis] < skeleton[i][longestAxis])
                 {
                     skeleton.insert(skeleton.begin() + i, Eigen::Vector3d(point[0], point[1], point[2]));
                     break;
@@ -74,9 +100,16 @@ namespace RoundwoodJoinery::Utils
     std::vector<Eigen::Vector3d> Compute2DAlphaShape(const std::vector<Eigen::Vector3d>& points, double alpha, Eigen::Vector3d normal)
     {
         std::vector<Eigen::Vector2d> verticesInPlane;
+
+        Eigen::Vector3d n = normal.normalized();
+        Eigen::Vector3d u = n.unitOrthogonal();
+        Eigen::Vector3d v = n.cross(u);
+
         for (const auto& point : points)
         {
-            verticesInPlane.emplace_back(point.x(), point.y());
+            double x = point.dot(u);
+            double y = point.dot(v);
+            verticesInPlane.emplace_back(x, y);
         }
         typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
         typedef CGAL::Alpha_shape_vertex_base_2<K> Vb;
@@ -92,7 +125,6 @@ namespace RoundwoodJoinery::Utils
         }
 
         Alpha_shape_2 A(cgalPoints2D.begin(), cgalPoints2D.end(), alpha, Alpha_shape_2::REGULARIZED);
-        std::vector<Eigen::Vector3d> alphaShapePoints;
         
         std::map<std::pair<double, double>, std::vector<std::pair<double, double>>> adjacency;
         for (auto it = A.finite_edges_begin(); it != A.finite_edges_end(); ++it) 
@@ -131,19 +163,21 @@ namespace RoundwoodJoinery::Utils
             prev = current;
             current = next;
         }
-        // imperfect way to reintroduce the z coordinate.
+        // imperfect way to reintroduce the 3rd coordinate.
         // We rely on the fact that the alpha shape points are a subset of the original points, 
-        // so we can find the corresponding z value in the original point cloud
+        // so we can find the corresponding 3rd dimension value in the original point cloud
         std::vector<Eigen::Vector3d> ordered3D;
         for (const auto& p2d : ordered2D) 
         {
-            for (const auto& p3d : points) 
+            auto it = std::find_if(points.begin(), points.end(), [&](const Eigen::Vector3d& p) 
             {
-                if (std::abs(p3d.x() - p2d.first) < 1e-6 && std::abs(p3d.y() - p2d.second) < 1e-6) 
-                {
-                    ordered3D.push_back(p3d);
-                    break;
-                }
+                double x = p.dot(u);
+                double y = p.dot(v);
+                return std::abs(x - p2d.first) < 1e-6 && std::abs(y - p2d.second) < 1e-6;
+            });
+            if (it != points.end()) 
+            {
+                ordered3D.push_back(*it);
             }
         }
         return ordered3D;
@@ -162,20 +196,337 @@ namespace RoundwoodJoinery::Utils
         plyOut.write(filename, happly::DataFormat::ASCII);
     }
 
-    Eigen::Matrix4d ComputeApproximatingTransformation(std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> anchorPointsAndTranslations)
+    std::vector<Eigen::Matrix4d> ComputeApproximatingTransformation(std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> groupedAnchorPointsAndTranslations)
     {
-        Eigen::MatrixXd sourcePoints(3, anchorPointsAndTranslations.size());
-        Eigen::MatrixXd targetPoints(3, anchorPointsAndTranslations.size());
-
-        for (size_t i = 0; i < anchorPointsAndTranslations.size(); ++i)
+        std::vector<Eigen::Matrix4d> transformations;
+        for (const auto& anchorPointsAndTranslations : groupedAnchorPointsAndTranslations)
         {
-            const auto& pair = anchorPointsAndTranslations[i];
-            sourcePoints.col(i) = pair.first;
-            targetPoints.col(i) = pair.first + pair.second;
+            Eigen::MatrixXd sourcePoints(3, anchorPointsAndTranslations.size());
+            Eigen::MatrixXd targetPoints(3, anchorPointsAndTranslations.size());
+
+            for (size_t i = 0; i < anchorPointsAndTranslations.size(); ++i)
+            {
+                const auto& pair = anchorPointsAndTranslations[i];
+                sourcePoints.col(i) = pair.first;
+                targetPoints.col(i) = pair.first + pair.second;
+            }
+
+            Eigen::Matrix4d transformation = Eigen::umeyama(sourcePoints, targetPoints, false);
+            transformations.push_back(transformation);
+        }
+        return transformations;
+    }
+
+    Eigen::Matrix4d ComputeCollectiveApproximatingTransformation(std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> groupedAnchorPointsAndTranslations)
+    {
+        Eigen::Matrix4d transformation;
+        int totalPairs = 0;
+        for(const auto& group : groupedAnchorPointsAndTranslations)
+        {
+            totalPairs += group.size();
+        }
+        Eigen::MatrixXd sourcePoints(3,totalPairs);
+        Eigen::MatrixXd targetPoints(3,totalPairs);
+
+        size_t colIndex = 0;
+
+        for (const auto& anchorPointsAndTranslations : groupedAnchorPointsAndTranslations)
+        {
+            for (size_t i = 0; i < anchorPointsAndTranslations.size(); ++i)
+            {
+                const auto& pair = anchorPointsAndTranslations[i];
+                sourcePoints.col(colIndex) = pair.first;
+                targetPoints.col(colIndex) = pair.first + pair.second;
+                ++colIndex;
+            }
+        }
+        transformation = Eigen::umeyama(sourcePoints, targetPoints, false);
+        if (transformation.hasNaN())
+        {
+            std::cerr << "Warning: Computed transformation contains NaN values. Check input data for validity." << std::endl;
+            
+            transformation = Eigen::Matrix4d::Identity();
+        }
+        return transformation;
+    }
+
+    CGAL::Polygon_2<CGAL::Projection_traits_3<K>> Compute2DPolygon(std::vector<Eigen::Vector3d> points, Eigen::Vector3d normal)
+    {
+        Eigen::Vector3d normal_normalized = normal.normalized();
+        CGAL::Projection_traits_3<K> traits({normal_normalized.x(), normal_normalized.y(), normal_normalized.z()});
+        CGAL::Polygon_2<CGAL::Projection_traits_3<K>> cgalPolygon(traits);
+        for (const auto& point : points)
+        {
+            cgalPolygon.push_back(Point_3(point.x(), point.y(), point.z()));
+        }
+        return cgalPolygon;
+    }
+
+    CGAL::Polygon_2<K> Compute2DPolygonInPlane(const std::vector<Eigen::Vector3d>& points, 
+                                                const Eigen::Vector3d& normal,
+                                                const Eigen::Vector3d& planeOrigin)
+    {
+        Eigen::Vector3d n = normal.normalized();
+        Eigen::Vector3d refAxis = (std::abs(n.y()) > 0.9) ? Eigen::Vector3d(0, 1, 0) : Eigen::Vector3d(1, 0, 0);
+        Eigen::Vector3d beamYDirection = refAxis - (n.dot(refAxis)) * n;
+        if (beamYDirection.squaredNorm() < 1e-9) 
+        {
+            return CGAL::Polygon_2<K>(); // Return an empty polygon if the normal is invalid
+        }
+        Eigen::Vector3d beamZDirection = beamYDirection.cross(n);
+
+        CGAL::Polygon_2<K> polygon;
+        for (const auto& p : points) {
+            Eigen::Vector3d vec = p - planeOrigin;
+            double u = vec.dot(beamYDirection); // x-coordinate in 2D
+            double v = vec.dot(beamZDirection); // y-coordinate in 2D
+            polygon.push_back(Point_2(u, v));
+        }
+        return polygon;
+    }
+
+    BPoly2 BuildExact2DPolygon(const std::vector<Eigen::Vector3d>& outline,
+                                    const Eigen::Vector3d& yDirection,
+                                    const Eigen::Vector3d& zDirection,
+                                    const Eigen::Vector3d& pointOnSkeleton)
+    {
+        BPoly2 poly;
+        if (outline.size() < 3) return poly;
+
+        const Eigen::Vector3d u = yDirection.normalized();
+        const Eigen::Vector3d v = zDirection.normalized();
+        const Eigen::Vector3d o = pointOnSkeleton;
+
+        constexpr double eps2 = 1e-12;
+        std::vector<Eigen::Vector2d> uv;
+        uv.reserve(outline.size());
+
+        // Project and remove near-duplicates globally
+        for (const auto& p3 : outline)
+        {
+            Eigen::Vector3d d = p3 - o;
+            Eigen::Vector2d q(d.dot(u), d.dot(v));
+
+            bool duplicate = false;
+            for (const auto& e : uv)
+            {
+                if ((q - e).squaredNorm() <= eps2)
+                {
+                    duplicate = true;
+                    break;
+                }
+            }
+            if (!duplicate) uv.push_back(q);
         }
 
-        Eigen::Matrix4d transformation = Eigen::umeyama(sourcePoints, targetPoints, false);
+        if (uv.size() < 3) return poly;
 
+        auto buildPoly = [](const std::vector<Eigen::Vector2d>& pts) -> BPoly2
+        {
+            BPoly2 p;
+            for (const auto& q : pts)
+            {
+                p.push_back(BPoint2(BK::FT(q.x()), BK::FT(q.y())));
+            }
+            if (p.size() >= 3 && p.is_simple() && p.is_clockwise_oriented()) p.reverse_orientation();
+            return p;
+        };
+
+        // Attempt 1: keep original order
+        poly = buildPoly(uv);
+        if (poly.size() >= 3 && poly.is_simple()) return poly;
+
+        // Attempt 2: sort by polar angle around centroid
+        Eigen::Vector2d c(0.0, 0.0);
+        for (const auto& q : uv) c += q;
+        c /= static_cast<double>(uv.size());
+
+        std::sort(uv.begin(), uv.end(), [&c](const Eigen::Vector2d& a, const Eigen::Vector2d& b)
+        {
+            double aa = std::atan2(a.y() - c.y(), a.x() - c.x());
+            double bb = std::atan2(b.y() - c.y(), b.x() - c.x());
+            if (aa == bb) return (a - c).squaredNorm() < (b - c).squaredNorm();
+            return aa < bb;
+        });
+
+        poly = buildPoly(uv);
+        if (poly.size() >= 3 && poly.is_simple()) return poly;
+
+        // Attempt 3: convex hull fallback
+        std::vector<BPoint2> pts;
+        pts.reserve(uv.size());
+        for (const auto& q : uv) pts.emplace_back(BK::FT(q.x()), BK::FT(q.y()));
+
+        std::vector<BPoint2> hull;
+        CGAL::convex_hull_2(pts.begin(), pts.end(), std::back_inserter(hull));
+
+        BPoly2 hullPoly;
+        for (const auto& p : hull) hullPoly.push_back(p);
+        if (hullPoly.size() >= 3 && hullPoly.is_simple() && hullPoly.is_clockwise_oriented()) hullPoly.reverse_orientation();
+        if (hullPoly.size() >= 3 && hullPoly.is_simple()) return hullPoly;
+
+        return BPoly2();
+    }
+
+    bool IsOutlineIntersectingPlane(const std::vector<Eigen::Vector3d>& outline, const Eigen::Vector3d& planePoint, const Eigen::Vector3d& planeNormal)
+    {
+        double firstDistance = (outline[0] - planePoint).dot(planeNormal);
+        bool firstSide = firstDistance > 0;
+        for (const auto& point : outline)
+        {
+            Eigen::Vector3d vec = point - planePoint;
+            double distance = vec.dot(planeNormal);
+            bool currentSide = distance > 0;
+            if (currentSide != firstSide)
+            {
+                return true; 
+            }
+        }
+        return false;
+    }
+
+    Eigen::Matrix4d ComputeMeanTransformation(const std::vector<Eigen::Matrix4d>& transformations)
+    {
+        if (transformations.empty())
+        {
+            return Eigen::Matrix4d::Identity();
+        }
+
+        // Average rotation using quaternions
+        std::vector<Eigen::Quaterniond> quaternions;
+        for (const auto& transform : transformations)
+        {
+            Eigen::Matrix3d rotation = transform.block<3, 3>(0, 0);
+            Eigen::Quaterniond q(rotation);
+            quaternions.push_back(q);
+        }
+
+        Eigen::Quaterniond meanQuaternion(0, 0, 0, 0);
+        for (const auto& q : quaternions)
+        {
+            if (q.coeffs().dot(meanQuaternion.coeffs()) < 0)
+            {
+                meanQuaternion.coeffs() += -1 * (q).coeffs();
+            }
+            else 
+            {
+                meanQuaternion.coeffs() += q.coeffs();
+            }
+        }
+        meanQuaternion.normalize();
+
+        // Average translation
+        Eigen::Vector3d meanTranslation(0, 0, 0);
+        for (const auto& transform : transformations)
+        {
+            meanTranslation += transform.block<3, 1>(0, 3);
+        }
+        meanTranslation /= transformations.size();
+
+        // Construct the mean transformation matrix
+        Eigen::Matrix4d meanTransformation = Eigen::Matrix4d::Identity();
+        meanTransformation.block<3, 3>(0, 0) = meanQuaternion.toRotationMatrix();
+        meanTransformation.block<3, 1>(0, 3) = meanTranslation;
+
+        return meanTransformation;
+    }
+
+    Eigen::Matrix4d ComputeCurveToCurveTransformation(const std::vector<Eigen::Vector3d>& sourceCurve, const std::vector<Eigen::Vector3d>& targetCurve)
+    {
+        cpd::Matrix source(sourceCurve.size(), 3);
+        cpd::Matrix target(targetCurve.size(), 3);
+
+        for (size_t i = 0; i < sourceCurve.size(); ++i)
+        {
+            source.row(i) = sourceCurve[i];
+        }
+        for (size_t i = 0; i < targetCurve.size(); ++i)
+        {
+            target.row(i) = targetCurve[i];
+        }
+        cpd::RigidResult result = cpd::rigid(source, target);
+        cpd::Matrix transform = result.matrix();
+        Eigen::Matrix4d transformation = Eigen::Matrix4d::Identity();
+        transformation.block<3, 3>(0, 0) = transform.block<3, 3>(0, 0);
+        transformation.block<3, 1>(0, 3) = transform.block<3, 1>(0, 3);
         return transformation;
+    }
+
+    std::pair<Eigen::Vector3d, Eigen::Vector3d> ComputeClosestPointsBetweenTwoCurves(const std::vector<Eigen::Vector3d>& curve1, const std::vector<Eigen::Vector3d>& curve2)
+    {
+        if (curve1.size() < 2 || curve2.size() < 2)
+        {
+            throw std::invalid_argument("Both curves must have at least two points.");
+            return {Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero()};
+        }
+
+        if(curve1.size() == 2 && curve2.size() == 2)
+        {
+            Eigen::Vector3d closestPointCurve1 = FindHeightOfTriangle(curve2[0], curve1[0], curve1[1]);
+            Eigen::Vector3d closestPointCurve2 = FindHeightOfTriangle(curve1[0], curve2[0], curve2[1]);
+            return {closestPointCurve1, closestPointCurve2};
+        }
+
+        double minDistance = std::numeric_limits<double>::max();
+        Eigen::Vector3d closestPointCurve1 = Eigen::Vector3d::Zero();
+        Eigen::Vector3d closestPointCurve2 = Eigen::Vector3d::Zero();
+
+        std::vector<PPSegment_3> segmentsCurve1;
+        std::vector<PPSegment_3> segmentsCurve2;
+        
+        for (size_t i = 0; i < curve1.size() - 1; ++i)
+        {
+            segmentsCurve1.emplace_back(PPPoint_3(curve1[i].x(), curve1[i].y(), curve1[i].z()),
+                                        PPPoint_3(curve1[i + 1].x(), curve1[i + 1].y(), curve1[i + 1].z()));
+        }
+        for (size_t i = 0; i < curve2.size() - 1; ++i)
+        {
+            segmentsCurve2.emplace_back(PPPoint_3(curve2[i].x(), curve2[i].y(), curve2[i].z()),
+                                        PPPoint_3(curve2[i + 1].x(), curve2[i + 1].y(), curve2[i + 1].z()));
+        }
+
+        PPTree treeCurve2(segmentsCurve2.begin(), segmentsCurve2.end());
+        PPTree treeCurve1(segmentsCurve1.begin(), segmentsCurve1.end());
+        PPPoint_3 closestPointOnCurve2;
+        // Eigen::Vector3d secondClosestPointOnCurve1 = Eigen::Vector3d::Zero();
+        PPPoint_3 closestPointOnCurve1;
+        // Eigen::Vector3d secondClosestPointOnCurve2 = Eigen::Vector3d::Zero();
+
+        for (const auto& segment1 : segmentsCurve1)
+        {
+            closestPointOnCurve2 = treeCurve2.closest_point(segment1.source());
+            closestPointOnCurve1 = treeCurve1.closest_point(closestPointOnCurve2);
+
+            double distance = std::sqrt(CGAL::squared_distance(closestPointOnCurve1, closestPointOnCurve2));
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                closestPointCurve1 = Eigen::Vector3d(closestPointOnCurve1.x(), closestPointOnCurve1.y(), closestPointOnCurve1.z());
+                closestPointCurve2 = Eigen::Vector3d(closestPointOnCurve2.x(), closestPointOnCurve2.y(), closestPointOnCurve2.z());
+            }
+        }
+
+        return {closestPointCurve1, closestPointCurve2};
+    }
+
+    std::pair<Eigen::Vector3d, bool> ProjectPointOnPlaneAlongDirection(const Eigen::Vector3d& point, const Eigen::Vector3d& planePoint, const Eigen::Vector3d& planeNormal, const Eigen::Vector3d& direction)
+    {
+        if (direction.norm() < 1e-6 || planeNormal.norm() < 1e-6)
+        {
+            std::cerr << "Warning: Direction vector or plane normal is too small. Cannot project point." << std::endl;
+            return {Eigen::Vector3d::Zero(), false};
+        }
+        Eigen::Vector3d normalizedDirection = direction.normalized();
+        Eigen::Vector3d normalizedPlaneNormal = planeNormal.normalized();
+        bool valid = true;
+
+        double dotProduct = normalizedDirection.dot(normalizedPlaneNormal);
+        if (std::abs(dotProduct) < 1e-6)
+        {
+            valid = false;
+            return {Eigen::Vector3d::Zero(), valid};
+        }
+        double t = (planePoint - point).dot(normalizedPlaneNormal) / dotProduct;
+        return {point + t * normalizedDirection, valid};
     }
 }

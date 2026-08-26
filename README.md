@@ -31,5 +31,11 @@ flowchart LR
     E --> F(optimised joint positions)
 ```
 
+Hereunder a graph of the area ratios (current/target) during optimisation.
+
+![evolution of areas during optimisation](./assets/imgs/2026_04_10_area_ratios_for_flat_joints_voxel_size_5mm_10_iterations.png)
+
 ## Usage
 Checkout the [Usage.md](./USAGE.md) for more info, but right now you should probably not try this at home ;) 
+For now the pipeline and its results are illustrated by this illustration:
+![illustration_of_process](./assets/imgs/2026_08_14_Roundwood_Joinery_summary.png)

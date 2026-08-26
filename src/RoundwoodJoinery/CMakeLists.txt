@@ -36,5 +36,5 @@ add_custom_command(
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_FILE:${SHARED_LIB_NAME}>
-        ${CMAKE_CURRENT_SOURCE_DIR}/../tests/py_binding_test/
+        ${CMAKE_CURRENT_SOURCE_DIR}/../python_package/roundwood_joinery/
 )
