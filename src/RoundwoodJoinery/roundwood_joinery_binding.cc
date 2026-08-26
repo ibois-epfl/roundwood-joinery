@@ -50,12 +50,16 @@ NB_MODULE(roundwoodJoineryBindings, m)
              nb::arg("radiusSearch"),
              nb::arg("alpha") = 500.0,
              nb::arg("maxAllowableDepth") = 50.0)
-        .def("get_current_outline", &RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline, 
-             "Get the current outline of the joint face based on the projected points from the beam's point cloud", 
-             nb::arg("beamPointCloud"), 
+        .def("get_current_outline", &RoundwoodJoinery::Joinery::JointFace::GetCurrentOutline,
+             "Get the current outline of the joint face based on the projected points from the beam's point cloud",
+             nb::arg("beamPointCloud"),
              nb::arg("radiusSearch"),
              nb::arg("alpha") = 500.0,
-             nb::arg("maxAllowableDepth") = 50.0);
+             nb::arg("maxAllowableDepth") = 50.0)
+        .def("get_projected_points", &RoundwoodJoinery::Joinery::JointFace::GetProjectedPoints)
+        .def("set_projected_points", &RoundwoodJoinery::Joinery::JointFace::SetProjectedPoints,
+             "Set the beam point-cloud points projected onto this joint face, bypassing project_points_onto_face",
+             nb::arg("projectedPoints"));
 
 
     nb::class_<RoundwoodJoinery::Joinery::Joint>(m, "Joint")

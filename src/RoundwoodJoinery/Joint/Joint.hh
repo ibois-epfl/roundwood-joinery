@@ -114,6 +114,23 @@ namespace RoundwoodJoinery::Joinery
             */
             std::vector<Eigen::Vector3d> GetCurrentOutline(PointCloud::PointCloud& pointCloud, double radiusSearch, double alpha = 500.0, double maxAllowableDepth = 50.0);
 
+            /**
+            * @brief Returns the beam point-cloud points that were projected onto this joint face (see ProjectPointsOntoFace).
+            * @return A vector of Eigen::Vector3d representing the projected points.
+            */
+            std::vector<Eigen::Vector3d> GetProjectedPoints() const
+            {
+                return this->_projectedPoints;
+            }
+
+            /**
+            * @brief Sets the projected points for this joint face, bypassing ProjectPointsOntoFace (e.g. when restoring from serialized data).
+            * @param projectedPoints A vector of Eigen::Vector3d representing the projected points.
+            */
+            void SetProjectedPoints(const std::vector<Eigen::Vector3d>& projectedPoints)
+            {
+                this->_projectedPoints = projectedPoints;
+            }
 
             void ApplyTransformation(Eigen::Matrix4d transformation);
 
