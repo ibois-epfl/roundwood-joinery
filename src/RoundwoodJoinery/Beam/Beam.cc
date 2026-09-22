@@ -18,13 +18,13 @@ namespace RoundwoodJoinery::Beam
                 Eigen::Vector3d closestPointOnSkeleton = this->_FindClosestPointOnSkeleton(joint->GetCenter());
                 joint->SetClosestPointOnSkeleton(closestPointOnSkeleton);
                 Eigen::Vector3d outwardDirection = (joint->GetCenter() - closestPointOnSkeleton).normalized();
-                for(std::shared_ptr<Joinery::JointFace> face : joint->GetFaces())
-                {
-                    if (face->GetNormal().dot(outwardDirection) < 0)
-                    {
-                        face->FlipNormal();
-                    }
-                }
+                // for(std::shared_ptr<Joinery::JointFace> face : joint->GetFaces())
+                // {
+                //     if (face->GetNormal().dot(outwardDirection) < 0)
+                //     {
+                //         face->FlipNormal();
+                //     }
+                // }
             }
         }
     }
@@ -190,7 +190,7 @@ namespace RoundwoodJoinery::Beam
                     std::vector<Eigen::Vector3d> projectedOutline;
                     if(Utils::IsOutlineIntersectingPlane(face->GetCorners(), pointOnSkeleton, beamDirection))
                     {
-                        Eigen::Vector3d projectionDirection = beamDirection - (beamDirection.dot(face->GetNormal())) * face->GetNormal();
+                        Eigen::Vector3d projectionDirection = beamDirection; // - (beamDirection.dot(face->GetNormal())) * face->GetNormal();
                         projectionDirection.normalize();
                         std::vector<Eigen::Vector3d> projectedPoints;
                         for (const auto& corner : face->GetCorners())
