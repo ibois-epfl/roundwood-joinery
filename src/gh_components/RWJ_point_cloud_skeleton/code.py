@@ -19,6 +19,8 @@ class RWJ_compute_point_cloud_skeleton(component):
             i_alpha = 500
         if not i_offset:
             i_offset = 1
+        if i_point_cloud is None or i_point_cloud.Count == 0:
+            return []
         np_point_cloud = np.array([[pt.X, pt.Y, pt.Z] for pt in i_point_cloud])
         rwj_pc = rwj.PointCloud(np_point_cloud)
         np_skeleton_pts = rwj.Utils.compute_point_cloud_skeleton(rwj_pc, alpha=i_alpha, offset=i_offset)
