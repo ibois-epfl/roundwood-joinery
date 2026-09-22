@@ -192,7 +192,9 @@ namespace RoundwoodJoinery::Beam
                         for (const auto& corner : face->GetCorners())
                         {
                             std::pair<Eigen::Vector3d, bool> projectedPointandSuccess = Utils::ProjectPointOnPlaneAlongDirection(corner, pointOnSkeleton, beamDirection, projectionDirection);
-                            projectedOutline.push_back(projectedPointandSuccess.first);
+                            
+                            if(projectedPointandSuccess.second)
+                                projectedOutline.push_back(projectedPointandSuccess.first);
                         }
                         for (int i = 0; i < face->GetCorners().size(); ++i)
                         {
@@ -202,15 +204,17 @@ namespace RoundwoodJoinery::Beam
 
                             Eigen::Vector3d translatedCorner = face->GetCorners()[j] + face->GetNormal() * 10 * this->_referenceDiameter;
                             std::pair<Eigen::Vector3d, bool> projectedTranslatedPointandSuccess = Utils::ProjectPointOnPlaneAlongDirection(translatedCorner, pointOnSkeleton, beamDirection, projectionDirection);
-                            projectedOutline.push_back(projectedTranslatedPointandSuccess.first);
+                            if(projectedTranslatedPointandSuccess.second)
+                                projectedOutline.push_back(projectedTranslatedPointandSuccess.first);
                         }
                     }
                     else
                     {
                         for (const auto& corner : face->GetCorners())
                         {
-                            std::pair<Eigen::Vector3d, bool> projectedPointAndSuccess = Utils::ProjectPointOnPlaneAlongDirection(corner, pointOnSkeleton, beamDirection, face->GetNormal());
-                            projectedOutline.push_back(projectedPointAndSuccess.first);
+                            std::pair<Eigen::Vector3d, bool> projectedPointAndSuccess = Utils::ProjectPointOnPlaneAlongDirection(corner, pointOnSkeleton, beamDirection, beamDirection);
+                            if(projectedPointAndSuccess.second)
+                                projectedOutline.push_back(projectedPointAndSuccess.first);
                         }
                     }
 
@@ -326,7 +330,7 @@ namespace RoundwoodJoinery::Beam
             }
             if (index != -1 && index < this->_skeleton.size() - 1)
             {
-                Eigen::Vector3d nextSkeletonPoint = this->_skeleton[i+1];
+                Eigen::Vector3d nextSkeletonPoint = this->_skeleton[index + 1];
                 closestPoint = Utils::FindHeightOfTriangle(point, skeletonPoint, nextSkeletonPoint);
             }
         }
