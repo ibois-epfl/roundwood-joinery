@@ -115,6 +115,11 @@ namespace RoundwoodJoinery::Joinery
         }
         
         std::vector<Eigen::Vector3d> alphaShapePoints = Utils::Compute2DAlphaShape(this->_projectedPoints, alpha, this->_normal);
+        if (alphaShapePoints.empty())
+        {
+            std::cerr << "Warning: Alpha shape computation resulted in no points. Returning {0, 0, 0}." << std::endl;
+            return {0.0, 0.0, 0.0};
+        }
         // Compute the area of the alpha shape polygon
         CGAL::Projection_traits_3<K> traits({this->_normal.x(), this->_normal.y(), this->_normal.z()});
         CGAL::Polygon_2<CGAL::Projection_traits_3<K>> cgalPolygon = Utils::Compute2DPolygon(alphaShapePoints, this->_normal);

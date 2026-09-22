@@ -23,6 +23,10 @@ namespace RoundwoodJoinery::Utils
         CGAL::Mean_curvature_flow_skeletonization<Mesh>::Skeleton cgalSkeletonGraph;
  
         CGAL::extract_mean_curvature_flow_skeleton(wrap, cgalSkeletonGraph);
+        if(boost::num_vertices(cgalSkeletonGraph) == 0)
+        {
+            return std::vector<Eigen::Vector3d>();
+        }
         auto vertice = cgalSkeletonGraph[0].point;
         std::cout << "Skeleton has " << vertice << " as first vertex." << std::endl;
         std::cout << "Skeleton has " << boost::num_vertices(cgalSkeletonGraph) << " vertices." << std::endl;
@@ -139,6 +143,11 @@ namespace RoundwoodJoinery::Utils
             }
         }
 
+        if (adjacency.empty())
+        {
+            std::cerr << "Warning: No edges found in alpha shape. Returning empty outline." << std::endl;
+            return {};
+        }
         std::pair<double, double> start = adjacency.begin()->first;
         std::vector<std::pair<double, double>> ordered2D;
         std::set<std::pair<double, double>> visited;
