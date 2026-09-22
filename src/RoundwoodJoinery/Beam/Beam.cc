@@ -253,7 +253,7 @@ namespace RoundwoodJoinery::Beam
                 {
                     remainingSet.insert(originalSectionPolygonExact);
                 }
-                catch (const CGAL::Assertion_exception& e)
+                catch (const CGAL::Failure_exception& e)
                 {
                     std::cerr << "Insert failed even with exact kernel: " << e.what() << std::endl;
                     continue;
@@ -272,7 +272,7 @@ namespace RoundwoodJoinery::Beam
                     {
                         remainingSet.difference(projectedPolygonExact);
                     }
-                    catch (const CGAL::Assertion_exception& e)
+                    catch (const CGAL::Failure_exception& e)
                     {
                         std::cerr << "Difference failed even with exact kernel: " << e.what() << std::endl;
                         continue;
@@ -328,7 +328,7 @@ namespace RoundwoodJoinery::Beam
                 // we can break early once the distance starts increasing
                 break;
             }
-            if (index != -1 && index < this->_skeleton.size() - 1)
+            if (index != -1 && index + 1 < this->_skeleton.size()) 
             {
                 Eigen::Vector3d nextSkeletonPoint = this->_skeleton[index + 1];
                 closestPoint = Utils::FindHeightOfTriangle(point, skeletonPoint, nextSkeletonPoint);
