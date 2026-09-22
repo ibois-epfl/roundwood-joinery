@@ -68,8 +68,12 @@ namespace RoundwoodJoinery::Beam
                         continue;
                     }
                     for (size_t k = 0; k < joint->GetNumFaces(); ++k)
-                    {
-                        std::cout << "pouf" << std::endl;
+                    {                        
+                        if (!joint->GetFaces()[k])
+                        {
+                            std::cerr << "Warning: null face in joint during optimization" << std::endl;
+                            continue;
+                        }
                         std::shared_ptr<Joinery::JointFace>& face = joint->GetFaces()[k];
                         double currentArea = face->GetCurrentArea();
                         double targetArea = face->GetTargetArea();
