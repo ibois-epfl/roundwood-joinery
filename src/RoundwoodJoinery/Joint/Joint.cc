@@ -40,7 +40,16 @@ namespace RoundwoodJoinery::Joinery
         std::cout << "Octree query: " << std::chrono::duration<double>(t2-t1).count() << "s\n";
         std::vector<Eigen::Vector3d> projectedPoints;
         std::cout << "Number of points in the neighborhood: " << neighborhoodPoints.size() << std::endl;
-        Eigen::Vector3d normal = this->_normal.normalized();
+        Eigen::Vector3d normal = this->_normal;
+        if (normal.norm() < 1e-12) 
+        {
+            std::cerr << "Warning: Zero normal vector in JointFace. Using fallback normal." << std::endl;
+            return projectedPoints;
+        } 
+        else 
+        {
+            normal.normalize();
+        }
         double distance = 0;
         for (const auto& point : neighborhoodPoints)
         {
