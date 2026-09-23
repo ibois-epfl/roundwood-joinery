@@ -1,0 +1,88 @@
+{
+    "name": "RWJ_define_joinery",
+    "nickname": "RWJ_define_joinery",
+    "category": "Roundwood Joinery",
+    "subcategory": "definitions",
+    "description": "This component defines the joinery for roundwood elements with its surfaces and degrees of freedom.",
+    "exposure": 4,
+    "instanceGuid": "bc1c05de-c584-4292-ad69-8597137ba893",
+    "ghpython": {
+        "hideOutput": true,
+        "hideInput": true,
+        "isAdvancedMode": true,
+        "marshalOutGuids": true,
+        "iconDisplay": 2,
+        "inputParameters": [
+            {
+                "name": "i_curves_datatree",
+                "nickname": "i_curves_datatree",
+                "description": "The datatree containing the joint faces. The root level is the whole beam joints, the first depth is the joint groups, the second depth is the joint, and the third and last depth is the joint faces.",
+                "optional": false,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "tree",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "curve"
+            },
+            {
+                "name": "i_dof_vectors",
+                "nickname": "i_dof_vectors",
+                "description": "The degrees of freedom that each joint group has. The order of the DOF vectors should be the same as the order of the joint groups in the i_curves_datatree.",
+                "optional": false,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "tree",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "vector"
+            },
+            {
+                "name": "i_max_joint_depths_datatree",
+                "nickname": "i_max_joint_depths_datatree",
+                "description": "The maximum depths for each joint face. The datatree structure should match the structure of the i_curves_datatree.",
+                "optional": false,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "tree",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "float"
+            },
+            {
+                "name": "i_target_areas_datatree",
+                "nickname": "i_target_areas_datatree",
+                "description": "The target areas for each joint face. The datatree structure should match the structure of the i_curves_datatree.",
+                "optional": false,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "tree",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "float"
+            },
+            {
+                "name": "i_jointface_normals",
+                "nickname": "i_jointface_normals",
+                "description": "The normals of the joint faces. The datatree structure should match the structure of the i_curves_datatree.",
+                "optional": false,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "tree",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "vector"
+            }
+        ],
+        "outputParameters": [
+            {
+                "name": "o_joinery",
+                "nickname": "o_joinery",
+                "description": "The defined joinery for a single beam.",
+                "optional": false,
+                "sourceCount": 0,
+                "graft": false
+            }
+        ]
+    }
+}

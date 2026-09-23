@@ -1,0 +1,42 @@
+{
+    "name": "RWJ_serialize_joint",
+    "nickname": "RWJ_serialize_joint",
+    "category": "Roundwood Joinery",
+    "subcategory": "serialization",
+    "description": "This component serializes the joint data.",
+    "exposure": 4,
+    "instanceGuid": "b264a670-69d8-4080-aa93-d3ddec9c2660",
+    "ghpython": {
+        "hideOutput": true,
+        "hideInput": true,
+        "isAdvancedMode": true,
+        "marshalOutGuids": true,
+        "iconDisplay": 2,
+        "inputParameters": [
+            {
+                "name": "i_joinery",
+                "nickname": "i_joinery",
+                "description": "The defined joinery for a single beam.",
+                "optional": false,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "list",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "none"
+            },
+            {
+                "name": "i_file_path",
+                "nickname": "i_file_path",
+                "description": "The file path where the joinery should be serialized.",
+                "optional": false,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "item",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "str"
+            }
+        ]
+    }
+}

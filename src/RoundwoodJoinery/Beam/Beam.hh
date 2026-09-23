@@ -3,6 +3,9 @@
 #include <vector>
 #include <memory>
 #include <cmath>
+#include <string>
+#include <optional>
+#include <fstream>
 
 #include <Eigen/Dense>
 
@@ -15,7 +18,7 @@ namespace RoundwoodJoinery::Beam
     {
     public:
         Beam(double referenceDiameter, 
-            std::vector<std::shared_ptr<Joinery::Joint>> joints, 
+            std::vector<std::shared_ptr<Joinery::JointGroup>> jointGroups, 
             std::vector<Eigen::Vector3d> skeleton, 
             RoundwoodJoinery::PointCloud::PointCloud pointCloud);
             
@@ -36,9 +39,9 @@ namespace RoundwoodJoinery::Beam
          * 
          * @return A vector of shared pointers to the joints associated with the beam.
          */
-        std::vector<std::shared_ptr<RoundwoodJoinery::Joinery::Joint>> GetJoints() const
+        std::vector<std::shared_ptr<Joinery::JointGroup>> GetJointGroups() const
         {
-            return this->_joints;
+            return this->_jointGroups;
         }
 
         /**
@@ -67,21 +70,59 @@ namespace RoundwoodJoinery::Beam
          */
         void FindJointClosestPointsOnSkeleton()
         {
-            for (const auto& joint : this->_joints)
+            for (auto& jointGroup : this->_jointGroups)
             {
-                Eigen::Vector3d jointCenter = joint->GetCenter();
-                Eigen::Vector3d correspondance = this->_FindClosestPointOnSkeleton(jointCenter);
-                joint->SetClosestPointOnSkeleton(correspondance);
+                for (auto& joint : jointGroup->GetJoints())
+                {
+                    Eigen::Vector3d jointCenter = joint->GetCenter();
+                    Eigen::Vector3d correspondance = this->_FindClosestPointOnSkeleton(jointCenter);
+                    joint->SetClosestPointOnSkeleton(correspondance);
+                }
             }
         }
 
         /**
          * @brief Just a test function
          */
-        std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> ComputeOneIterationOfJointFaceTranslationsForOptimisation()
+        std::vector<Eigen::Matrix4d> ComputeOneIterationOfJointFaceTranslationsForOptimisation(double alphaForAreaComputations, double gain, double radiusSearch)
         {
-            return this->_ComputeJointFaceTranslationsForOptimisation();
+            std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> pointsAndTranslations = this->_ComputeJointFaceTranslationsForOptimisation(alphaForAreaComputations, gain, radiusSearch);
+            std::vector<Eigen::Matrix4d> transformations = RoundwoodJoinery::Utils::ComputeApproximatingTransformation(pointsAndTranslations);
+            Eigen::Matrix4d meanTransformation = RoundwoodJoinery::Utils::ComputeCollectiveApproximatingTransformation(pointsAndTranslations);
+            std::vector<Eigen::Matrix4d> adaptedTransformations;
+
+            for (size_t i = 0; i < transformations.size(); ++i)
+            {
+                Eigen::Matrix4d residualTransformation = meanTransformation.inverse() * transformations[i];
+                Eigen::Vector3d jointGroupDOF = this->_jointGroups[i]->GetDegreeOfFreedom().normalized();
+                Eigen::Vector3d residualTranslation = residualTransformation.block<3,1>(0,3);
+                Eigen::Matrix3d residualRotation = residualTransformation.block<3,3>(0,0);
+                Eigen::Vector3d implicitTranslation = (residualRotation * this->_jointGroups[i]->GetCentroid() + residualTranslation) - this->_jointGroups[i]->GetCentroid();
+                Eigen::Vector3d projectionOfImplicitTranslationOnDOF = implicitTranslation.dot(jointGroupDOF) * jointGroupDOF;
+                Eigen::Matrix4d adaptedTransformation = meanTransformation;
+                adaptedTransformation.block<3,1>(0,3) += projectionOfImplicitTranslationOnDOF;
+                adaptedTransformations.push_back(adaptedTransformation);
+            }
+            return adaptedTransformations;
         }
+
+        /**
+         * @brief Iteratively computes and applies the transformations for each joint group to optimize their positions based on the skeleton and target areas of their joint faces.
+         * 
+         * @param maxIterations The maximum number of iterations to perform for the optimization process.
+         * @param minRelativeTranslationRMSE The minimum relative translation root mean square error threshold to determine convergence of the optimization process. If the RMSE of the translations falls below this threshold, the optimization process will stop.
+         * @param alphaForAreaComputations The alpha parameter used in the computation of the current area and depths of the joint faces.
+         * @param initialGain The initial gain factor that influences the magnitude of the translations applied to the joint faces. This gain may be adjusted during the optimization process.
+         * @param radiusSearch The radius within which to search for points in the point cloud when computing the current area and depths of the joint faces.
+         * @param outputFolderPath The path to the folder where the area ratios will be outputted for each iteration. If not provided, no output will be generated.
+         * @return The vector of total transformations applied to each joint group. They have been applied and are returned for evaluation purposes.
+         */
+        std::vector<Eigen::Matrix4d> ComputeJointGroupOptimisation(int maxIterations, double minRelativeTranslationRMSE, double alphaForAreaComputations, double initialGain, double radiusSearch, std::optional<std::string> outputFolderPath);
+
+        /**
+         * @brief Computes the remaining sections in the beam for each joint group, and updates their internal state accordingly.
+         */
+        void ComputeRemainingSections();
 
     private:
 
@@ -99,12 +140,17 @@ namespace RoundwoodJoinery::Beam
          * @brief Private method that computes the translations of the joint faces for optimization purposes. 
          * This is based on the current positions of the joints, their closest points on the skeleton, and their joint faces' target areas.
          * 
-         * @return A vector of pairs, where each pair consists of an anchor point (the center of a joint face),
-         *  and a translation vector that indicates how much the joint face should be translated to better fit the skeleton and target area.
+         * @param alphaForAreaComputations A parameter used in the computation of the current area and depths of the joint faces.
+         * @param gain A gain factor that influences the magnitude of the translations applied to the joint faces.
+         * @param radiusSearch The radius within which to search for points in the point cloud when computing the current area and depths of the joint faces.
+         * 
+         * @return A vector of vectors of pairs, where each inner vector corresponds to a group of joints,
+         *  and each pair consists of an anchor point (a corner of a joint face) and a translation vector
+         *  that indicates how much the joint face should be translated to better fit the skeleton and target area.
          */
-        std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> _ComputeJointFaceTranslationsForOptimisation();
+        std::vector<std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>>> _ComputeJointFaceTranslationsForOptimisation(double alphaForAreaComputations, double gain, double radiusSearch);
 
-        std::vector<std::shared_ptr<Joinery::Joint>> _joints;
+        std::vector<std::shared_ptr<Joinery::JointGroup>> _jointGroups;
         std::vector<Eigen::Vector3d> _skeleton;
         RoundwoodJoinery::PointCloud::PointCloud _pointCloud;
         double _referenceDiameter;

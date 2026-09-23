@@ -13,6 +13,15 @@ namespace RoundwoodJoinery::PointCloud
             {
                 this->_points.emplace_back(vertex[0], vertex[1], vertex[2]);
             }
+
+            std::list<Point> cgalPoints;
+            for (const auto& point : this->_points)
+            {
+                cgalPoints.push_back(Point(point.x(), point.y(), point.z()));
+            }
+            auto tree = std::make_shared<CGAL::Kd_tree<Traits>>(cgalPoints.begin(), cgalPoints.end());
+            this->_kdTree = tree;
+
             return true;
         }
         catch (const std::exception& e)
@@ -20,5 +29,21 @@ namespace RoundwoodJoinery::PointCloud
             std::cerr << "Error loading point cloud from file: " << e.what() << std::endl;
             return false;
         }
+    }
+
+    std::shared_ptr<CGAL::Kd_tree<Traits>> PointCloud::BuildKdTree()
+    {
+        if (this->_kdTree)
+        {
+            return this->_kdTree;
+        }
+        std::list<Point> cgalPoints;
+        for (const auto& point : this->_points)
+        {
+            cgalPoints.push_back(Point(point.x(), point.y(), point.z()));
+        }
+        auto tree = std::make_shared<CGAL::Kd_tree<Traits>>(cgalPoints.begin(), cgalPoints.end());
+        this->_kdTree = tree;
+        return tree;
     }
 }

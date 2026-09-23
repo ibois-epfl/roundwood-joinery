@@ -1,0 +1,52 @@
+{
+    "name": "RWJ_align_skeleton",
+    "nickname": "RWJ_align_skeleton",
+    "category": "Roundwood Joinery",
+    "subcategory": "utility",
+    "description": "This component aligns a set of points to a beam skeleton.",
+    "exposure": 4,
+    "instanceGuid": "64e3b23f-ec00-4aa0-bbb4-678546467e0a",
+    "ghpython": {
+        "hideOutput": true,
+        "hideInput": true,
+        "isAdvancedMode": true,
+        "marshalOutGuids": true,
+        "iconDisplay": 2,
+        "inputParameters": [
+            {
+                "name": "i_points",
+                "nickname": "i_points",
+                "description": "A set of points to be aligned to the beam skeleton.",
+                "optional": false,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "list",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "point"
+            },
+            {
+                "name": "i_skeleton",
+                "nickname": "i_skeleton",
+                "description": "The beam skeleton to which the points will be aligned.",
+                "optional": false,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "list",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "point"
+            }
+        ],
+        "outputParameters": [
+            {
+                "name": "o_transformation",
+                "nickname": "o_transformation",
+                "description": "The achieved transformations after optimisation as a datatree.",
+                "optional": false,
+                "sourceCount": 0,
+                "graft": false
+            }
+        ]
+    }
+}

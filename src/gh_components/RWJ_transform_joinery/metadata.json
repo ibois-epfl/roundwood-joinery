@@ -1,0 +1,60 @@
+{
+    "name": "RWJ_transform_joinery",
+    "nickname": "RWJ_transform_joinery",
+    "category": "Roundwood Joinery",
+    "subcategory": "definitions",
+    "description": "This component transforms the joinery for roundwood elements with its surfaces and degrees of freedom, so it goes from its theoretical positions to its position aligned on the beam, prior to optimisation.",
+    "exposure": 4,
+    "instanceGuid": "2c4fade0-0757-4acf-8889-f21daac9e650",
+    "ghpython": {
+        "hideOutput": true,
+        "hideInput": true,
+        "isAdvancedMode": true,
+        "marshalOutGuids": true,
+        "iconDisplay": 2,
+        "inputParameters": [
+            {
+                "name": "i_transformation",
+                "nickname": "i_transformation",
+                "description": "The transformation to be applied to the joint faces.",
+                "optional": false,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "item",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "transform"
+            },
+            {
+                "name": "i_joinery",
+                "nickname": "i_joinery",
+                "description": "The joinery definition for the roundwood elements that we want to transform.",
+                "optional": false,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "list",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "none"
+            }
+        ],
+        "outputParameters": [
+            {
+                "name": "o_joinery",
+                "nickname": "o_joinery",
+                "description": "The transformed joinery for a single beam.",
+                "optional": false,
+                "sourceCount": 0,
+                "graft": false
+            },
+            {
+                "name": "o_joint_outlines",
+                "nickname": "o_joint_outlines",
+                "description": "The transformed joint outlines",
+                "optional": false,
+                "sourceCount": 0,
+                "graft": true
+            }
+        ]
+    }
+}

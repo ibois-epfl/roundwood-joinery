@@ -1,0 +1,44 @@
+{
+    "name": "RWJ_deserialize_joint",
+    "nickname": "RWJ_deserialize_joint",
+    "category": "Roundwood Joinery",
+    "subcategory": "serialization",
+    "description": "This component deserializes the joint data from a file.",
+    "exposure": 4,
+    "instanceGuid": "5372a19b-b22a-465f-baf2-b1437b78252f",
+    "ghpython": {
+        "hideOutput": true,
+        "hideInput": true,
+        "isAdvancedMode": true,
+        "marshalOutGuids": true,
+        "iconDisplay": 2,
+        "inputParameters": [
+            {
+                "name": "i_file_path",
+                "nickname": "i_file_path",
+                "description": "The file path from which the joinery should be deserialized.",
+                "optional": false,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "item",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "str"
+            }
+        ],
+        "outputParameters": [
+            {
+                "name": "o_joinery",
+                "nickname": "o_joinery",
+                "description": "The deserialized joinery.",
+                "optional": false,
+                "allowTreeAccess": true,
+                "showTypeHints": true,
+                "scriptParamAccess": "item",
+                "wireDisplay": "default",
+                "sourceCount": 0,
+                "typeHintID": "none"
+            }
+        ]
+    }
+}
