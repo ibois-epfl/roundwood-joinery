@@ -44,9 +44,9 @@ int main()
         std::cout << "Beam reference diameter incorrect: " << retrievedReferenceDiameter << std::endl;
         return 1;
     }
-    if (beam.GetJointGroups()[0]->GetJoints()[0]->GetFaces()[0]->GetNormal() != Eigen::Vector3d(0.0, 0.0, 1.0))
+    if (beam.GetJointGroups()[0]->GetJoints()[0]->GetFaces()[0]->GetNormal() != Eigen::Vector3d(0.0, 0.0, -1.0))
     {
-        std::cout << "Beam joint face normal should have been flipped to (0,0,1) but is: " << beam.GetJointGroups()[0]->GetJoints()[0]->GetFaces()[0]->GetNormal().transpose() << std::endl;
+        std::cout << "Beam joint face normal should have been flipped to (0,0,-1) but is: " << beam.GetJointGroups()[0]->GetJoints()[0]->GetFaces()[0]->GetNormal().transpose() << std::endl;
         return 1;
     }
     if (beam.GetJointGroups().size() != jointGroups.size())
